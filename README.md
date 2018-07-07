@@ -39,7 +39,7 @@ To run the HTTP server:
   Connections are done from the raspberryPi GPIO pins to the _positive_ side of the lights circuit (high-side switch) using a _p-channel MOSFET_ transistor. 
   Discussion on low-side or high-side switching are out of the scope of this _readme_ document.
   ​
-  An schematic view of the _switch_ mechanism follows:
+  An schematic view of the _switch_ mechanism follows (from this [partsim project](http://www.partsim.com/simulator#132504)):
 
   ![high-side switch](high-side-switch.jpeg)
 
