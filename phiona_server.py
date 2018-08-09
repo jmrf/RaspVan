@@ -1,7 +1,12 @@
 import json
 import logging
 import argparse
-import sched, time
+import time
+
+import atexit
+
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
 from tendo import colorer
 
@@ -53,13 +58,12 @@ def read_pin_states():
     ])
 
 
-def switch_light(light_name, flag):
-    signal = not flag  # low side switch => (ON => 0v | OFF => 3.3v)
+def switch_light(light_name, signal):
     if light_name in PORT_MAPPING:
         logger.info("Switching light '{}' --> {}".format(light_name, 'ON' if signal else 'OFF'))
         GPIO.output(
             PORT_MAPPING[light_name],
-            GPIO.HIGH if signal else GPIO.LOW
+            GPIO.HIGH if not signal else GPIO.LOW   # low side switch => (ON => 0v | OFF => 3.3v)
         )
         return {light_name: 'OFF' if GPIO.input(PORT_MAPPING[light_name]) else 'ON'}
     else:
@@ -70,6 +74,13 @@ def switch_light(light_name, flag):
 
 class LightTimer(Resource):
 
+    def __init__(self):
+        self.sched = BackgroundScheduler(daemon=True)
+
+    def scheduled_switch(self, light_name, signal, id):
+        switch_light(light_name, signal)
+        self.sched.remove_job(id)
+
     def get(self):
         pass
 
@@ -78,9 +89,18 @@ class LightTimer(Resource):
             json_data = request.get_json(force=True)
 
             for k, v in json_data.items():
-                s = sched.scheduler(time.time, time.sleep)
-                s.enter(v['delay'], 1, switch_light, (k, v['flag'],))
-                s.run()
+                l_name, signal, delay = k, v['signal'], v['delay']
+                logger.info("{} ==> {} in {} seconds".format(l_name, "ON" if signal else "OFF", delay))
+                job_id = "{}-{}-{}".format(l_name, signal, delay)
+                self.sched.add_job(
+                    self.scheduled_switch,
+                    'interval',
+                    seconds=delay,
+                    id=job_id,
+                    args=(l_name, signal, job_id,)
+                )
+                self.sched.start()
+            return {"timers": [k for k in json_data.keys()]}
 
         except Exception as e:
             logger.error("Error in POST request: {}".format(e))
