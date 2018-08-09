@@ -58,14 +58,21 @@ class RaspberryPiServer(Resource):
         try:
             json_data = request.get_json(force=True)
             for k, v in json_data.items():
+                signal = not v  # low side switch => (ON => 0v | OFF => 3.3v)
                 if k in PORT_MAPPING:
                     logger.info("Switching light '{}' --> {}".format(k, 'ON' if v else 'OFF'))
                     GPIO.output(
                         PORT_MAPPING[k],
-                        GPIO.HIGH if v else GPIO.LOW
+                        GPIO.HIGH if signal else GPIO.LOW 
                     )
+                    return dict([
+                        ("{} ({})".format(k, pin_n), 'OFF' if GPIO.input(pin_n) else 'ON')
+                        for k, pin_n in PORT_MAPPING.items()
+                    ])
                 else:
-                    logger.warning("Light '{}' not recognized. Ignoring request...".format(k))
+                    msg = "Light '{}' not recognized. Ignoring request...".format(k)
+                    logger.warning(msg)
+                    return {"error": msg}
 
         except Exception as e:
             logger.error("Error in POST request: {}".format(e))

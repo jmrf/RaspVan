@@ -6,10 +6,13 @@ import json
 
 from tendo import colorer
 
+# lights to pin layout
+MAIN_LIGHTS_PIN = 7
+
 # GPIO imports
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(12, GPIO.OUT)	# map to physical port 12
+GPIO.setup(MAIN_LIGHTS_PIN, GPIO.OUT)	# map to physical ports
 
 
 logging.basicConfig()
@@ -53,11 +56,11 @@ def on_message(client, userdata, msg):
     if msg.topic == TURN_LIGHTS_ON:
         logger.info(("[{}] - Understood should turn on the {} lights."
                      " (prob: {:.3f})").format(time_now(), light_type, get_prob(msg)))
-	GPIO.output(12, GPIO.HIGH)
+        GPIO.output(MAIN_LIGHTS_PIN, GPIO.HIGH)
     elif msg.topic == TURN_LIGHTS_OFF:
         logger.info(("[{}] - Understood should turn off the {} lights."
                      " (prob: {:.3f})").format(time_now(), light_type, get_prob(msg)))
-	GPIO.output(12, GPIO.LOW)
+        GPIO.output(MAIN_LIGHTS_PIN, GPIO.LOW)
     elif msg.topic == DIM_LIGHTS:
         logger.info(("[{}] - Understood should dim the {} lights."
                      " (prob: {:.3f})").format(time_now(), light_type, get_prob(msg)))
