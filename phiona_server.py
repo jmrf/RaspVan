@@ -99,7 +99,7 @@ class LightTimer(Resource):
                     id=job_id,
                     args=(l_name, signal, job_id,)
                 )
-                self.sched.start()
+            self.sched.start()
             return {"timers": [k for k in json_data.keys()]}
 
         except Exception as e:
