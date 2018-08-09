@@ -1,6 +1,7 @@
 import json
 import logging
 import argparse
+import sched, time
 
 from tendo import colorer
 
@@ -45,37 +46,62 @@ app = Flask("RaspberryPiServer")
 api = Api(app)
 
 
+def read_pin_states():
+    return dict([
+        ("{}".format(k, pin_n), 'OFF' if GPIO.input(pin_n) else 'ON')
+        for k, pin_n in PORT_MAPPING.items()
+    ])
+
+
+def switch_light(light_name, flag):
+    signal = not flag  # low side switch => (ON => 0v | OFF => 3.3v)
+    if light_name in PORT_MAPPING:
+        logger.info("Switching light '{}' --> {}".format(light_name, 'ON' if signal else 'OFF'))
+        GPIO.output(
+            PORT_MAPPING[light_name],
+            GPIO.HIGH if signal else GPIO.LOW
+        )
+        return {light_name: 'OFF' if GPIO.input(PORT_MAPPING[light_name]) else 'ON'}
+    else:
+        msg = "Light '{}' not recognized. Ignoring request...".format(light_name)
+        logger.warning(msg)
+        return {"error": msg}
+
+
+class LightTimer(Resource):
+
+    def get(self):
+        pass
+
+    def post(self):
+        try:
+            json_data = request.get_json(force=True)
+
+            for k, v in json_data.items():
+                s = sched.scheduler(time.time, time.sleep)
+                s.enter(v['delay'], 1, switch_light, (k, v['flag'],))
+                s.run()
+
+        except Exception as e:
+            logger.error("Error in POST request: {}".format(e))
+            logger.exception(e)
+
+
 class RaspberryPiServer(Resource):
 
     def __init__(self):
         logger.info("Initiating Phiona Server...")
 
-    def read_pin_state(self):
-        return dict([
-            ("{}".format(k, pin_n), 'OFF' if GPIO.input(pin_n) else 'ON')
-            for k, pin_n in PORT_MAPPING.items()
-        ])
-
     def get(self):
         # read the state of the pins and return
-        return self.read_pin_state()
+        return read_pin_states()
 
     def post(self):
         try:
             json_data = request.get_json(force=True)
             for k, v in json_data.items():
-                signal = not v  # low side switch => (ON => 0v | OFF => 3.3v)
-                if k in PORT_MAPPING:
-                    logger.info("Switching light '{}' --> {}".format(k, 'ON' if v else 'OFF'))
-                    GPIO.output(
-                        PORT_MAPPING[k],
-                        GPIO.HIGH if signal else GPIO.LOW
-                    )
-                    return {k: 'OFF' if GPIO.input(PORT_MAPPING[k]) else 'ON'}
-                else:
-                    msg = "Light '{}' not recognized. Ignoring request...".format(k)
-                    logger.warning(msg)
-                    return {"error": msg}
+                return switch_light(k, v)
+
 
         except Exception as e:
             logger.error("Error in POST request: {}".format(e))
@@ -101,6 +127,14 @@ def set_IO_pins():
             logger.exception(e)
 
 
+def init_app():
+    # set the GPIO pins in output mode
+    set_IO_pins()
+    # endpoints
+    api.add_resource(RaspberryPiServer, '/lights')
+    api.add_resource(LightTimer, '/timer')
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', '-p', type=int, default=5000, help="Server listening port")
@@ -112,10 +146,7 @@ if __name__ == "__main__":
 
     args = get_args()
 
-    # set the GPIO pins in output mode
-    set_IO_pins()
-
-    api.add_resource(RaspberryPiServer, '/lights')
+    init_app()
     app.run(host='0.0.0.0', port=args.port, debug=args.debug)
 
 
