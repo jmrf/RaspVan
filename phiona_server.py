@@ -50,9 +50,15 @@ class RaspberryPiServer(Resource):
     def __init__(self):
         logger.info("Initiating Phiona Server...")
 
+    def read_pin_state(self):
+        dict([
+            ("{}".format(k, pin_n), 'OFF' if GPIO.input(pin_n) else 'ON')
+            for k, pin_n in PORT_MAPPING.items()
+        ])
+
     def get(self):
         # read the state of the pins and return
-        return {}
+        return self.read_pin_state()
 
     def post(self):
         try:
@@ -63,12 +69,9 @@ class RaspberryPiServer(Resource):
                     logger.info("Switching light '{}' --> {}".format(k, 'ON' if v else 'OFF'))
                     GPIO.output(
                         PORT_MAPPING[k],
-                        GPIO.HIGH if signal else GPIO.LOW 
+                        GPIO.HIGH if signal else GPIO.LOW
                     )
-                    return dict([
-                        ("{} ({})".format(k, pin_n), 'OFF' if GPIO.input(pin_n) else 'ON')
-                        for k, pin_n in PORT_MAPPING.items()
-                    ])
+                    return 'OFF' if GPIO.input(k) else 'ON'
                 else:
                     msg = "Light '{}' not recognized. Ignoring request...".format(k)
                     logger.warning(msg)
