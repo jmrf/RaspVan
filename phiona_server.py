@@ -1,15 +1,11 @@
-import json
 import logging
 import argparse
-import time
 
-import atexit
-
+from datetime import datetime as dt
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 from tendo import colorer
-
 from flask import Flask, request
 from flask_restful import Resource, Api
 
@@ -72,17 +68,28 @@ def switch_light(light_name, signal):
         return {"error": msg}
 
 
-class LightTimer(Resource):
+class BaseTimer(Resource):
 
-    def __init__(self):
-        self.sched = BackgroundScheduler(daemon=True)
+    @classmethod
+    def initiate(cls):
+        cls.pending_task = {}
+        cls.sched = BackgroundScheduler(daemon=True)
+        cls.sched.start()
+        return cls
+
+
+class LightTimer(BaseTimer):
 
     def scheduled_switch(self, light_name, signal, id):
         switch_light(light_name, signal)
         self.sched.remove_job(id)
+        del self.pending_task[id]
 
     def get(self):
-        pass
+        return [
+            (self.pending_task[j.id]['light'], self.pending_task[j.id]['signal'], j.next_run_time.isoformat())
+            for j in self.sched.get_jobs()
+        ]
 
     def post(self):
         try:
@@ -90,8 +97,12 @@ class LightTimer(Resource):
 
             for k, v in json_data.items():
                 l_name, signal, delay = k, v['signal'], v['delay']
+                job_id = "{}-{}-{}-{}".format(dt.now().isoformat(), l_name, signal, delay)
                 logger.info("{} ==> {} in {} seconds".format(l_name, "ON" if signal else "OFF", delay))
-                job_id = "{}-{}-{}".format(l_name, signal, delay)
+                self.pending_task[job_id] = {
+                    'light': l_name,
+                    'signal': "ON" if signal else "OFF"
+                }
                 self.sched.add_job(
                     self.scheduled_switch,
                     'interval',
@@ -99,7 +110,6 @@ class LightTimer(Resource):
                     id=job_id,
                     args=(l_name, signal, job_id,)
                 )
-                self.sched.start()
             return {"timers": [k for k in json_data.keys()]}
 
         except Exception as e:
@@ -121,7 +131,6 @@ class RaspberryPiServer(Resource):
             json_data = request.get_json(force=True)
             for k, v in json_data.items():
                 return switch_light(k, v)
-
 
         except Exception as e:
             logger.error("Error in POST request: {}".format(e))
@@ -150,9 +159,11 @@ def set_IO_pins():
 def init_app():
     # set the GPIO pins in output mode
     set_IO_pins()
-    # endpoints
+    # manual light switchs
     api.add_resource(RaspberryPiServer, '/lights')
-    api.add_resource(LightTimer, '/timer')
+    # timer light switchs
+    timer = LightTimer.initiate()
+    api.add_resource(timer, '/timer')
 
 
 def get_args():
@@ -168,5 +179,3 @@ if __name__ == "__main__":
 
     init_app()
     app.run(host='0.0.0.0', port=args.port, debug=args.debug)
-
-
