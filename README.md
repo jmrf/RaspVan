@@ -11,12 +11,12 @@ either by _voice_ or by sending _POST requests_ to a python server.
 
 ```bash
 .
-├── phiona_server.py 			    # simple Flask server to control the lights
+├── phiona_server.py 			    # simple Flask server to control the lights through HTTP requests
 ├── raspberry-pi-pinout.png 		    # Raspberry GPIO pins layout
 ├── README.md
-└── Voice assistant 		  	    # Voice assistant stuff
-    ├── assistantproj_rkr68ZJX-phiona.zip   # voice assistant model
-    ├── voice_ctl.py 			    # listen to MQTT for recognized voice commands
+└── Voice assistant 		  	    # Voice assistant directory
+    ├── assistantproj_rkr68ZJX-phiona.zip   # Snips voice assistant zipped model file
+    ├── voice_action_server.py 		    # listens to MQTT for recognized voice commands and execute  appropiate actions
     └── run_voice_assistant.sh 		    # run dockerized voice assistant
 ```
 
@@ -24,13 +24,13 @@ either by _voice_ or by sending _POST requests_ to a python server.
 
 To run the voice assitant:
 ```bash
-	./voice_assitant/tun_voice_assistant.sh
-	python3 voice_ctl.py
+	~./voice_assitant/run_voice_assistant.sh~
+	python3 voice_action_server.py
 ```
 
 To run the HTTP server:
 ```bash
-	python3 phiona_server.py
+	python3 http_server.py
 ```
 ## Wiring and Connections
 
