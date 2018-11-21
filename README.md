@@ -13,13 +13,19 @@ This repo as it is works with `Raspbian Stretch` and `Snips version: 0.60.1`.
 
 ```bash
 .
-├── phiona_server.py 			    # simple Flask server to control the lights through HTTP requests
-├── raspberry-pi-pinout.png 		    # Raspberry GPIO pins layout
-├── README.md
-└── Voice assistant 		  	    # Voice assistant directory
-    ├── assistantproj_rkr68ZJX-phiona.zip   # Snips voice assistant zipped model file
-    ├── voice_action_server.py 		    # listens to MQTT for recognized voice commands and execute  appropiate actions
-    └── run_voice_assistant.sh 		    # run dockerized voice assistant
+├── http_server.py			    # lights control HTTP server
+├── logs				    # log directory
+├── raspberry-pi-pinout.png
+├── README.md				    # this readme
+├── requirements.txt			    # HTTP server requirements
+└── voice_assistant			    # voice assistant directory
+    ├── assistant_proj_rkr68ZJX-.zip	    # zipped assistant project (ASR, NLU, ...)
+    ├── README.md			    # voice assistant README
+    ├── requirements.txt		    # voice_action service python requirements
+    ├── run_voice_assistant_deprecated.sh   # deprecated
+    ├── snips-record-personal-hotword	    # https://github.com/jmrf/snips-record-personal-hotword
+    └── voice_action_server.py		    # voice command to action service
+
 ```
 
 ## Requirements
