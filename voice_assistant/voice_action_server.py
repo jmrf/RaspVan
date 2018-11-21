@@ -6,17 +6,40 @@ import pprint
 import json
 
 from tendo import colorer
+import RPi.GPIO as GPIO
+
 
 # TODO: Update to use hermes_python instead of the low level mqtt library
 
 
 # lights to pin layout
-MAIN_LIGHTS_PIN = 7
+MAIN_LIGHT_PIN = 7
+L1_LIGHT_PIN = 11
+L2_LIGHT_PIN = 13
+L3_LIGHT_PIN = 15
 
-# GPIO imports
-import RPi.GPIO as GPIO
+# light names to PIN mapping
+# TODO: Define a list of synonims for this mapping. i.e.: rear == back == L1_LIGHT_PIN
+light_to_pin = {
+    "back": L1_LIGHT_PIN,
+    "middle": L2_LIGHT_PIN,
+    "front": L3_LIGHT_PIN,
+    "main": MAIN_LIGHT_PIN
+}
+
+# define the name intents
+TURN_LIGHTS_ON = 'hermes/intent/jmrf:TurnOnLights'
+TURN_LIGHTS_OFF = 'hermes/intent/jmrf:TurnOffLights'
+DIM_LIGHTS = 'hermes/intent/jmrf:DimLights'
+ASSISTANT_MSG = 'hermes/tts/say'
+
+# GPIO mode setup
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(MAIN_LIGHTS_PIN, GPIO.OUT)	# map to physical ports
+GPIO.setup(MAIN_LIGHT_PIN, GPIO.OUT)
+GPIO.setup(L1_LIGHT_PIN, GPIO.OUT)
+GPIO.setup(L2_LIGHT_PIN, GPIO.OUT)
+GPIO.setup(L3_LIGHT_PIN, GPIO.OUT)
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -40,12 +63,6 @@ logger.addHandler(ch)
 
 # MQTT client to connect to the bus
 mqtt_client = mqtt.Client()
-
-# define the name intents
-TURN_LIGHTS_ON = 'hermes/intent/jmrf:TurnOnLights'
-TURN_LIGHTS_OFF = 'hermes/intent/jmrf:TurnOffLights'
-DIM_LIGHTS = 'hermes/intent/jmrf:DimLights'
-ASSISTANT_MSG = 'hermes/tts/say'
 
 
 def time_now():
@@ -79,23 +96,37 @@ def on_message(client, userdata, msg):
         topic = msg.topic
         logger.info("Message topic: {}".format(topic.split("/")[-1]))
 
-        light_type = [s['rawValue'] for s in payload.get('slots', [])
+        light_names = [s['rawValue'] for s in payload.get('slots', [])
                       if s['slotName'] == 'LightType'] or '???'
 
         # note: Notice that we are using a low switch relay device, hence switching on
         # requires a low signal from the GPIO pins
         # i.e.: reversed switching. ON => LOW | OFF => HIGH
+        
+        # Switch on intent
         if msg.topic == TURN_LIGHTS_ON:
             logger.info(("Understood should turn on the {} lights."
-                         " (prob: {:.3f})").format(light_type, get_prob(payload)))
-            GPIO.output(MAIN_LIGHTS_PIN, GPIO.LOW)
+                         " (prob: {:.3f})").format(light_names, get_prob(payload)))
+            
+            for l_name in light_names:
+                l_pin = light_to_pin.get(l_name, None)
+                if l_pin:
+                    GPIO.output(l_pin, GPIO.LOW)
+
+        # switch off intent
         elif msg.topic == TURN_LIGHTS_OFF:
             logger.info(("Understood should turn off the {} lights."
-                         " (prob: {:.3f})").format(light_type, get_prob(payload)))
-            GPIO.output(MAIN_LIGHTS_PIN, GPIO.HIGH)
+                         " (prob: {:.3f})").format(light_names, get_prob(payload)))
+            
+            for l_name in light_names:
+                l_pin = light_to_pin.get(l_name, None)
+                if l_pin:
+                    GPIO.output(l_pin, GPIO.HIGH)
+        
+        # Dim intent
         elif msg.topic == DIM_LIGHTS:
             logger.info(("Understood should dim the {} lights."
-                         " (prob: {:.3f})").format(light_type, get_prob(payload)))
+                         " (prob: {:.3f})").format(light_names, get_prob(payload)))
         elif msg.topic == ASSISTANT_MSG:
             logger.info("Assistant says: '{}'".format(payload.get('text')))
     
@@ -117,4 +148,5 @@ if __name__ == "__main__":
     mqtt_client.on_connect = on_connect
     mqtt_client.on_message = on_message
     mqtt_client.connect(args.mqtt_server, args.mqtt_port)
-    mqtt_client.loop_forever()
+    
+mqtt_client.loop_forever()
