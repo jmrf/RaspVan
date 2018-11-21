@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # logger file handler
-fh = logging.FileHandler('phiona_server.log')
-fh.setLevel(logging.DEBUG)
+#fh = logging.FileHandler('phiona_server.log')
+#fh.setLevel(logging.DEBUG)
 
 # logger console handler
 ch = logging.StreamHandler()
@@ -34,11 +34,11 @@ ch.setLevel(logging.DEBUG)
 
 # logger formatter
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(lineno)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
+#fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 
 # add the handlers to the logger
-logger.addHandler(fh)
+#logger.addHandler(fh)
 logger.addHandler(ch)
 
 
