@@ -129,8 +129,10 @@ class RaspberryPiServer(Resource):
     def post(self):
         try:
             json_data = request.get_json(force=True)
+            res = {}
             for k, v in json_data.items():
-                return switch_light(k, v)
+                res.update(switch_light(k, v))
+            return res
 
         except Exception as e:
             logger.error("Error in POST request: {}".format(e))

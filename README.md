@@ -31,14 +31,21 @@ This repo as it is works with `Raspbian Stretch` and `Snips version: 0.60.1`.
 ## Requirements
 
 *  Raspbian Stretch
-*  Snips
+*  [Snips](https://docs.snips.ai/getting-started/quick-start-raspberry-pi)
 *  python3
 *  MQTT (mosquitto)
 
 
 ## How to
 
-The following steps assumes we are at the route of the repo directory located at `/home/pi/RaspVan`.
+
+### Installation
+
+#### Voice control:
+
+For the voice control part the easiest thing is to use [Snips](https://docs.snips.ai/getting-started/quick-start-raspberry-pi)
+
+Once installed, the following steps assumes we are at the route of the repo directory located at `/home/pi/RaspVan`.
 
 To run the voice assitant:
 ```bash
@@ -46,12 +53,16 @@ To run the voice assitant:
 	python3 voice_assistant/voice_action_server.py
 ```
 
+#### HTTP Control (Android app or similar):
+
 To run the HTTP server:
 ```bash
 	python3 http_server.py
 ```
 
-Ideally this processes should run on startup, for this we use `systemctl`.
+
+Ideally these processes should run on startup, for this we use `systemctl`.
+
 For example to configure a _unit_ for the `voice_action_server`:
 
 1. Create the `.service`:
@@ -101,10 +112,16 @@ To start manually and test proper functioning:
 
 * Lights:
 
-  Connections are done from the raspberryPi GPIO pins to the _positive_ side of the lights circuit (high-side switch) using a _p-channel MOSFET_ transistor. 
-  Discussion on low-side or high-side switching are out of the scope of this _readme_ document.
-  ​
-  An schematic view of the _switch_ mechanism follows (from this [partsim project](http://www.partsim.com/simulator#132504)):
+  **Update**:
+  Instead of using the _MOSFET_ configuration, is prefered using an array of relays because of encapsulation.
+  Switching times increase when using relays but encapsulation of the devices makes life easier.
+  We use [these relays](https://amzn.to/2FRfuCP)
+
+  ~~Connections are done from the raspberryPi GPIO pins to the _positive_ side of the lights circuit (high-side switch) using a 
+  _p-channel MOSFET_ transistor. 
+  Discussion on low-side or high-side switching are out of the scope of this _readme_ document.~~
+
+ An schematic view of the _switch_ mechanism follows (from this [partsim project](http://www.partsim.com/simulator#132504)):
 
   ![high-side switch](high-side-switch.jpeg)
 
