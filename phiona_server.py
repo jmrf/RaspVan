@@ -49,7 +49,7 @@ api = Api(app)
 
 def read_pin_states():
     return dict([
-        ("{}".format(k, pin_n), 'OFF' if GPIO.input(pin_n) else 'ON')
+        ("{}".format(k, pin_n), False if GPIO.input(pin_n) else True)
         for k, pin_n in PORT_MAPPING.items()
     ])
 
@@ -61,7 +61,7 @@ def switch_light(light_name, signal):
             PORT_MAPPING[light_name],
             GPIO.HIGH if not signal else GPIO.LOW   # low side switch => (ON => 0v | OFF => 3.3v)
         )
-        return {light_name: 'OFF' if GPIO.input(PORT_MAPPING[light_name]) else 'ON'}
+        return {light_name: False if GPIO.input(PORT_MAPPING[light_name]) else True}
     else:
         msg = "Light '{}' not recognized. Ignoring request...".format(light_name)
         logger.warning(msg)
@@ -87,9 +87,9 @@ class LightTimer(BaseTimer):
 
     def get(self):
         return [
-            (self.pending_task[j.id]['light'], self.pending_task[j.id]['signal'], j.next_run_time.isoformat())
-            for j in self.sched.get_jobs()
-        ]
+            (self.pending_task[j.id]['light'],
+             self.pending_task[j.id]['signal'],
+             j.next_run_time.isoformat()) for j in self.sched.get_jobs()]
 
     def post(self):
         try:
@@ -101,7 +101,7 @@ class LightTimer(BaseTimer):
                 logger.info("{} ==> {} in {} seconds".format(l_name, "ON" if signal else "OFF", delay))
                 self.pending_task[job_id] = {
                     'light': l_name,
-                    'signal': "ON" if signal else "OFF"
+                    'signal': signal
                 }
                 self.sched.add_job(
                     self.scheduled_switch,
@@ -110,7 +110,7 @@ class LightTimer(BaseTimer):
                     id=job_id,
                     args=(l_name, signal, job_id,)
                 )
-            return {"timers": [k for k in json_data.keys()]}
+            return self.get()
 
         except Exception as e:
             logger.error("Error in POST request: {}".format(e))
