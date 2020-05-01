@@ -1,4 +1,19 @@
-__pycache__/
+# datafiles
+*.wav
+*.mp3
+*.flac
 
+# other files
 *.log
 *.bak
+
+# directories
+__pycache__/
+.cache/
+imgs/
+hotword/data/random/
+py-kaldi-asr-client/
+
+
+
+

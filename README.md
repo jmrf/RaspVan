@@ -12,26 +12,12 @@ This repo as it is works with `Raspbian Stretch` and `Snips version: 0.60.1`.
 ## Structure
 
 ```bash
-.
-├── http_server.py			# lights control HTTP server
-├── logs				    # log directory
-├── raspberry-pi-pinout.png
-├── README.md				# this readme
-├── requirements.txt        # HTTP server requirements
-└── voice_assistant			# voice assistant directory
-    ├── assistant_proj_rkr68ZJX-.zip	# zipped assistant project (ASR, NLU, ...)
-    ├── README.md			    		# voice assistant README
-    ├── requirements.txt		    # voice_action service python requirements
-    ├── run_voice_assistant_deprecated.sh   # deprecated
-    ├── snips-record-personal-hotword	    # https://github.com/jmrf/snips-record-personal-hotword
-    └── voice_action_server.py		    # voice command to action service
 
 ```
 
 ## Requirements
 
 *  [Raspbian Stretch](https://www.raspberrypi.org/downloads/raspbian/) ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
-*  [Snips](https://docs.snips.ai/getting-started/quick-start-raspberry-pi)
 *  python3
 *  MQTT (mosquitto)
 
@@ -42,26 +28,17 @@ This repo as it is works with `Raspbian Stretch` and `Snips version: 0.60.1`.
 
 #### WiFi and automatic hotspot
 
-In order to communicate with the RaspberryPi we will configure it to connect to a series of known WiFi networks when available and to create a Hotspot otherwise.
+In order to communicate with the RaspberryPi we will configure it to connect to
+a series of known WiFi networks when available and to create a Hotspot otherwise.
 
-Refer to [auto-wifi-hotspot](http://www.raspberryconnect.com/network/item/330-raspberry-pi-auto-wifi-hotspot-switch-internet) from [raspberryconnect/network](http://www.raspberryconnect.com/network).
+Refer to
+[auto-wifi-hotspot](http://www.raspberryconnect.com/network/item/330-raspberry-pi-auto-wifi-hotspot-switch-internet)
+from [raspberryconnect/network](http://www.raspberryconnect.com/network).
 
 By default the RaspberryPi will be accessible at the IP: `192.168.50.5` when the hotspot is active.
 
 
-
 #### Voice Control:
-
-For the voice control part the easiest thing is to use [Snips for the RaspberryPi](https://docs.snips.ai/getting-started/quick-start-raspberry-pi).
-
-Once installed, the following steps assumes we are at the route of the repo directory located at `/home/pi/RaspVan`.
-
-To run the voice assitant:
-```bash
-
-	python3 voice_assistant/voice_action_server.py
-```
-
 
 
 #### HTTP Control (Android app or similar):
@@ -141,13 +118,13 @@ Refer to [GumCP](https://github.com/gumslone/GumCP) for instructions.
   Switching times increase when using relays but encapsulation of the devices makes life easier.
   We use [these relays](https://amzn.to/2FRfuCP).
 
-  ~~Connections are done from the raspberryPi GPIO pins to the _positive_ side of the lights circuit (high-side switch) using a 
-  _p-channel MOSFET_ transistor. 
+  ~~Connections are done from the raspberryPi GPIO pins to the _positive_ side of the lights circuit (high-side switch) using a
+  _p-channel MOSFET_ transistor.
   Discussion on low-side or high-side switching are out of the scope of this _readme_ document.~~
 
  An schematic view of the _switch_ mechanism follows (from this [partsim project](http://www.partsim.com/simulator#132504)):
 
-  ![high-side switch](high-side-switch.jpeg)
+  ![high-side switch](diagrams/high-side-switch.jpeg)
 
 
 
