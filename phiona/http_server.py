@@ -1,44 +1,41 @@
-import logging
 import argparse
-
+import logging
 from datetime import datetime as dt
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
 
-from tendo import colorer
-from flask import Flask, request
-from flask_restful import Resource, Api
+import RPi.GPIO as GPIO
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask
+from flask import request
+from flask_restful import Api
+from flask_restful import Resource
 
 # RapberryPi GPIO control
-import RPi.GPIO as GPIO
+# from apscheduler.triggers.interval import IntervalTrigger
 
 GPIO.setmode(GPIO.BOARD)
-PORT_MAPPING = {
-    "main": 7,
-    "l1": 11,
-    "l2": 13,
-    "l3": 15
-}
+PORT_MAPPING = {"main": 7, "l1": 11, "l2": 13, "l3": 15}
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # logger file handler
-#fh = logging.FileHandler('phiona_server.log')
-#fh.setLevel(logging.DEBUG)
+# fh = logging.FileHandler('phiona_server.log')
+# fh.setLevel(logging.DEBUG)
 
 # logger console handler
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 
 # logger formatter
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(lineno)s - %(levelname)s - %(message)s')
-#fh.setFormatter(formatter)
+formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(lineno)s - %(levelname)s - %(message)s"
+)
+# fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 
 # add the handlers to the logger
-#logger.addHandler(fh)
+# logger.addHandler(fh)
 logger.addHandler(ch)
 
 
@@ -48,28 +45,31 @@ api = Api(app)
 
 
 def read_pin_states():
-    return dict([
-        ("{}".format(k, pin_n), False if GPIO.input(pin_n) else True)
+    return {
+        f"{k}": False if GPIO.input(pin_n) else True
         for k, pin_n in PORT_MAPPING.items()
-    ])
+    }
 
 
 def switch_light(light_name, signal):
     if light_name in PORT_MAPPING:
-        logger.info("Switching light '{}' --> {}".format(light_name, 'ON' if signal else 'OFF'))
+        logger.info(
+            "Switching light '{}' --> {}".format(light_name, "ON" if signal else "OFF")
+        )
         GPIO.output(
             PORT_MAPPING[light_name],
-            GPIO.HIGH if not signal else GPIO.LOW   # low side switch => (ON => 0v | OFF => 3.3v)
+            GPIO.HIGH
+            if not signal
+            else GPIO.LOW,  # low side switch => (ON => 0v | OFF => 3.3v)
         )
         return {light_name: False if GPIO.input(PORT_MAPPING[light_name]) else True}
     else:
-        msg = "Light '{}' not recognized. Ignoring request...".format(light_name)
+        msg = f"Light '{light_name}' not recognized. Ignoring request..."
         logger.warning(msg)
         return {"error": msg}
 
 
 class BaseTimer(Resource):
-
     @classmethod
     def initiate(cls):
         cls.pending_task = {}
@@ -79,7 +79,6 @@ class BaseTimer(Resource):
 
 
 class LightTimer(BaseTimer):
-
     def scheduled_switch(self, light_name, signal, id):
         switch_light(light_name, signal)
         self.sched.remove_job(id)
@@ -87,38 +86,44 @@ class LightTimer(BaseTimer):
 
     def get(self):
         return [
-            (self.pending_task[j.id]['light'],
-             self.pending_task[j.id]['signal'],
-             j.next_run_time.isoformat()) for j in self.sched.get_jobs()]
+            (
+                self.pending_task[j.id]["light"],
+                self.pending_task[j.id]["signal"],
+                j.next_run_time.isoformat(),
+            )
+            for j in self.sched.get_jobs()
+        ]
 
     def post(self):
         try:
             json_data = request.get_json(force=True)
 
             for k, v in json_data.items():
-                l_name, signal, delay = k, v['signal'], v['delay']
-                job_id = "{}-{}-{}-{}".format(dt.now().isoformat(), l_name, signal, delay)
-                logger.info("{} ==> {} in {} seconds".format(l_name, "ON" if signal else "OFF", delay))
-                self.pending_task[job_id] = {
-                    'light': l_name,
-                    'signal': signal
-                }
+                l_name, signal, delay = k, v["signal"], v["delay"]
+                job_id = "{}-{}-{}-{}".format(
+                    dt.now().isoformat(), l_name, signal, delay
+                )
+                logger.info(
+                    "{} ==> {} in {} seconds".format(
+                        l_name, "ON" if signal else "OFF", delay
+                    )
+                )
+                self.pending_task[job_id] = {"light": l_name, "signal": signal}
                 self.sched.add_job(
                     self.scheduled_switch,
-                    'interval',
+                    "interval",
                     seconds=delay,
                     id=job_id,
-                    args=(l_name, signal, job_id,)
+                    args=(l_name, signal, job_id,),
                 )
             return self.get()
 
         except Exception as e:
-            logger.error("Error in POST request: {}".format(e))
+            logger.error(f"Error in POST request: {e}")
             logger.exception(e)
 
 
 class RaspberryPiServer(Resource):
-
     def __init__(self):
         logger.info("Initiating Phiona Server...")
 
@@ -135,7 +140,7 @@ class RaspberryPiServer(Resource):
             return res
 
         except Exception as e:
-            logger.error("Error in POST request: {}".format(e))
+            logger.error(f"Error in POST request: {e}")
             logger.exception(e)
 
 
@@ -152,9 +157,9 @@ def set_IO_pins():
     for p in PORT_MAPPING.values():
         try:
             GPIO.setup(p, GPIO.OUT)
-            logger.info("Setting physical pin={} in OUTPUT mode.".format(p))
+            logger.info(f"Setting physical pin={p} in OUTPUT mode.")
         except Exception as e:
-            logger.error("Error setting port={} in OUTPUT mode".format(p))
+            logger.error(f"Error setting port={p} in OUTPUT mode")
             logger.exception(e)
 
 
@@ -162,16 +167,20 @@ def init_app():
     # set the GPIO pins in output mode
     set_IO_pins()
     # manual light switchs
-    api.add_resource(RaspberryPiServer, '/lights')
+    api.add_resource(RaspberryPiServer, "/lights")
     # timer light switchs
     timer = LightTimer.initiate()
-    api.add_resource(timer, '/timer')
+    api.add_resource(timer, "/timer")
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--port', '-p', type=int, default=5000, help="Server listening port")
-    parser.add_argument('--debug', action='store_true', help="Whether to use Flask in debug mode")
+    parser.add_argument(
+        "--port", "-p", type=int, default=5000, help="Server listening port"
+    )
+    parser.add_argument(
+        "--debug", action="store_true", help="Whether to use Flask in debug mode"
+    )
     return parser.parse_args()
 
 
@@ -180,4 +189,4 @@ if __name__ == "__main__":
     args = get_args()
 
     init_app()
-    app.run(host='0.0.0.0', port=args.port, debug=args.debug)
+    app.run(host="0.0.0.0", port=args.port, debug=args.debug)

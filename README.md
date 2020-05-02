@@ -2,24 +2,68 @@
 
 Domotics using a Raspberry Pi 3 for our own-built campervan.
 
-At the moment is just a simple prototype to control the van lights
-either by _voice_ or by sending _HTTP requests_ to a python server.
+At the moment it is ~~just a simple prototype~~ complete domotic voice-controled
+system.
+Commands can be executed either by _voice_ or by sending _HTTP requests_ to a server.
 
-This repo as it is works with `Raspbian Stretch` and `Snips version: 0.60.1`.
 
+Table of Contents
+=================
+
+   * [RaspVan](#raspvan)
+   * [Table of Contents](#table-of-contents)
+      * [Requirements](#requirements)
+      * [Structure](#structure)
+      * [How to](#how-to)
+         * [Installation](#installation)
+            * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
+            * [Voice Control:](#voice-control)
+            * [HTTP Control (Android app or similar):](#http-control-android-app-or-similar)
+            * [Web Control Panel (optional)](#web-control-panel-optional)
+      * [Wiring and Connections](#wiring-and-connections)
+      * [Misc](#misc)
+
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
+
+## Requirements
+
+Apart from any other requirement defined in each of the sub-components we
+need the follwing:
+
+*  [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
+   ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
+*  [MQTT](https://mqtt.org/) (mosquitto)
+*  python >= 3.6
 
 
 ## Structure
 
 ```bash
+.
+├── ASR
+│   ├── client
+│   ├── data
+│   │   ├── audio
+│   │   └── lm
+│   ├── logs
+│   └── models
+│       └── lm
+├── diagrams
+├── hotword
+│   ├── data
+│   │   ├── phiona
+│   │   └── random
+│   ├── logs
+│   │   ├── phiona.logs
+│   │   └── phiona-om.logs
+│   └── models
+├── imgs
+├── phiona
+└── scripts
 
+20 directories
 ```
-
-## Requirements
-
-*  [Raspbian Stretch](https://www.raspberrypi.org/downloads/raspbian/) ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
-*  python3
-*  MQTT (mosquitto)
 
 
 ## How to
@@ -128,6 +172,6 @@ Refer to [GumCP](https://github.com/gumslone/GumCP) for instructions.
 
 
 
-### Misc
+## Misc
 
 * Drawing and simulation tool: [partsim simulator](https://www.partsim.com/simulator)

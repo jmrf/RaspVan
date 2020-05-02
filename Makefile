@@ -1,6 +1,8 @@
 .PHONY: clean test lint init check-readme
 
 help:
+	@echo "    train-lm"
+	@echo "        Train the speech language model"
 	@echo "    train-nlu"
 	@echo "        Train the NLU engine"
 	@echo "    train-dialogue"
@@ -31,6 +33,12 @@ help:
 	@echo "        Run pytest on tests/."
 
 
+train-lm:
+	cd ASR && \
+		# ./prepare_lm_data.sh && \
+		./train_lm.sh && \
+		cd ..
+
 train-nlu:
 	./scripts/bootstrap_nlu.sh
 
@@ -60,10 +68,10 @@ build-docker-actions:
 	# make build-docker-actions mode=dev version=0.1
 	# make build-docker-actions mode=full version=0.1
 	docker build --rm \
-		-f bot_actions/$(mode)Actions.Dockerfile \
+		-f actions/$(mode)Actions.Dockerfile \
 		-t ${PROJECT}-$(mode)-actions:$(version) \
 		-t ${PROJECT}-$(mode)-actions:latest \
-		bot_actions
+		actions
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -75,11 +83,11 @@ clean:
 	rm -rf docs/_build
 
 formatter:
-	black *_engine bot_actions scripts
+	black ASR hotword phiona scripts --exclude external
 
 lint:
-	# flake8 *_engine tests bot_actions
-	black --check *_engine bot_actions scripts
+	flake8 ASR hotword phiona tests
+	black --check ASR hotword phiona scripts  --exclude external
 
 types:
-	pytype --keep-going *_engine bot_actions scripts
+	pytype --keep-going ASR hotword phiona scripts  --exclude external

@@ -1,8 +1,27 @@
-# ASR (Automatic Speech Recognition)
+# STT (Speech To Text) / ASR (Automatic Speech Recognition)
 
 
-If you do not know where to start, [this video series](https://www.youtube.com/watch?v=i9Gn2QYrYpo)
-could be a great start.
+The goal of an STT system is to transcribe from an audio stream the most likely
+sequence of words from an accoustic observation.
+
+
+If you do not know where to begin at,
+[this video series](https://www.youtube.com/watch?v=i9Gn2QYrYpo) could be a great start.
+
+In a nutshell `Automatic Speech Recognition` requires different type of models,
+working one after the other to be able to transform a soundwave into text.
+
+The main components are:
+
+- Acoustic model: Mapping accoustic observations
+- Lexicons or Dictionaries: Defining the possible **words** in the domain of application
+- Grapheme-to-Phoneme (G2P): Mapping words to **pronunciations**
+- Language Model: Mapping sequence of word probabilities to sentences or phrases.
+
+All these componentes together define what we call a **ASR** model.
+
+However, new advances have been making increasingly possible to have end-to-end
+systems.
 
 
 Table of Contents
@@ -10,8 +29,8 @@ Table of Contents
 
    * [ASR (Automatic Speech Recognition)](#asr-automatic-speech-recognition)
    * [Table of Contents](#table-of-contents)
-      * [Introduction](#introduction)
-         * [Frameworks](#frameworks)
+      * [Requirements](#requirements)
+      * [Frameworks](#frameworks)
          * [Tools](#tools)
       * [Install](#install)
       * [Training](#training)
@@ -22,13 +41,20 @@ Table of Contents
 Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 
+## Requirements
 
-### Frameworks
+- python >= 3.6
+- [kenLM](https://github.com/kpu/kenlm) (only if training a new language model)
+
+In addition, we will be using one of the below frameworks.
+
+## Frameworks
 
 We consider a few different options for the `ASR` pipeline:
 
 * [wav2letter](https://github.com/facebookresearch/wav2letter/)
-* [Kaldi](https://kaldi-asr.org/): To starting understanding `Kaldi` a good place to start from is the
+* [Kaldi](https://kaldi-asr.org/): To begin understanding `Kaldi` a good place
+    to start from is the
     [4 part kaldi lectures](https://sites.google.com/site/dpovey/kaldi-lectures).
 
 To see how this frameworks compare, check this
@@ -43,12 +69,46 @@ To see how this frameworks compare, check this
 
 ## Install
 
-TODO
+Only necessary if we want to train a language model. Assuming Ubuntu OS:
+
+Install dependencies and packages:
+```bash
+sudo apt install build-essential cmake \
+    libboost-system-dev libboost-thread-dev \
+    libboost-program-options-dev libboost-test-dev \
+    libeigen3-dev zlib1g-dev libbz2-dev liblzma-dev
+```
+
+Install `kenLM` ([build instructions](https://github.com/kpu/kenlm/blob/master/BUILDING)):
+
+```bash
+# clone the repo
+cd external && git clone https://github.com/kpu/kenlm.git
+# install
+cd kenlm && mkdir -p build && cd build
+  cmake ..
+  make -j 4
+
+```
 
 
 ## Training
 
-TODO
+Potentially a pre-trained ASR model could be enough. However, adapting the
+`language model` to the specific domain should yield better results.
+
+This can be done as follows:
+
+```
+    # 1. Run the data preparation scripts
+    ./prepare_lm_data.sh
+
+    # 2. train the language model
+    ./train_lm.sh
+
+    # 3. Start the ASR model adaptation
+    python -m src.adapt -h
+```
 
 
 ## Inference
