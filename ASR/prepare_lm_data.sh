@@ -55,14 +55,14 @@ unxz $DATA_PATH && rm $DATA_PATH
 
 # Download model to adapt
 echo
-say @cyan[["Downloading language model $LM_MODEL_NAME..."]]
+say @cyan[["Downloading ASR model $BASE_ASR_MODEL_NAME..."]]
 mkdir -p $MODEL_DIR
 download_file \
-    "https://goofy.zamia.org/zamia-speech/asr-models/${LM_MODEL_NAME}.tar.xz" \
+    "https://goofy.zamia.org/zamia-speech/asr-models/${BASE_ASR_MODEL_NAME}.tar.xz" \
     $MODEL_DIR
 
-say @cyan[["Extracting language model ${LM_MODEL_NAME}..."]]
-MODEL_PATH="$MODEL_DIR/${LM_MODEL_NAME}"
+say @cyan[["Extracting ASR model ${BASE_ASR_MODEL_NAME}..."]]
+MODEL_PATH="$MODEL_DIR/${BASE_ASR_MODEL_NAME}"
 tar xf $MODEL_PATH.tar.xz -C $MODEL_DIR && rm $MODEL_PATH.tar.xz
 
 echo

@@ -41,10 +41,22 @@ fi
 say @magenta[["Sourcing .env file"]]
 source .env
 
-say @cyan[["Extracting model vocabulary"]]
-lmplz -o 4 \
-    --prune 0 1 2 3 \
-    --limit_vocab_file $DATA_DIR/vocab.txt \
-    --interpolate_unigrams 0 < $DATA_DIR/lm.txt > $MODEL_DIR/lm.arpa
+# say @cyan[["Traning kenLM language model"]]
+# $KENLM_PATH/lmplz -o 4 \
+#     --prune 0 1 2 3 \
+#     --limit_vocab_file $DATA_DIR/vocab.txt \
+#     --interpolate_unigrams 0 < $DATA_DIR/lm.txt > $MODEL_DIR/lm.arpa
+
+
+say @cyan[["Adapting language model"]]
+python -m src.adapt \
+    --kaldi-root $KALDI_PATH \
+    -m $MODEL_DIR/$BASE_ASR_MODEL_NAME \
+    -lm $LM_MODEL_DIR/lm.arpa \
+    -o $DST_MODEL_NAME \
+    -w $WORKDIR_PATH \
+    --force --verbose
+
+cp $WORKDIR_PATH/kaldi-$DST_MODEL_NAME-adapt.tar.xz $MODEL_DIR
 
 say @green[["Done! :)"]]

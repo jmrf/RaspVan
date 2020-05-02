@@ -1,13 +1,48 @@
+# -*- coding: utf-8 -*-
+
+# This is an imrovement of Guenter Bartsh's script:
+# https://github.com/gooofy/kaldi-adapt-lm/blob/master/kaldi-adapt-lm
+
+# Adapted to work on python3 and making it self-contained, without the need
+# for other libraries or code.
+# The original script header follows:
+
+#
+# Copyright 2016, 2017, 2018 Guenter Bartsch
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#
+# adapt an existing kaldi model to a new language model
+#
+
+
 import logging
 import os
+import subprocess
 import sys
 from argparse import ArgumentParser
 
 from .kaldi_adapt import kaldi_adapt_lm
+from .misc import configure_logging
 
 DEFAULT_KALDI_ROOT = "/opt/kaldi"
 DEFAULT_MODEL_DIR = "./models/lm"
-DEFAULT_WORK_DIR = "work"
+DEFAULT_WORK_DIR = "/tmp/work"
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_args():
@@ -62,7 +97,7 @@ if __name__ == "__main__":
 
     args = get_args()
 
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
+    configure_logging(logger, level=logging.DEBUG if args.verbose else logging.INFO)
 
     work_dir = args.work_dir
 
@@ -70,14 +105,14 @@ if __name__ == "__main__":
         if args.force:
             # cleanup leftovers from previous runs
             cmd = "rm -rf %s" % work_dir
-            logging.info(cmd)
-            os.system(cmd)
+            logger.info(cmd)
+            subprocess.Popen(cmd, shell=True).wait()
         else:
-            logging.error("work dir %s already exists." % work_dir)
+            logger.error("work dir %s already exists." % work_dir)
             sys.exit(1)
 
     kaldi_adapt_lm(
         args.kaldi_root, args.src_model_dir, args.lm_fn, work_dir, args.dst_model_name
     )
 
-    logging.info("All done.")
+    logger.info("All done.")

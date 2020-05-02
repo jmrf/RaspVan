@@ -44,6 +44,7 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 ## Requirements
 
 - python >= 3.6
+- [Kaldi](https://github.com/kaldi-asr/kaldi)
 - [kenLM](https://github.com/kpu/kenlm) (only if training a new language model)
 
 In addition, we will be using one of the below frameworks.
@@ -69,7 +70,8 @@ To see how this frameworks compare, check this
 
 ## Install
 
-Only necessary if we want to train a language model. Assuming Ubuntu OS:
+**Only necessary if we want to train a language model**.
+Assuming Ubuntu OS:
 
 Install dependencies and packages:
 ```bash
@@ -79,11 +81,12 @@ sudo apt install build-essential cmake \
     libeigen3-dev zlib1g-dev libbz2-dev liblzma-dev
 ```
 
-Install `kenLM` ([build instructions](https://github.com/kpu/kenlm/blob/master/BUILDING)):
+1. Install `kenLM` ([build instructions](https://github.com/kpu/kenlm/blob/master/BUILDING)):
 
 ```bash
 # clone the repo
-cd external && git clone https://github.com/kpu/kenlm.git
+cd ../external && git clone https://github.com/kpu/kenlm.git
+
 # install
 cd kenlm && mkdir -p build && cd build
   cmake ..
@@ -91,23 +94,51 @@ cd kenlm && mkdir -p build && cd build
 
 ```
 
+2. Clone `Kaldi` (no need to build the binaries):
+
+```bash
+# clone the repo
+cd ../external && git clone https://github.com/kaldi-asr/kaldi
+
+# check missing deps & manual install
+cd kaldi/tools && ./extras/check_dependencies.sh  # should say 'OK'
+
+# install the tools: https://github.com/kaldi-asr/kaldi/blob/master/tools/INSTALL
+nproc  # num cpus: should say something like 4 or 8
+make -j 8
+
+# install kaldi src
+cd ../src
+./configure --shared  # optinoally: --use-cuda=no
+make depend -j 8
+make -j 8
+```
+
+However, to train ASR models from scratch, check
+[installation instructions](https://github.com/kaldi-asr/kaldi/blob/master/INSTALL)
+
 
 ## Training
 
-Potentially a pre-trained ASR model could be enough. However, adapting the
-`language model` to the specific domain should yield better results.
+Potentially a [pre-trained ASR model](https://kaldi-asr.org/models.html)
+could be enough. However, adapting the `language model` parts to the specific
+domain should yield better results.
 
-This can be done as follows:
+First we need to gather examples of the sentences we want the language model
+to be fitted to (compute `n-gram` occurence frequencies). For this, we write
+our sentences in `data/data/lm/utterances.txt`. One senence per line.
+
+Once done, we execute what follows:
 
 ```
-    # 1. Run the data preparation scripts
-    ./prepare_lm_data.sh
+# 1. Run the data preparation scripts
+./prepare_lm_data.sh
 
-    # 2. train the language model
-    ./train_lm.sh
+# 2. train the language model
+./train_lm.sh
 
-    # 3. Start the ASR model adaptation
-    python -m src.adapt -h
+# 3. Start the ASR model adaptation
+python -m src.adapt -h
 ```
 
 

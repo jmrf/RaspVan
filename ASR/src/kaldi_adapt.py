@@ -1,10 +1,15 @@
 import logging
 import os
+import subprocess
 
+from .misc import configure_logging
 from .misc import copy_file
 from .misc import mkdirs
 from .misc import render_template
 from .misc import symlink
+
+logger = logging.getLogger(__name__)
+configure_logging(logger, level=logging.DEBUG)
 
 
 def kaldi_adapt_lm(kaldi_root, src_model_dir, lm_fn, work_dir, dst_model_name):
@@ -22,7 +27,7 @@ def kaldi_adapt_lm(kaldi_root, src_model_dir, lm_fn, work_dir, dst_model_name):
     # copy dictionary and phoneme sets from original model
     #
 
-    logging.info("copying dictionary and phoneme sets from original model...")
+    logger.info("copying dictionary and phoneme sets from original model...")
 
     mkdirs("%s/data/local/dict" % work_dir)
     copy_file(
@@ -56,7 +61,7 @@ def kaldi_adapt_lm(kaldi_root, src_model_dir, lm_fn, work_dir, dst_model_name):
     # create skeleton dst model
     #
 
-    logging.info("creating skeleton destination model...")
+    logger.info("creating skeleton destination model...")
 
     mkdirs("%s/exp/adapt" % work_dir)
 
@@ -139,12 +144,22 @@ def kaldi_adapt_lm(kaldi_root, src_model_dir, lm_fn, work_dir, dst_model_name):
     symlink("%s/egs/wsj/s5/steps" % kaldi_root, "%s/steps" % work_dir)
     symlink("%s/egs/wsj/s5/utils" % kaldi_root, "%s/utils" % work_dir)
 
-    cmd = '/bin/bash -c "pushd %s && bash run-adaptation.sh && popd"' % work_dir
-    logging.info(cmd)
-    os.system(cmd)
+    try:
+        cmd = '/bin/bash -c "pushd %s && bash run-adaptation.sh && popd"' % work_dir
+        logger.info(cmd)
+        subprocess.Popen(cmd, shell=True).wait()
+    except Exception as e:
+        logger.error(f"Error running 'run-adaptation.sh'!")
+        logger.exception(e)
+        exit(1)
 
-    cmd = '/bin/bash -c "pushd {} && bash model-dist.sh "{}" && popd"'.format(
-        work_dir, dst_model_name,
-    )
-    logging.info(cmd)
-    os.system(cmd)
+    try:
+        cmd = '/bin/bash -c "pushd {} && bash model-dist.sh "{}" && popd"'.format(
+            work_dir, dst_model_name,
+        )
+        logger.info(cmd)
+        subprocess.Popen(cmd, shell=True).wait()
+    except Exception as e:
+        logger.error(f"Error running 'model-dist.sh'!")
+        logger.exception(e)
+        exit(1)
