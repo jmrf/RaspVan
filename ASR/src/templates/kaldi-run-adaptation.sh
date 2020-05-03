@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2016, 2017, 2018 G. Bartsch
 # Copyright 2015 Language Technology, Technische Universitaet Darmstadt (author: Benjamin Milde)
@@ -26,6 +26,27 @@
 set -e
 set -o pipefail
 
+say() {
+ echo "$@" | sed \
+         -e "s/\(\(@\(red\|green\|yellow\|blue\|magenta\|cyan\|white\|reset\|b\|u\)\)\+\)[[]\{2\}\(.*\)[]]\{2\}/\1\4@reset/g" \
+         -e "s/@red/$(tput setaf 1)/g" \
+         -e "s/@green/$(tput setaf 2)/g" \
+         -e "s/@yellow/$(tput setaf 3)/g" \
+         -e "s/@blue/$(tput setaf 4)/g" \
+         -e "s/@magenta/$(tput setaf 5)/g" \
+         -e "s/@cyan/$(tput setaf 6)/g" \
+         -e "s/@white/$(tput setaf 7)/g" \
+         -e "s/@reset/$(tput sgr0)/g" \
+         -e "s/@b/$(tput bold)/g" \
+         -e "s/@u/$(tput sgr 0 1)/g"
+}
+
+echo
+echo
+say @cyan[["========= Starting processing with KLADI-RUN-ADAPTATION template ========="]]
+say @yellow[["Current dir: $PWD"]]
+
+
 # now start preprocessing with KALDI scripts
 
 if [ -f cmd.sh ]; then
@@ -33,7 +54,9 @@ if [ -f cmd.sh ]; then
          echo "missing cmd.sh"; exit 1;
 fi
 
-#Path also sets LC_ALL=C for Kaldi, otherwise you will experience strange (and hard to debug!) bugs. It should be set here, after the python scripts and not at the beginning of this script
+# Path also sets LC_ALL=C for Kaldi, otherwise you will experience strange
+# (and hard to debug!) bugs. It should be set here, after the python scripts
+# and not at the beginning of this script
 if [ -f path.sh ]; then
       . path.sh; else
          echo "missing path.sh"; exit 1;
@@ -103,5 +126,7 @@ fi
 
 expdir=exp/adapt
 
-utils/mkgraph.sh $lang $expdir $expdir/graph || exit 1;
+utils/mkgraph.sh $lang $expdir $expdir/graph && \
+    say @green[["Success!"]] || \
+        say @red[["Failed kaldi-adaptation!"]] && exit 1;
 

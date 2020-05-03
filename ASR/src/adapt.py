@@ -34,8 +34,8 @@ import subprocess
 import sys
 from argparse import ArgumentParser
 
+from . import configure_logging
 from .kaldi_adapt import kaldi_adapt_lm
-from .misc import configure_logging
 
 DEFAULT_KALDI_ROOT = "/opt/kaldi"
 DEFAULT_MODEL_DIR = "./models/lm"

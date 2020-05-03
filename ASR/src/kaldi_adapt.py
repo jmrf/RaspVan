@@ -2,11 +2,11 @@ import logging
 import os
 import subprocess
 
-from .misc import configure_logging
-from .misc import copy_file
-from .misc import mkdirs
-from .misc import render_template
-from .misc import symlink
+from . import configure_logging
+from . import copy_file
+from . import mkdirs
+from . import render_template
+from . import symlink
 
 logger = logging.getLogger(__name__)
 configure_logging(logger, level=logging.DEBUG)

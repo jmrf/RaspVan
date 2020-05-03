@@ -41,6 +41,9 @@ fi
 say @magenta[["Sourcing .env file"]]
 source .env
 
+echo
+echo
+say @cyan[["=================== Starting PREPARE-LM-DATA script ======================"]]
 
 # ================================= Download Sentences =================================
 echo

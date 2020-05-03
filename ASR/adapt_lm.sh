@@ -41,13 +41,17 @@ fi
 say @magenta[["Sourcing .env file"]]
 source .env
 
-# ============================== Training kenLM model ==================================
 echo
-say @cyan[["Traning kenLM language model (4-gram word model)"]]
-$KENLM_PATH/lmplz -o 4 \
-    --prune 0 1 2 3 \
-    --limit_vocab_file $LM_DATA_DIR/vocab.txt \
-    --interpolate_unigrams 0 < $LM_DATA_DIR/lm.txt > $LM_MODEL_DIR/lm.arpa
+echo
+say @cyan[["==================== Starting TRAIN-LM script ============================="]]
+
+# ============================== Training kenLM model ==================================
+# echo
+# say @cyan[["Traning kenLM language model (4-gram word model)"]]
+# $KENLM_PATH/lmplz -o 4 \
+#     --prune 0 1 2 3 \
+#     --limit_vocab_file $LM_DATA_DIR/vocab.txt \
+#     --interpolate_unigrams 0 < $LM_DATA_DIR/lm.txt > $LM_MODEL_DIR/lm.arpa
 
 # ============================== Adapting Kaldi ASR model ==============================
 echo
@@ -62,8 +66,10 @@ python -m src.adapt \
     -lm $LM_MODEL_DIR/lm.arpa \
     -o $DST_MODEL_NAME \
     -w $WORKDIR_PATH \
-    --force --verbose
+    --verbose \
+    --force
 
+say @cyan[["Copying model from $WORKDIR_PATH to $MODEL_DIR"]]
 cp $WORKDIR_PATH/kaldi-$DST_MODEL_NAME-adapt.tar.xz $MODEL_DIR
 
 say @green[["Done! :)"]]
