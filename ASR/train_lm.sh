@@ -41,14 +41,21 @@ fi
 say @magenta[["Sourcing .env file"]]
 source .env
 
-# say @cyan[["Traning kenLM language model"]]
-# $KENLM_PATH/lmplz -o 4 \
-#     --prune 0 1 2 3 \
-#     --limit_vocab_file $DATA_DIR/vocab.txt \
-#     --interpolate_unigrams 0 < $DATA_DIR/lm.txt > $MODEL_DIR/lm.arpa
+# ============================== Training kenLM model ==================================
+echo
+say @cyan[["Traning kenLM language model (4-gram word model)"]]
+$KENLM_PATH/lmplz -o 4 \
+    --prune 0 1 2 3 \
+    --limit_vocab_file $LM_DATA_DIR/vocab.txt \
+    --interpolate_unigrams 0 < $LM_DATA_DIR/lm.txt > $LM_MODEL_DIR/lm.arpa
 
-
+# ============================== Adapting Kaldi ASR model ==============================
+echo
 say @cyan[["Adapting language model"]]
+py=$(which python)
+
+say @yellow[["python binary: $py"]]
+
 python -m src.adapt \
     --kaldi-root $KALDI_PATH \
     -m $MODEL_DIR/$BASE_ASR_MODEL_NAME \

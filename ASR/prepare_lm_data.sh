@@ -42,37 +42,50 @@ say @magenta[["Sourcing .env file"]]
 source .env
 
 
-# Download sentences
-say @cyan[["Downloading sentences for language model adaptation..."]]
-mkdir -p $DATA_DIR
-download_file \
-    'http://goofy.zamia.org/zamia-speech/misc/sentences-en.txt.xz' \
-    $DATA_DIR
-
-say @cyan[["Extracting data..."]]
-DATA_PATH="$DATA_DIR/sentences-en.txt.xz"
-unxz $DATA_PATH && rm $DATA_PATH
-
-# Download model to adapt
+# ================================= Download Sentences =================================
 echo
-say @cyan[["Downloading ASR model $BASE_ASR_MODEL_NAME..."]]
-mkdir -p $MODEL_DIR
-download_file \
-    "https://goofy.zamia.org/zamia-speech/asr-models/${BASE_ASR_MODEL_NAME}.tar.xz" \
-    $MODEL_DIR
+DATA_FILE="$LM_DATA_DIR/sentences-en.txt"
 
-say @cyan[["Extracting ASR model ${BASE_ASR_MODEL_NAME}..."]]
+if [ ! -f $DATA_FILE ] ; then
+    say @cyan[["Downloading sentences for language model adaptation..."]]
+    mkdir -p $LM_DATA_DIR
+    download_file \
+        'http://goofy.zamia.org/zamia-speech/misc/sentences-en.txt.xz' \
+        $LM_DATA_DIR
+
+    DATA_XZ_FILE="$LM_DATA_DIR/sentences-en.txt.xz"
+    say @cyan[["Extracting data ($DATA_XZ_FILE)..."]]
+    unxz $DATA_XZ_FILE && rm $DATA_XZ_FILE
+else
+    say @magenta[["Sentences file (${DATA_FILE}) exists. Skipping download...."]]
+fi
+
+# =============================== Download model to adapt ==============================
+echo
 MODEL_PATH="$MODEL_DIR/${BASE_ASR_MODEL_NAME}"
-tar xf $MODEL_PATH.tar.xz -C $MODEL_DIR && rm $MODEL_PATH.tar.xz
 
+if [ ! -d $MODEL_PATH ] ; then
+    say @cyan[["Downloading ASR model $BASE_ASR_MODEL_NAME..."]]
+    mkdir -p $MODEL_DIR
+    download_file \
+        "https://goofy.zamia.org/zamia-speech/asr-models/${BASE_ASR_MODEL_NAME}.tar.xz" \
+        $MODEL_DIR
+
+    say @cyan[["Extracting ASR model ${BASE_ASR_MODEL_NAME}..."]]
+    tar xf $MODEL_PATH.tar.xz -C $MODEL_DIR && rm $MODEL_PATH.tar.xz
+else
+    say @magenta[["ASR model (${BASE_ASR_MODEL_NAME}) exists. Skipping download...."]]
+fi
+
+# =============================== Combine sentence data ================================
 echo
 say @cyan[["Combining language data"]]
-cat $DATA_DIR/utterances.txt $DATA_DIR/utterances.txt \
-    $DATA_DIR/utterances.txt $DATA_DIR/utterances.txt \
-    $DATA_DIR/utterances.txt $DATA_DIR/sentences-en.txt > $DATA_DIR/lm.txt
+cat $LM_DATA_DIR/utterances.txt $LM_DATA_DIR/utterances.txt \
+    $LM_DATA_DIR/utterances.txt $LM_DATA_DIR/utterances.txt \
+    $LM_DATA_DIR/utterances.txt $LM_DATA_DIR/sentences-en.txt > $LM_DATA_DIR/lm.txt
 
 echo
 say @cyan[["Extracting model vocabulary"]]
-cut -f 1 -d ' ' $MODEL_PATH/data/local/dict/lexicon.txt > $DATA_DIR/vocab.txt
+cut -f 1 -d ' ' $MODEL_PATH/data/local/dict/lexicon.txt > $LM_DATA_DIR/vocab.txt
 
 say @green[["Done! :)"]]
