@@ -1,8 +1,8 @@
 # Hotword detection
 
-We use [mycroft/precise](https://github.com/jmrf/mycroft-precise)
+We use a custom [mycroft/precise fork](https://github.com/jmrf/mycroft-precise)
 for hotword detection. We collect some recordings and
-[train a custom word](https://github.com/MycroftAI/mycroft-precise/wiki/Training-your-own-wake-word)
+[train a custom word](https://github.com/jmrf/mycroft-precise/wiki/Training-your-own-wake-word)
 by combining with [public sounds](http://pdsounds.tuxfamily.org/).
 
 We find that collecting the following quantity to data yields acceptable results:
@@ -64,7 +64,7 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 To train a `custom model` we need to install from source:
 ```
-    git clone https://github.com/mycroftai/mycroft-precise
+    git clone https://github.com/jmrf/mycroft-precise
     cd mycroft-precise
     ./setup.sh
 ```
@@ -72,7 +72,7 @@ To train a `custom model` we need to install from source:
 Once deployed in the `RaspberryPi`, we can use the binary installs:
 ```
     ARCH=armv7l
-    wget https://github.com/MycroftAI/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
+    wget https://github.com/jmrf/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
     tar xvf precise-engine.tar.gz
 ```
 

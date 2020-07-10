@@ -49,7 +49,7 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 In addition, we will be using one of the below frameworks.
 
-## Frameworks
+### Frameworks
 
 We consider a few different options for the `ASR` pipeline:
 
@@ -149,47 +149,61 @@ python -m src.adapt -h
 For inference we can use the
 [dockerized inference pipeline](https://github.com/facebookresearch/wav2letter/wiki/Building-Running-with-Docker)
 
-```
+```bash
 docker run --rm -it \
     -v ${PWD}/data:/data \
+    -v ${PWD}/models/wav2letter:/root/model/ \
     --ipc=host \
     --name w2l \
     wav2letter/wav2letter:inference-latest
 ```
 
-**TODO**: Make a custom image with all of this ready!
 
 Once inside we can do some preparation to simplify things inside the container:
 
-```
-# create a softling to wav2letter binaries
+```bash
+# create a softlink to wav2letter binaries
 cd bin && \
 ln -s /root/wav2letter/build/inference/inference/examples/multithreaded_streaming_asr_example streaming_asr && \
-ln -s /root/wav2letter/build/inference/inference/examples/interactive_streaming_asr_example interactive_asr
+ln -s /root/wav2letter/build/inference/inference/examples/interactive_streaming_asr_example interactive_asr && \
+ln -s /root/wav2letter/build/inference/inference/examples/simple_streaming_asr_example
 
 # download pre-trained models
-cd / && mkdir model && cd / model && \
+cd / && mkdir -p /root/model && cd /root/model && \
 for f in acoustic_model.bin tds_streaming.arch decoder_options.json feature_extractor.bin language_model.bin lexicon.txt tokens.txt ; do wget http://dl.fbaipublicfiles.com/wav2letter/inference/examples/model/${f} ; done
 
 ```
 
-Once this is done we can record wav files to test:
+> **TODO**: Make a custom image with all of the above ready!
 
-```
-    arecord -f S16_LE -r 16000 -D default -c 1 my_wav_redcording.wav
+Once this is done we can record wav files to test:
+```bash
+arecord -f S16_LE -r 16000 -D default -c 1 my_wav_redcording.wav
 ```
 
 Copying them to the `./data` folder we mounted in the container will allow
 as to test the models:
 
-```
-    # start the interactive ASR
-    interactive_asr --input_files_base_path /model
-    # ...
-    Entering interactive command line shell. enter '?' for help.
-    ------------------------------------------------------------
-    $>input=/data/my_wav_redcording.wav
+```bash
+# start the interactive ASR
+interactive_asr --input_files_base_path /model
+# ...
+Entering interactive command line shell. enter '?' for help.
+------------------------------------------------------------
+$>input=/data/my_wav_redcording.wav
 
+```
+
+Eventually we will want to stream the audio instead of recording files and passing them around:
+> Asuming the modified image is `jmrf/w2l`
+```bash
+    docker run --rm \
+        -v ${PWD}models/wav2letter:/root/models/ \
+        -v ${PWD}/data/audio/test:/root/audios/ \
+        -it --ipc=host \
+        -a stdin -a stdout -a stderr \
+        jmrf/w2l \
+        sh -c "cat /root/audios/phiona-test-1.wav | /bin/simple_streaming_asr_example --input_files_base_path /bin/model"
 ```
 
 
