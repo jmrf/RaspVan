@@ -174,7 +174,8 @@ for f in acoustic_model.bin tds_streaming.arch decoder_options.json feature_extr
 
 ```
 
-> **TODO**: Make a custom image with all of the above ready!
+> **NOTE**: Once the above is executed in the container, run:
+>           `docker commit w2l jmrf/w2l` to save the modified image for further use.
 
 Once this is done we can record wav files to test:
 ```bash
@@ -195,15 +196,17 @@ $>input=/data/my_wav_redcording.wav
 ```
 
 Eventually we will want to stream the audio instead of recording files and passing them around:
+
 > Asuming the modified image is `jmrf/w2l`
+
 ```bash
-    docker run --rm \
-        -v ${PWD}models/wav2letter:/root/models/ \
-        -v ${PWD}/data/audio/test:/root/audios/ \
-        -it --ipc=host \
-        -a stdin -a stdout -a stderr \
-        jmrf/w2l \
-        sh -c "cat /root/audios/phiona-test-1.wav | /bin/simple_streaming_asr_example --input_files_base_path /bin/model"
+docker run --rm \
+    -v ${PWD}/models/wav2letter:/root/model/ \
+    -v ${PWD}/data/audio/test:/root/audios/ \
+    -it --ipc=host \
+    -a stdin -a stdout -a stderr \
+    jmrf/w2l \
+    sh -c "cat /root/audios/phiona-test-1.wav | simple_streaming_asr_example --input_files_base_path /root/model"
 ```
 
 
