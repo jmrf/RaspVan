@@ -1,0 +1,54 @@
+version: "3.8"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: "200k"
+    max-file: "10"
+
+services:
+
+  asr:
+    image: jmrf/w2l-worker
+    networks: ["voice-assistant"]
+    logging: *default-logging
+    volumes:
+      - ./phiona/workers:/root/app/
+      - ./ASR/models/wav2letter:/root/model/
+      - ./ASR/data/audio/test:/root/audios/
+    command:
+      - python
+      - -u
+      - /root/app/asr.py
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    # image: rabbitmq:3
+    image: rabbitmq:3-management
+    networks: ["voice-assistant"]
+    logging: *default-logging
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  # redis:
+  #   image: redis
+  #   networks: ["voice-assistant"]
+  #   logging: *default-logging
+  #   ports:
+  #     - "6379:6379"
+  #   command:
+  #     - redis-server
+  #     - --protected-mode
+  #     - "no"
+
+networks:
+  "voice-assistant":
+    name: $PROJECT-network
+
+
