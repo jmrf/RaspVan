@@ -1,6 +1,6 @@
 # Hotword detection
 
-We use a custom [mycroft/precise fork](https://github.com/jmrf/mycroft-precise) for hot-word detection. 
+We use a custom [mycroft/precise fork](https://github.com/jmrf/mycroft-precise) for hot-word detection.
 
 We collect some recordings and [train a custom word ](https://github.com/jmrf/mycroft-precise/wiki/Training-your-own-wake-word)by combining with [public sounds](http://pdsounds.tuxfamily.org/).
 
@@ -82,4 +82,4 @@ And finally:
 
 ### Train a custom hotword
 
-TODO
+See the [MycroftAI wiki instructions](https://github.com/MycroftAI/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word)
