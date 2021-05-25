@@ -4,6 +4,7 @@ Domotics using a Raspberry Pi 3 for our own-built campervan.
 
 At the moment it is ~~just a simple prototype~~ complete domotic voice-controled
 system.
+
 Commands can be executed either by _voice_ or by sending _HTTP requests_ to a server.
 
 
@@ -168,7 +169,7 @@ Refer to [GumCP](https://github.com/gumslone/GumCP) for instructions.
 
  An schematic view of the _switch_ mechanism follows (from this [partsim project](http://www.partsim.com/simulator#132504)):
 
-  ![high-side switch](diagrams/high-side-switch.jpeg)
+  ![high-side switch](assets/diagrams/high-side-switch.jpeg)
 
 
 
