@@ -1,11 +1,10 @@
 # Hotword detection
 
-We use a custom [mycroft/precise fork](https://github.com/jmrf/mycroft-precise)
-for hotword detection. We collect some recordings and
-[train a custom word](https://github.com/jmrf/mycroft-precise/wiki/Training-your-own-wake-word)
-by combining with [public sounds](http://pdsounds.tuxfamily.org/).
+We use a custom [mycroft/precise fork](https://github.com/jmrf/mycroft-precise) for hot-word detection. 
 
-We find that collecting the following quantity to data yields acceptable results:
+We collect some recordings and [train a custom word ](https://github.com/jmrf/mycroft-precise/wiki/Training-your-own-wake-word)by combining with [public sounds](http://pdsounds.tuxfamily.org/).
+
+We find that collecting the following samples yields acceptable results:
 
 - train: ~20 positive examples and ~300 negative
 - test:  ~10 positive examples and ~70 negative

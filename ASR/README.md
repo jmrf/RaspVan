@@ -5,8 +5,7 @@ The goal of an STT system is to transcribe from an audio stream the most likely
 sequence of words from an accoustic observation.
 
 
-If you do not know where to begin at,
-[this video series](https://www.youtube.com/watch?v=i9Gn2QYrYpo) could be a great start.
+If you do not know where to begin at, [this video series](https://www.youtube.com/watch?v=i9Gn2QYrYpo) could be a great start.
 
 In a nutshell `Automatic Speech Recognition` requires different type of models,
 working one after the other to be able to transform a soundwave into text.
@@ -24,8 +23,9 @@ However, new advances have been making increasingly possible to have end-to-end
 systems.
 
 
-Table of Contents
-=================
+## Table of Contents
+
+<!--ts-->
 
    * [ASR (Automatic Speech Recognition)](#asr-automatic-speech-recognition)
    * [Table of Contents](#table-of-contents)
@@ -40,6 +40,7 @@ Table of Contents
 
 Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
+<!--te-->
 
 ## Requirements
 
@@ -70,7 +71,8 @@ To see how this frameworks compare, check this
 
 ## Install
 
-**Only necessary if we want to train a language model**.
+> :exclamation: **Only necessary if we want to train a language model**.
+
 Assuming Ubuntu OS:
 
 Install dependencies and packages:
