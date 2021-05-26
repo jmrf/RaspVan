@@ -71,7 +71,9 @@ def get_args():
         help="work dir (default: %s)" % DEFAULT_WORK_DIR,
     )
     io_group.add_argument(
-        "-o", "--dst-model-name", help="Output model name",
+        "-o",
+        "--dst-model-name",
+        help="Output model name",
     )
     # Extra options
     parser.add_argument(

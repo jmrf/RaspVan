@@ -155,7 +155,8 @@ def kaldi_adapt_lm(kaldi_root, src_model_dir, lm_fn, work_dir, dst_model_name):
 
     try:
         cmd = '/bin/bash -c "pushd {} && bash model-dist.sh "{}" && popd"'.format(
-            work_dir, dst_model_name,
+            work_dir,
+            dst_model_name,
         )
         logger.info(cmd)
         subprocess.Popen(cmd, shell=True).wait()

@@ -14,8 +14,12 @@
 __pycache__/
 .cache/
 .vscode/
+
+
 imgs/
-hotword/data/random/
+**/data/
+**/models/
+
 py-kaldi-asr-client/
 
 

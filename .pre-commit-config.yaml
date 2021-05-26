@@ -8,15 +8,18 @@ repos:
     - id: name-tests-test
       args: ['--django']
     - id: detect-private-key
-    - id: requirements-txt-fixer
     - id: check-yaml
     - id: check-json
+    - id: requirements-txt-fixer
+      args:
+        - requirements.txt
+        - requirements-dev.txt
 
--   repo: https://github.com/ambv/black
-    rev: stable
+-   repo: https://github.com/psf/black
+    rev: 20.8b1 # Replace by any tag/version: https://github.com/psf/black/tags
     hooks:
     - id: black
-      language_version: python3.6
+      language_version: python3
 
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 3.7.1

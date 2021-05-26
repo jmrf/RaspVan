@@ -77,17 +77,43 @@ clean:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f  {} +
+	find . -name 'README.md.*' -exec rm -f  {} +
 	rm -rf build/
 	rm -rf .pytype/
 	rm -rf dist/
 	rm -rf docs/_build
+	# rm -rf *egg-info
+	# rm -rf pip-wheel-metadata
 
 formatter:
-	black ASR hotword phiona scripts --exclude external
+	black . --exclude external
 
 lint:
-	flake8 ASR hotword phiona tests
-	black --check ASR hotword phiona scripts  --exclude external
+	flake8 .
+	black --check .  --exclude external
 
 types:
-	pytype --keep-going ASR hotword phiona scripts  --exclude external
+	# https://google.github.io/pytype/
+	pytype --keep-going . --exclude external
+
+pyupgrade:
+	find .  -name '*.py' | grep -v 'proto\|eggs\|docs' | xargs pyupgrade --py36-plus
+
+readme-toc:
+	# https://github.com/ekalinin/github-markdown-toc
+	find . -name README.md -exec gh-md-toc --insert {} \;
+
+
+test: clean
+	# OMP_NUM_THREADS can improve overral performance using one thread by process (on tensorflow), avoiding overload
+	OMP_NUM_THREADS=1 pytest tests -n $(JOBS) --cov gnes
+
+tag:
+	git tag $$( python -c 'import src; print(src.__version__)' )
+	git push --tags
+
+setup-dvc:
+	# Configure https://mai-dvc.ams3.digitaloceanspaces.com as remote storage
+	dvc init
+	dvc remote add -d $(remote) s3://mai-dvc/$(remote)
+	dvc remote modify $(remote) endpointurl https://ams3.digitaloceanspaces.com

@@ -28,6 +28,8 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 - python >= 3.6
 - [mycroft/precise](https://github.com/jmrf/mycroft-precise#source-install)
 
+> Important: Ensure `h5py==2.10.0` otherwise keras will fail to load models
+
 
 ## Structure
 
@@ -82,4 +84,11 @@ And finally:
 
 ### Train a custom hotword
 
-See the [MycroftAI wiki instructions](https://github.com/MycroftAI/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word)
+1. run
+
+   ```bash
+   ./scripts/crate_dirs.sh
+   ```
+
+2. follow the [this wiki instructions](https://github.com/jmrf/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word)
+

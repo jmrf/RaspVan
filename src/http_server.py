@@ -114,7 +114,11 @@ class LightTimer(BaseTimer):
                     "interval",
                     seconds=delay,
                     id=job_id,
-                    args=(l_name, signal, job_id,),
+                    args=(
+                        l_name,
+                        signal,
+                        job_id,
+                    ),
                 )
             return self.get()
 
