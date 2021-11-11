@@ -28,7 +28,12 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 - python >= 3.6
 - [mycroft/precise](https://github.com/jmrf/mycroft-precise#source-install)
 
-> Important: Ensure `h5py==2.10.0` otherwise keras will fail to load models
+> ‼️ Important:
+> Ensure `h5py==2.10.0` otherwise keras will fail to load models
+
+> ‼️ Important:
+> Ensure you have version `0.3.0` of both `mycroft-precise` and `precise-runner`
+> check with `pip list |grep precise` and `pip list |grep h5py`
 
 
 ## Structure

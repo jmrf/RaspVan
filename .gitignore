@@ -21,6 +21,7 @@ imgs/
 **/models/
 
 py-kaldi-asr-client/
+hotword/precise/
 
 
 
