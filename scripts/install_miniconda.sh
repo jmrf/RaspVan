@@ -10,7 +10,7 @@ say() {
          -e "s/@green/$(tput setaf 2)/g" \
          -e "s/@yellow/$(tput setaf 3)/g" \
          -e "s/@blue/$(tput setaf 4)/g" \
-         -e "s/@magenta/$(tput setaf 5)/g" \
+         -e "s/@magenta/$(tput setaf 2)/g" \
          -e "s/@cyan/$(tput setaf 6)/g" \
          -e "s/@white/$(tput setaf 7)/g" \
          -e "s/@reset/$(tput sgr0)/g" \

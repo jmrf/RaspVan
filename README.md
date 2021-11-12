@@ -1,9 +1,9 @@
-# RaspVan
+# RaspVan (codename: `Fiona`)
 
 Domotics using a Raspberry Pi 3 for our own-built campervan.
 
-At the moment it is ~~just a simple prototype~~ complete domotic voice-controled
-system.
+At the moment it is _just a simple prototype_ aiming to become a
+complete domotic voice-controled system.
 
 Commands can be executed either by _voice_ or by sending _HTTP requests_ to a server.
 
@@ -29,37 +29,40 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 ## Requirements
 
-Apart from any other requirement defined in each of the sub-components we
+Apart from any other requirement defined in the root or any  of the sub-components we
 need the follwing:
 
 *  [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
    ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
 *  [MQTT](https://mqtt.org/) (mosquitto)
 *  python >= 3.6
+* Docker & Docker-compose
 
 
 ## Structure
 
+This repo is organized in a series of sub-components plus the main solution code
+under [src](src/]).
+
+To understand how to train, configure, test and run each sub-component please refer to
+the individual readme files.
+
 ```bash
 .
-├── ASR
-│   ├── client
-│   ├── data
-│   │   ├── audio
-│   │   └── lm
-│   ├── logs
-│   └── models
-│       └── lm
-├── diagrams
-├── hotword
-│   ├── data
-│   │   ├── fiona
-│   │   └── random
-│   ├── logs
-│   │   ├── fiona.logs
-│   │   └── fiona-om.logs
-│   └── models
-└── scripts
+├── asr                     # ASR component (uses Mozilla DeepSpeech)
+├── assets
+├── data
+├── docker-compose.yml
+├── external
+├── hotword                 # HotWord detection (uses Mycroft/Precise)
+├── Makefile
+├── README.md
+├── requirements-dev.txt
+├── requirements.txt
+├── scripts
+├── setup.cfg
+└── src                     # clients and servers of the entire solution
+
 
 20 directories
 ```
@@ -69,7 +72,12 @@ need the follwing:
 
 ### Installation
 
-#### WiFi and automatic hotspot
+
+```bash
+pip install -r requirements.txt
+```
+
+### WiFi and automatic hotspot
 
 In order to communicate with the RaspberryPi we will configure it to connect to
 a series of known WiFi networks when available and to create a Hotspot otherwise.
@@ -81,10 +89,10 @@ from [raspberryconnect/network](http://www.raspberryconnect.com/network).
 By default the RaspberryPi will be accessible at the IP: `192.168.50.5` when the hotspot is active.
 
 
-#### Voice Control:
+### Voice Control
 
 
-#### HTTP Control (Android app or similar):
+### HTTP Control (Android app or similar)
 
 To run the HTTP server:
 ```bash
@@ -143,13 +151,12 @@ Similarly should be done for the `HTTP python server`.
 
 
 
-#### Web Control Panel (optional)
+### Web Control Panel (optional)
 
 In addition we can configure an Apache server displaying several stats about the RaspberryPi:
 (temperature, work load, memory load, etc).
 
 Refer to [GumCP](https://github.com/gumslone/GumCP) for instructions.
-
 
 
 ## Wiring and Connections
