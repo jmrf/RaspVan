@@ -4,6 +4,7 @@ import json
 from time import sleep
 
 from src import logger
+from src.constants import Q_EXCHANGE_ENV_VAR
 from src.utils.rabbit import BlockingQueuePublisher
 
 from precise_runner import PreciseEngine
@@ -11,8 +12,6 @@ from precise_runner import PreciseRunner
 
 
 Q_TOPIC = "hotword"
-Q_NAME = "hotword"
-X_CHANGE = "fiona"
 
 
 def run():
@@ -24,12 +23,15 @@ def run():
     if engine_binary is None:
         raise ValueError(f"'PRECISE_ENGINE' env. var not set.")
 
+    xchange = os.getenv(Q_EXCHANGE_ENV_VAR)
+    if xchange is None:
+        raise ValueError(f"'{Q_EXCHANGE_ENV_VAR}' env. var not set.")
+
     # Init the rabbit MQ sender
     logger.info("🐇 Initializing publisher")
     publisher = BlockingQueuePublisher(
         amqp_uri="localhost",
-        queue_name=Q_NAME,
-        exchange_name=X_CHANGE,
+        exchange_name=xchange,
         exchange_type="topic",
     )
 

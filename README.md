@@ -53,14 +53,12 @@ need the follwing:
 ├── diagrams
 ├── hotword
 │   ├── data
-│   │   ├── phiona
+│   │   ├── fiona
 │   │   └── random
 │   ├── logs
-│   │   ├── phiona.logs
-│   │   └── phiona-om.logs
+│   │   ├── fiona.logs
+│   │   └── fiona-om.logs
 │   └── models
-├── imgs
-├── phiona
 └── scripts
 
 20 directories
