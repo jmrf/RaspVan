@@ -10,7 +10,7 @@ services:
 
   asr:
     image: jmrf/w2l-worker
-    networks: ["voice-assistant"]
+    networks: ["fiona"]
     logging: *default-logging
     volumes:
       - ./phiona/workers:/root/app/
@@ -21,12 +21,12 @@ services:
       - -u
       - /root/app/asr.py
     depends_on:
-      - rabbitmq
+      - rabbit
 
-  rabbitmq:
+  rabbit:
     # image: rabbitmq:3
     image: rabbitmq:3-management
-    networks: ["voice-assistant"]
+    networks: ["fiona"]
     logging: *default-logging
     hostname: rabbitmq
     ports:
@@ -38,7 +38,7 @@ services:
 
   # redis:
   #   image: redis
-  #   networks: ["voice-assistant"]
+  #   networks: ["fiona"]
   #   logging: *default-logging
   #   ports:
   #     - "6379:6379"
@@ -48,7 +48,7 @@ services:
   #     - "no"
 
 networks:
-  "voice-assistant":
+  "fiona":
     name: $PROJECT-network
 
 
