@@ -1,7 +1,7 @@
 import os
 import logging
 
-from src.utils.io import init_logger
+from common.utils.io import init_logger
 
 
 logger = logging.getLogger(__name__)

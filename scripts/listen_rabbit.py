@@ -2,9 +2,12 @@ import argparse
 import json
 import logging
 
-from src import logger
-from src.utils.rabbit import BlockingQueueConsumer
-from src.utils.io import init_logger
+from common.utils.rabbit import BlockingQueueConsumer
+from common.utils.io import init_logger
+
+
+logger = logging.getLogger(__name__)
+init_logger(level=logging.DEBUG, logger=logger)
 
 
 def on_event(event):
@@ -32,8 +35,6 @@ if __name__ == "__main__":
 
     args = get_args()
 
-    init_logger(level=logging.DEBUG, logger=logger)
-
     try:
         exchange_name = args.from_exchange or ""
         exchange_type = "topic" if args.from_exchange else None
@@ -44,6 +45,7 @@ if __name__ == "__main__":
                 f"A topic must be provided when consuming from an exchange"
             )
 
+        logger.info("Creating consumer and listening")
         consumer = BlockingQueueConsumer(
             "localhost",
             on_event,

@@ -1,17 +1,38 @@
 import os
 import json
+import logging
 
+from playsound import playsound
 from time import sleep
 
-from src import logger
-from src.constants import Q_EXCHANGE_ENV_VAR
-from src.utils.rabbit import BlockingQueuePublisher
+from raspvan.constants import Q_EXCHANGE_ENV_VAR
+from common.utils.io import init_logger
+from common.utils.rabbit import BlockingQueuePublisher
 
 from precise_runner import PreciseEngine
 from precise_runner import PreciseRunner
 
 
+logger = logging.getLogger(__name__)
+init_logger(level=logging.INFO, logger=logger)
+
 Q_TOPIC = "hotword"
+
+
+def play_sound():
+    playsound("/home/jose/code/Personal/RaspVan/assets/diagrams/hotword-ding-2.mp3")
+
+
+class Trigger:
+    def __init__(self, publisher: BlockingQueuePublisher) -> None:
+        self.publisher = publisher
+
+    def on_activation(self):
+        logger.info(f" 🔫 Hotword detcted!")
+
+        self.publisher.send_message(json.dumps(["active"]), topic=Q_TOPIC)
+
+        play_sound()
 
 
 def run():
@@ -35,15 +56,12 @@ def run():
         exchange_type="topic",
     )
 
+    trigger = Trigger(publisher)
+
     # Init the Precise Engine & Runner
     logger.info("📢 Initializing hotword engine")
     engine = PreciseEngine(engine_binary, model_pb)
-    runner = PreciseRunner(
-        engine,
-        on_activation=lambda: publisher.send_message(
-            json.dumps(["active"]), topic=Q_TOPIC
-        ),
-    )
+    runner = PreciseRunner(engine, on_activation=trigger.on_activation)
 
     logger.info("🚀 Ignition")
     runner.start()

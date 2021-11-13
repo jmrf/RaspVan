@@ -109,7 +109,7 @@ test: clean
 	OMP_NUM_THREADS=1 pytest tests -n $(JOBS) --cov gnes
 
 tag:
-	git tag $$( python -c 'import src; print(src.__version__)' )
+	git tag $$( python -c 'import src; print(raspvan.__version__)' )
 	git push --tags
 
 setup-dvc:

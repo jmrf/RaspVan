@@ -9,8 +9,8 @@ import numpy as np
 from funcy import chunks
 from tqdm import tqdm
 
-from src.utils.exec import run_in_event_loop
-from src.utils.exec import run_sync
+from common.utils.exec import run_in_event_loop
+from common.utils.exec import run_sync
 
 
 logger = logging.getLogger(__name__)

@@ -6,9 +6,7 @@ from logging import Logger
 
 import tqdm
 
-from src.constants import DEFAULT_LOG_DIR
-
-LOG_DIR = os.getenv("LOG_DIR", DEFAULT_LOG_DIR)
+LOG_DIR = os.getenv("LOG_DIR", "logs")
 
 from typing import Any
 from typing import Dict
