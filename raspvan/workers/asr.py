@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 init_logger(level=logging.DEBUG, logger=logger)
 
 
-MODEL_PATH = "asr/models/deepspeech-0.9.3-models.pbmm"
-SCORER_PATH = "asr/models/deepspeech-0.9.3-models.scorer"
+MODEL_PATH = os.getenv("ASR_MODEL")
+SCORER_PATH = os.getenv("ASR_SCORER")
 
 
 logger.info(f"⚙️ Initializing model: {MODEL_PATH}")

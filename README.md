@@ -1,6 +1,6 @@
 # RaspVan (codename: `Fiona`)
 
-Domotics using a Raspberry Pi 3 for our own-built campervan.
+Domotics using a Raspberry Pi 3B for our own-built campervan.
 
 At the moment it is _just a simple prototype_ aiming to become a
 complete domotic voice-controled system.
@@ -35,8 +35,8 @@ need the follwing:
 *  [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
    ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
 *  [MQTT](https://mqtt.org/) (mosquitto)
-*  python >= 3.6
-* Docker & Docker-compose
+*  python >= 3.7
+*  Docker & Docker-compose
 
 
 ## Structure

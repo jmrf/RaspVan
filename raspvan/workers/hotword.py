@@ -56,9 +56,9 @@ class Trigger:
 
 
 def run():
-    model_pb = os.getenv("HOTWORD_MODEL_PB")
+    model_pb = os.getenv("HOTWORD_MODEL")
     if model_pb is None:
-        raise ValueError(f"'HOTWORD_MODEL_PB' env. var not set.")
+        raise ValueError(f"'HOTWORD_MODEL' env. var not set.")
 
     engine_binary = os.getenv("PRECISE_ENGINE")
     if engine_binary is None:
