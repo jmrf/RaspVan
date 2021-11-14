@@ -6,11 +6,11 @@ import logging
 import numpy as np
 
 from halo import Halo
-
 from asr.audio import VADAudio
 from asr.audio import DEFAULT_SAMPLE_RATE
 
 from common.utils.io import init_logger
+from common.utils.context import timeout
 from common.utils.decorators import deprecated
 from common.utils.rabbit import BlockingQueueConsumer
 
@@ -66,33 +66,46 @@ def old_pika_consume():
 
 
 def vad_listen():
-    logger.info("Listening (ctrl-C to exit)...")
-    stream_context = model.createStream()
+    logger.info("Listening...")
 
+    stream_context = model.createStream()
     frames = vad_audio.vad_collector()
     spinner = Halo(spinner="line")
 
-    text = "😕"
+    nones = 0
+    rec = []
+
     for frame in frames:
         if frame is not None:
             spinner.start()
-            logging.debug("streaming frame")
             stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
         else:
-            spinner.stop()
-            logging.debug("end utterence")
-            # Collect the text
+
             text = stream_context.finishStream()
-            print(f"🎤 Recognized: {text}")
+
+            rec.append(text)
+            nones += 1
+            print(f"end utterence. Nones: {nones}")
+
+            if nones >= 2:
+                break
+
             stream_context = model.createStream()
-            break
 
-    return text
+    spinner.stop()
+    return rec
 
 
-def callback(event):
+def callback(event, listen_time=10):
     logger.info("Received a request to launch ASR")
-    vad_listen()
+    text = "😕"
+    try:
+        with timeout(listen_time):
+            text = vad_listen()
+    except Exception as e:
+        logger.warning(f"callback -> {e}")
+
+    print(f"🎤 Recognized: {text}")
 
 
 def get_args():

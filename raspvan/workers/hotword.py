@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import threading
 
 from playsound import playsound
 from time import sleep
@@ -17,10 +18,22 @@ logger = logging.getLogger(__name__)
 init_logger(level=logging.INFO, logger=logger)
 
 Q_TOPIC = "hotword"
+COUNT = 0
 
 
-def play_sound():
-    playsound("/home/jose/code/Personal/RaspVan/assets/diagrams/hotword-ding-2.mp3")
+class CounterThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.output = None
+
+    def run(self):
+        try:
+            sound_path = (
+                "/home/jose/code/Personal/RaspVan/assets/diagrams/hotword-ding-2.mp3"
+            )
+            playsound(sound_path)
+        except Exception as e:
+            logger.error(f"Error playing sound: {e}")
 
 
 class Trigger:
@@ -28,11 +41,13 @@ class Trigger:
         self.publisher = publisher
 
     def on_activation(self):
-        logger.info(f" 🔫 Hotword detcted!")
+        global COUNT
+        COUNT += 1
+
+        logger.info(f" 🔫 Hotword detected! ({COUNT})")
+        CounterThread().start()
 
         self.publisher.send_message(json.dumps(["active"]), topic=Q_TOPIC)
-
-        play_sound()
 
 
 def run():
