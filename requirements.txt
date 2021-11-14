@@ -1,9 +1,14 @@
 APScheduler==3.5.1
 coloredlogs
+deepspeech==0.9.3
 Flask==2.0.2
 Flask_RESTful==0.3.6
-funcy==1.16
+funcy>=1.16
+halo>=0.0.31
 numpy==1.16.0
 pika==1.2.0
-PyYAML==6.0
-tqdm==4.62.3
+pyaudio>=0.2.11
+PyYAML>=6.0
+scipy>=1.7.2
+tqdm>=4.62.3
+webrtcvad>=2.0.10

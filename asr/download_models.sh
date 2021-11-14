@@ -25,6 +25,7 @@ if [ ! -f models/deepspeech-0.9.3-models.pbmm ]; then
     say @blue[["⏬ Downloading deepspeech model..."]]
     cd models
     curl -LO https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/deepspeech-0.9.3-models.pbmm
+    curl -LO https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/deepspeech-0.9.3-models.tflite
     cd -
 else
     say @cyan[["✅ Deepspeech model already present. Skipping download..."]]

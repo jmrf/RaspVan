@@ -33,6 +33,13 @@ help:
 	@echo "        Run pytest on tests/."
 
 
+
+rpi-install:
+	/usr/bin/python3 -m venv .venv/
+	source .venv/bin/activate
+	pip install requirements.txt
+
+
 train-lm:
 	cd ASR && \
 		# ./prepare_lm_data.sh && \
