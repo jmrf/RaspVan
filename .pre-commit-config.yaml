@@ -14,6 +14,9 @@ repos:
       args:
         - requirements.txt
         - requirements-dev.txt
+        - asr/requirements.txt
+        - hotword/requirements.txt
+        - respeaker/requirements.txt
 
 -   repo: https://github.com/psf/black
     rev: 20.8b1 # Replace by any tag/version: https://github.com/psf/black/tags

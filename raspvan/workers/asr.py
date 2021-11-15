@@ -14,16 +14,20 @@ from common.utils.context import timeout
 from common.utils.decorators import deprecated
 from common.utils.rabbit import BlockingQueueConsumer
 
+from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
+from raspvan.constants import ASR_MODEL_ENV_VAR
+from raspvan.constants import ASR_SCORER_ENV_VAR
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
 
 
 logger = logging.getLogger(__name__)
 init_logger(level=logging.DEBUG, logger=logger)
 
+AUDIO_DEVICE = int(os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0))
+MODEL_PATH = os.getenv(ASR_MODEL_ENV_VAR)
+SCORER_PATH = os.getenv(ASR_SCORER_ENV_VAR)
 
-MODEL_PATH = os.getenv("ASR_MODEL")
-SCORER_PATH = os.getenv("ASR_SCORER")
-
+logger.info(f"🎤 Using Audio Device: {AUDIO_DEVICE}")
 
 logger.info(f"⚙️ Initializing model: {MODEL_PATH}")
 model = deepspeech.Model(MODEL_PATH)
@@ -34,7 +38,7 @@ model.enableExternalScorer(SCORER_PATH)
 # Start audio with VAD
 vad_audio = VADAudio(
     aggressiveness=3,
-    device=None,
+    device=AUDIO_DEVICE,
     input_rate=DEFAULT_SAMPLE_RATE,
     file=None,
 )
