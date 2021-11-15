@@ -78,8 +78,10 @@ class Pixels:
         self.dev.show()
 
 
+pixels = Pixels(pattern=random.choice([AlexaLedPattern, GoogleHomeLedPattern]))
+
+
 if __name__ == "__main__":
-    pixels = Pixels(pattern=random.choice([AlexaLedPattern, GoogleHomeLedPattern]))
 
     while True:
         try:

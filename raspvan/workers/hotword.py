@@ -9,7 +9,7 @@ from time import sleep
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
 from common.utils.io import init_logger
 from common.utils.rabbit import BlockingQueuePublisher
-from respeaker.pixels import Pixels
+from respeaker.pixels import pixels
 
 from precise_runner import PreciseEngine
 from precise_runner import PreciseRunner
@@ -40,19 +40,18 @@ class SoundThread(threading.Thread):
 class Trigger:
     def __init__(self, publisher: BlockingQueuePublisher) -> None:
         self.publisher = publisher
-        self.pixels = Pixels()
 
     def on_activation(self):
         global COUNT
         COUNT += 1
 
         logger.info(f" 🔫 Hotword detected! ({COUNT})")
-        self.pixels.wakeup()
+        pixels.wakeup()
         SoundThread().start()
 
         self.publisher.send_message(json.dumps(["active"]), topic=Q_TOPIC)
 
-        self.pixels.off()
+        pixels.off()
 
 
 def run():
