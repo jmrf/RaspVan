@@ -7,12 +7,16 @@ from playsound import playsound
 from pyaudio import PyAudio, paInt16
 from time import sleep
 
+from typing import Callable
+
 from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
+from common.utils.context import no_alsa_err
 from common.utils.io import init_logger
 from common.utils.rabbit import BlockingQueuePublisher
 from respeaker.pixels import pixels
 
+import precise_runner
 from precise_runner import PreciseEngine
 from precise_runner import PreciseRunner
 
@@ -55,7 +59,7 @@ class Trigger:
         pixels.off()
 
 
-def run():
+def init_engine(on_activation_func: Callable):
     model_pb = os.getenv("HOTWORD_MODEL")
     if model_pb is None:
         raise ValueError(f"'HOTWORD_MODEL' env. var not set.")
@@ -64,6 +68,38 @@ def run():
     if engine_binary is None:
         raise ValueError(f"'PRECISE_ENGINE' env. var not set.")
 
+    logger.debug(f"Precise Engine: '{engine_binary}'")
+    logger.debug(f"Precise Runner version: '{precise_runner.__version__}'")
+    logger.debug(f"model path: '{model_pb}'")
+
+    # Init the runner with a custom stream
+    # so we can select the device
+    device_id = os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0)
+    logger.info(f"📢 Initializing audio stream. Using device ID: {device_id}")
+
+    with no_alsa_err():
+        pa = PyAudio()
+        stream = pa.open(
+            rate=16000,
+            channels=4,
+            format=paInt16,
+            input=True,
+            frames_per_buffer=CHUNK_SIZE,
+            input_device_index=int(device_id),
+        )
+
+        # Init the Precise Engine
+        logger.info("⚙️ Initializing hotword engine")
+        engine = PreciseEngine(engine_binary, model_pb, chunk_size=CHUNK_SIZE)
+
+        # Init the precise runner (python wrapper over the engine)
+        logger.info("⚙️ Initializing hotword runner")
+        runner = PreciseRunner(engine, on_activation=on_activation_func, stream=stream)
+
+        return runner, pa, stream
+
+
+def run():
     xchange = os.getenv(Q_EXCHANGE_ENV_VAR)
     if xchange is None:
         raise ValueError(f"'{Q_EXCHANGE_ENV_VAR}' env. var not set.")
@@ -75,26 +111,10 @@ def run():
         exchange_name=xchange,
         exchange_type="topic",
     )
-
-    # Init the Precise Engine
-    logger.info("📢 Initializing hotword engine")
-    engine = PreciseEngine(engine_binary, model_pb, chunk_size=CHUNK_SIZE)
-
-    # Init the runner with a custom stream
-    # so we can select the device
-    device_id = os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0)
-    logger.debug(f"Using device ID: {device_id}")
-    pa = PyAudio()
-    stream = pa.open(
-        rate=16000,
-        channels=4,
-        format=paInt16,
-        input=True,
-        frames_per_buffer=CHUNK_SIZE,
-        input_device_index=int(device_id),
-    )
     trigger = Trigger(publisher)
-    runner = PreciseRunner(engine, on_activation=trigger.on_activation, stream=stream)
+
+    # Init the precise machinery
+    runner, pa, stream = init_engine(trigger.on_activation)
 
     logger.info("🚀 Ignition")
     runner.start()
