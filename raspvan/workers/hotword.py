@@ -4,14 +4,16 @@ import logging
 import threading
 
 from playsound import playsound
-from pyaudio import PyAudio, paInt16
+
+# from pyaudio import PyAudio, paInt16
 from time import sleep
 
 from typing import Callable
 
 from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
-from common.utils.context import no_alsa_err
+
+# from common.utils.context import no_alsa_err
 from common.utils.io import init_logger
 from common.utils.rabbit import BlockingQueuePublisher
 from respeaker.pixels import pixels
@@ -77,26 +79,26 @@ def init_engine(on_activation_func: Callable):
     device_id = os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0)
     logger.info(f"📢 Initializing audio stream. Using device ID: {device_id}")
 
-    with no_alsa_err():
-        pa = PyAudio()
-        stream = pa.open(
-            rate=16000,
-            channels=4,
-            format=paInt16,
-            input=True,
-            frames_per_buffer=CHUNK_SIZE,
-            input_device_index=int(device_id),
-        )
+    # with no_alsa_err():
+    #     pa = PyAudio()
+    #     stream = pa.open(
+    #         rate=16000,
+    #         channels=4,
+    #         format=paInt16,
+    #         input=True,
+    #         frames_per_buffer=CHUNK_SIZE,
+    #         input_device_index=int(device_id),
+    #     )
 
-        # Init the Precise Engine
-        logger.info("⚙️ Initializing hotword engine")
-        engine = PreciseEngine(engine_binary, model_pb, chunk_size=CHUNK_SIZE)
+    # Init the Precise Engine
+    logger.info("⚙️ Initializing hotword engine")
+    engine = PreciseEngine(engine_binary, model_pb)  # , chunk_size=CHUNK_SIZE * 4)
 
-        # Init the precise runner (python wrapper over the engine)
-        logger.info("⚙️ Initializing hotword runner")
-        runner = PreciseRunner(engine, on_activation=on_activation_func, stream=stream)
+    # Init the precise runner (python wrapper over the engine)
+    logger.info("⚙️ Initializing hotword runner")
+    runner = PreciseRunner(engine, on_activation=on_activation_func)  # , stream=stream)
 
-        return runner, pa, stream
+    return runner  # , pa, stream
 
 
 def run():
@@ -118,7 +120,8 @@ def run():
 
     try:
         # Init the precise machinery
-        runner, pa, stream = init_engine(trigger.on_activation)
+        # runner, pa, stream = init_engine(trigger.on_activation)
+        runner = init_engine(trigger.on_activation)
 
         logger.info("🚀 Ignition")
         runner.start()
@@ -129,8 +132,8 @@ def run():
         while True:
             sleep(10)
 
-        pa.terminate()
-        stream.stop_stream()
+        # pa.terminate()
+        # stream.stop_stream()
 
 
 if __name__ == "__main__":

@@ -18,6 +18,12 @@ say() {
          -e "s/@u/$(tput sgr 0 1)/g"
 }
 
+# check current directory
+current_dir=${PWD##*/}
+if [ "$current_dir" == "scripts" ]; then
+    say @red[["This scripts should be executed from the root folder as: ./scripts/create_dirs.sh"]]
+    exit
+fi
 
 label=$1
 
@@ -26,7 +32,7 @@ if [ -z $label ]; then
     exit
 fi
 
-mkdir -p ./data/$label/wake-word
-mkdir -p ./data/$label/not-wake-word
-mkdir -p ./data/$label/test/wake-word
-mkdir -p ./data/$label/test/not-wake-word
+mkdir -p ./$label/wake-word
+mkdir -p ./$label/not-wake-word
+mkdir -p ./$label/test/wake-word
+mkdir -p ./$label/test/not-wake-word

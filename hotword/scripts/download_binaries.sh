@@ -19,6 +19,14 @@ say() {
 }
 
 
+# check current directory
+current_dir=${PWD##*/}
+if [ "$current_dir" == "scripts" ]; then
+    say @red[["This scripts should be executed from the root folder as: ./scripts/download_binaries.sh"]]
+    exit
+fi
+
+
 ARCH=$(uname -a |awk '{print $12}')
 TAR_FILE="precise-engine.tar.gz"
 
