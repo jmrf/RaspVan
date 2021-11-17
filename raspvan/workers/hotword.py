@@ -20,7 +20,6 @@ import precise_runner
 from precise_runner import PreciseEngine
 from precise_runner import PreciseRunner
 
-
 logger = logging.getLogger(__name__)
 init_logger(level=logging.DEBUG, logger=logger)
 
@@ -60,6 +59,7 @@ class Trigger:
 
 
 def init_engine(on_activation_func: Callable):
+    # TODO: Make this env.var names constants
     model_pb = os.getenv("HOTWORD_MODEL")
     if model_pb is None:
         raise ValueError(f"'HOTWORD_MODEL' env. var not set.")
@@ -104,29 +104,33 @@ def run():
     if xchange is None:
         raise ValueError(f"'{Q_EXCHANGE_ENV_VAR}' env. var not set.")
 
-    # Init the rabbit MQ sender
-    logger.info("🐇 Initializing publisher")
-    publisher = BlockingQueuePublisher(
-        amqp_uri="localhost",  # TODO: Make this configurable!
-        exchange_name=xchange,
-        exchange_type="topic",
-    )
-    trigger = Trigger(publisher)
+    try:
+        # Init the rabbit MQ sender
+        logger.info("🐇 Initializing publisher")
+        publisher = BlockingQueuePublisher(
+            amqp_uri="localhost",  # TODO: Make this configurable!
+            exchange_name=xchange,
+            exchange_type="topic",
+        )
+        trigger = Trigger(publisher)
+    except Exception as e:
+        raise Exception(f"Error initializing 🐇 publisher: {e}")
 
-    # Init the precise machinery
-    runner, pa, stream = init_engine(trigger.on_activation)
+    try:
+        # Init the precise machinery
+        runner, pa, stream = init_engine(trigger.on_activation)
 
-    logger.info("🚀 Ignition")
-    runner.start()
+        logger.info("🚀 Ignition")
+        runner.start()
+    except Exception as e:
+        raise Exception(f"Error in audio-stream or hotword engine: {e}")
+    else:
+        # Sleep forever
+        while True:
+            sleep(10)
 
-    # trigger.on_activation()
-
-    # Sleep forever
-    while True:
-        sleep(10)
-
-    pa.terminate()
-    stream.stop_stream()
+        pa.terminate()
+        stream.stop_stream()
 
 
 if __name__ == "__main__":
@@ -134,3 +138,4 @@ if __name__ == "__main__":
         run()
     except Exception as e:
         logger.error(f"Error while running hotword detection: {e}")
+        logger.exception("")
