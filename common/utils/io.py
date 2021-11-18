@@ -138,7 +138,7 @@ def init_logger(
     logger: Logger,
     filename: str = None,
     log_dir: str = None,
-    fmt="%(asctime)s,%(msecs)03d %(levelname)-8s %(name)-45s:%(lineno)3d - %(message)-50s",
+    fmt="%(asctime)s,%(msecs)03d %(levelname)-8s %(name)-25s:%(lineno)3d - %(message)-50s",
 ):
     """ Configures the given logger; format, logging level, style, etc """
 

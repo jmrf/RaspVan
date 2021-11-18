@@ -11,7 +11,7 @@ from asr.audio import DEFAULT_SAMPLE_RATE
 
 from common.utils.io import init_logger
 from common.utils.context import timeout
-from common.utils.decorators import deprecated
+from common.utils.context import no_alsa_err
 from common.utils.rabbit import BlockingQueueConsumer
 
 from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
@@ -35,7 +35,7 @@ model = deepspeech.Model(MODEL_PATH)
 logger.info(f"⚙️ Initalizing scorer: {SCORER_PATH}")
 model.enableExternalScorer(SCORER_PATH)
 
-# Start audio with VAD
+
 vad_audio = VADAudio(
     aggressiveness=3,
     device=AUDIO_DEVICE,
@@ -44,60 +44,38 @@ vad_audio = VADAudio(
 )
 
 
-@deprecated
-def old_pika_consume():
-    import pika
-
-    # Pika (rabbitMQ) client setup
-    credentials = pika.PlainCredentials("guest", "guest")
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host="rabbitmq", credentials=credentials)
-    )
-
-    channel = connection.channel()
-    channel.exchange_declare(exchange="asr-task", exchange_type="fanout")
-
-    result = channel.queue_declare(queue="", exclusive=True)
-    queue_name = result.method.queue
-
-    channel.queue_bind(exchange="asr-task", queue=queue_name)
-
-    print("[*] Waiting for asr-task. To exit press CTRL+C")
-
-    channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
-
-    channel.start_consuming()
-
-
 def vad_listen():
     logger.info("Listening...")
 
-    stream_context = model.createStream()
-    frames = vad_audio.vad_collector()
-    spinner = Halo(spinner="line")
+    # Start audio with VAD
+    with no_alsa_err:
 
-    nones = 0
-    rec = []
+        stream_context = model.createStream()
+        frames = vad_audio.vad_collector()
+        spinner = Halo(spinner="line")
 
-    for frame in frames:
-        if frame is not None:
-            spinner.start()
-            stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
-        else:
+        nones = 0
+        rec = []
 
-            text = stream_context.finishStream()
+        for frame in frames:
+            if frame is not None:
+                spinner.start()
+                stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
+            else:
 
-            rec.append(text)
-            nones += 1
-            print(f"end utterence. Nones: {nones}")
+                text = stream_context.finishStream()
 
-            if nones >= 2:
-                break
+                rec.append(text)
+                nones += 1
+                print(f"end utterence. Nones: {nones}")
 
-            stream_context = model.createStream()
+                if nones >= 2:
+                    break
 
-    spinner.stop()
-    return rec
+                stream_context = model.createStream()
+
+        spinner.stop()
+        return rec
 
 
 def callback(event, listen_time=10):
