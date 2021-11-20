@@ -39,46 +39,16 @@ rpi-install:
 	source .venv/bin/activate
 	pip install requirements.txt
 
+print-audio-devices:
+	python -m respeaker.get_audio_device_index
 
-train-lm:
-	cd ASR && \
-		# ./prepare_lm_data.sh && \
-		./train_lm.sh && \
-		cd ..
+run-hotword:
+	docker-compose up -d rabbit
+	python -m raspvan.workers.hotword -t topic
 
-train-nlu:
-	./scripts/bootstrap_nlu.sh
-
-train-dialogue:
-	./scripts/bootstrap_dialogue.sh
-
-train-mai:
-	./scripts/bootstrap_mai.sh
-
-run-nlu:
-	./scripts/launch_nlu_server.sh
-
-run-dialogue:
-	./scripts/launch_dialogue_server.sh
-
-run-mai:
-	./scripts/launch_mai_server.sh
-
-run-actions:
-	./scripts/launch_action_server.sh
-
-run-response-server:
-	./scripts/launch_response_server.sh
-
-build-docker-actions:
-	# Examples:
-	# make build-docker-actions mode=dev version=0.1
-	# make build-docker-actions mode=full version=0.1
-	docker build --rm \
-		-f actions/$(mode)Actions.Dockerfile \
-		-t ${PROJECT}-$(mode)-actions:$(version) \
-		-t ${PROJECT}-$(mode)-actions:latest \
-		actions
+run-asr:
+	docker-compose up -d rabbit
+	python -m raspvan.workers.asr -t topic
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +

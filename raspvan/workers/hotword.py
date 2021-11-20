@@ -59,13 +59,17 @@ class Trigger:
         COUNT += 1
 
         logger.info(f" 🔫 Hotword detected! ({COUNT})")
-        pixels.wakeup()
-        SoundThread().start()
-        # Send activation message through queue
-        self.publisher.send_message(json.dumps(["active"]), topic=Q_TOPIC)
-        # Switch off the wake up pixels
-        time.sleep(0.5)
-        pixels.off()
+        try:
+            pixels.wakeup()
+            SoundThread().start()
+            # Send activation message through queue
+            self.publisher.send_message(json.dumps(["active"]), topic=Q_TOPIC)
+            # Switch off the wake up pixels
+        except Exception as e:
+            logger.error(f"Error sending Queue message: {e}")
+        finally:
+            time.sleep(0.5)
+            pixels.off()
 
 
 def init_engine(on_activation_func: Callable, custom_stream: bool = False):
@@ -130,8 +134,8 @@ def run():
     try:
         # Init the precise machinery
         runner, pa, stream = init_engine(trigger.on_activation)
-        logger.info("🚀 Ignition")
         runner.start()
+        logger.info("🚀 Runner started!")
     except Exception as e:
         raise Exception(f"Error in audio-stream or hotword engine: {e}")
     else:
@@ -140,6 +144,7 @@ def run():
             sleep(10)
 
         if pa is not None:
+            logger.warning("‼️ Terminating pyAudio!")
             pa.terminate()
             stream.stop_stream()
 
