@@ -6,6 +6,7 @@ import logging
 import numpy as np
 
 from halo import Halo
+
 from asr.audio import VADAudio
 from asr.audio import DEFAULT_SAMPLE_RATE
 
@@ -18,6 +19,9 @@ from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
 from raspvan.constants import ASR_MODEL_ENV_VAR
 from raspvan.constants import ASR_SCORER_ENV_VAR
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
+
+from respeaker.pixels import pixels
+from respeaker.record import record_audio
 
 
 logger = logging.getLogger(__name__)
@@ -35,7 +39,6 @@ model = deepspeech.Model(MODEL_PATH)
 logger.info(f"⚙️ Initalizing scorer: {SCORER_PATH}")
 model.enableExternalScorer(SCORER_PATH)
 
-
 vad_audio = VADAudio(
     aggressiveness=3,
     device=AUDIO_DEVICE,
@@ -48,44 +51,49 @@ def vad_listen():
     logger.info("Listening...")
 
     # Start audio with VAD
-    with no_alsa_err:
+    stream_context = model.createStream()
+    frames = vad_audio.vad_collector()
+    spinner = Halo(spinner="line")
 
-        stream_context = model.createStream()
-        frames = vad_audio.vad_collector()
-        spinner = Halo(spinner="line")
+    nones = 0
+    rec = []
 
-        nones = 0
-        rec = []
+    for frame in frames:
+        if frame is not None:
+            spinner.start()
+            stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
+        else:
 
-        for frame in frames:
-            if frame is not None:
-                spinner.start()
-                stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
-            else:
+            text = stream_context.finishStream()
 
-                text = stream_context.finishStream()
+            rec.append(text)
+            nones += 1
+            print(f"end utterence. Nones: {nones}")
 
-                rec.append(text)
-                nones += 1
-                print(f"end utterence. Nones: {nones}")
+            if nones >= 2:
+                break
 
-                if nones >= 2:
-                    break
+            stream_context = model.createStream()
 
-                stream_context = model.createStream()
-
-        spinner.stop()
-        return rec
+    spinner.stop()
+    return rec
 
 
-def callback(event, listen_time=10):
+def callback(event, max_time=10):
     logger.info("Received a request to launch ASR")
     text = "😕"
     try:
-        with timeout(listen_time):
-            text = vad_listen()
+        pixels.listen()
+        with no_alsa_err:
+            with timeout(max_time):
+                # text = vad_listen()
+                record_audio(record_seconds=4, output_filename="asr-recording.wav")
+    except RuntimeError as re:
+        logger.warning(f"VAD listening runtime error: {re}")
     except Exception as e:
-        logger.warning(f"callback -> {e}")
+        logger.exception(f"Unknown error while runnig callback -> {e}")
+    finally:
+        pixels.off()
 
     print(f"🎤 Recognized: {text}")
 

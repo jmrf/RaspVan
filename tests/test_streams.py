@@ -27,7 +27,10 @@ if __name__ == "__main__":
             print(f"Total number of streams: {n} (channels={n*4})")
             time.sleep(1)
 
-        assert len(streams) == i + 1
+        assert len(streams) == i + 1, (
+            "Can't open several streams. "
+            "Make sure you are using ALSA **dsnoop** as input and default device"
+        )
 
     except Exception as e:
         print(f"Error: {e}")

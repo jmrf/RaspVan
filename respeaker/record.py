@@ -5,44 +5,55 @@ from respeaker.constants import RESPEAKER_RATE
 from respeaker.constants import RESPEAKER_CHANNELS
 from respeaker.constants import RESPEAKER_WIDTH
 
-# RESPEAKER_RATE = 16000
-# RESPEAKER_CHANNELS = 4
-# RESPEAKER_WIDTH = 2
-
-# run getDeviceInfo.py to get index
-RESPEAKER_INDEX = 0  # refer to input device id
+RESPEAKER_RATE = 16000
+RESPEAKER_CHANNELS = 4
+RESPEAKER_WIDTH = 2
+RESPEAKER_DEVICE_INDEX = 0  # refer to input device id
 
 CHUNK = 1024
-RECORD_SECONDS = 5
 WAVE_OUTPUT_FILENAME = "output.wav"
 
-p = pyaudio.PyAudio()
 
-stream = p.open(
+def record_audio(
+    record_seconds: int,
+    output_filename=WAVE_OUTPUT_FILENAME,
     rate=RESPEAKER_RATE,
-    format=p.get_format_from_width(RESPEAKER_WIDTH),
     channels=RESPEAKER_CHANNELS,
-    input=True,
-    input_device_index=RESPEAKER_INDEX,
-)
+    width=RESPEAKER_WIDTH,
+):
+    p = pyaudio.PyAudio()
 
-print("* recording")
+    stream = p.open(
+        rate=rate,
+        format=p.get_format_from_width(RESPEAKER_WIDTH),
+        channels=channels,
+        input=True,
+        # input_device_index=RESPEAKER_INDEX,
+    )
 
-frames = []
+    print("🎙️ recording")
 
-for i in range(0, int(RESPEAKER_RATE / CHUNK * RECORD_SECONDS)):
-    data = stream.read(CHUNK)
-    frames.append(data)
+    frames = []
 
-print("* done recording")
+    for i in range(0, int(rate / CHUNK * record_seconds)):
+        data = stream.read(CHUNK)
+        frames.append(data)
 
-stream.stop_stream()
-stream.close()
-p.terminate()
+    print("🎬️ done recording")
 
-wf = wave.open(WAVE_OUTPUT_FILENAME, "wb")
-wf.setnchannels(RESPEAKER_CHANNELS)
-wf.setsampwidth(p.get_sample_size(p.get_format_from_width(RESPEAKER_WIDTH)))
-wf.setframerate(RESPEAKER_RATE)
-wf.writeframes(b"".join(frames))
-wf.close()
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+    wf = wave.open(output_filename, "wb")
+    wf.setnchannels(channels)
+    wf.setsampwidth(p.get_sample_size(p.get_format_from_width(width)))
+    wf.setframerate(rate)
+    wf.writeframes(b"".join(frames))
+    wf.close()
+
+    print(f"🔊 saved output as: '{output_filename}'")
+
+
+if __name__ == "__main__":
+    record_audio(5, "output.wav")

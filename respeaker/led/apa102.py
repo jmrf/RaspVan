@@ -147,7 +147,7 @@ class APA102:
             self.spi.xfer2([0x00])
 
     def clear_strip(self):
-        """ Turns off the strip and shows the result right away."""
+        """Turns off the strip and shows the result right away."""
 
         for led in range(self.num_led):
             self.set_pixel(led, 0, 0, 0)

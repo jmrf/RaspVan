@@ -63,7 +63,7 @@ def timeit(func: Callable) -> Callable:
         start = time.time()
         res = func(*args, **kwargs)
         delta = time.time() - start
-        logger.debug(f"function '{func.__name__}' took {delta:.4f}")  # type: ignore
+        print(f"\t⏱️  Function '{func.__name__}' took {delta:.4f}")  # type: ignore
         return res
 
     return timed_wrapper
