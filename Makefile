@@ -42,13 +42,18 @@ rpi-install:
 print-audio-devices:
 	python -m respeaker.get_audio_device_index
 
+# print-audio-cards:
+# 	cat /proc/asound/cards
+# 	arecord -L
+# 	aplay -L
+
 run-hotword:
 	docker-compose up -d rabbit
-	python -m raspvan.workers.hotword -t topic
+	python -m raspvan.workers.hotword -t hotword
 
 run-asr:
 	docker-compose up -d rabbit
-	python -m raspvan.workers.asr -t topic
+	python -m raspvan.workers.asr -t hotword
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +

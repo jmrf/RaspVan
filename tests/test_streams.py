@@ -17,12 +17,10 @@ if __name__ == "__main__":
         for i in range(5):
             print(f"Opening stream: {i}")
             stream = pa.open(
-                rate=48000,
+                rate=16000,
                 channels=1,
                 format=paInt16,
                 input=True,
-                # frames_per_buffer=2048,
-                input_device_index=0,
             )
             streams.append(stream)
             n = len(streams)
