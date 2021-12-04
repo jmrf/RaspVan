@@ -1,4 +1,27 @@
-__pycache__/
+# python files
+*.pyc
 
+# datafiles
+*.wav
+*.mp3
+*.flac
+
+# other files
 *.log
 *.bak
+
+# directories
+__pycache__/
+.cache/
+.vscode/
+.venv/
+
+
+imgs/
+**/data/
+**/models/
+
+
+
+
+

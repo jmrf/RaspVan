@@ -1,0 +1,78 @@
+version: "3.8"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: "200k"
+    max-file: "10"
+
+services:
+
+  test:
+    image: python:3.7-slim
+    logging: *default-logging
+    networks:
+      - fiona
+    command:
+      - python
+      - --version
+
+  asr:
+    # TODO: TO be changed to Kaldi
+    image: jmrf/w2l-worker
+    logging: *default-logging
+    networks:
+      - fiona
+    volumes:
+      - ./phiona/workers:/root/app/
+      - ./ASR/models/wav2letter:/root/model/
+      - ./ASR/data/audio/test:/root/audios/
+    command:
+      - python
+      - -u
+      - /root/app/asr.py
+    depends_on:
+      - rabbit
+
+  rabbit:
+    # image: rabbitmq:3-management
+    image: ronnyroos/rpi-rabbitmq:latest
+    logging: *default-logging
+    networks:
+      - fiona
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  node-red:
+    image: nodered/node-red:latest
+    logging: *default-logging
+    environment:
+      - TZ=Europe/Madrid
+    ports:
+      - "1880:1880"
+    networks:
+      - fiona
+    volumes:
+      - ${PWD}/data/NodeRed:/data
+
+  # redis:
+  #   image: redis
+  #   networks: ["fiona"]
+  #   logging: *default-logging
+  #   ports:
+  #     - "6379:6379"
+  #   command:
+  #     - redis-server
+  #     - --protected-mode
+  #     - "no"
+
+networks:
+  "fiona":
+    name: $PROJECT-network
+
+
