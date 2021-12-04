@@ -1,14 +1,12 @@
 import argparse
 import os
 import json
-import deepspeech
 import logging
-import numpy as np
 
-from halo import Halo
+# import numpy as np
 
-from asr.audio import VADAudio
-from asr.audio import DEFAULT_SAMPLE_RATE
+# from halo import Halo
+
 
 from common.utils.io import init_logger
 from common.utils.context import timeout
@@ -16,8 +14,6 @@ from common.utils.context import no_alsa_err
 from common.utils.rabbit import BlockingQueueConsumer
 
 from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
-from raspvan.constants import ASR_MODEL_ENV_VAR
-from raspvan.constants import ASR_SCORER_ENV_VAR
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
 
 from respeaker.pixels import pixels
@@ -28,55 +24,9 @@ logger = logging.getLogger(__name__)
 init_logger(level=logging.DEBUG, logger=logger)
 
 AUDIO_DEVICE = int(os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0))
-MODEL_PATH = os.getenv(ASR_MODEL_ENV_VAR)
-SCORER_PATH = os.getenv(ASR_SCORER_ENV_VAR)
+
 
 logger.info(f"🎤 Using Audio Device: {AUDIO_DEVICE}")
-
-logger.info(f"⚙️ Initializing model: {MODEL_PATH}")
-model = deepspeech.Model(MODEL_PATH)
-
-logger.info(f"⚙️ Initalizing scorer: {SCORER_PATH}")
-model.enableExternalScorer(SCORER_PATH)
-
-vad_audio = VADAudio(
-    aggressiveness=3,
-    device=AUDIO_DEVICE,
-    input_rate=DEFAULT_SAMPLE_RATE,
-    file=None,
-)
-
-
-def vad_listen():
-    logger.info("Listening...")
-
-    # Start audio with VAD
-    stream_context = model.createStream()
-    frames = vad_audio.vad_collector()
-    spinner = Halo(spinner="line")
-
-    nones = 0
-    rec = []
-
-    for frame in frames:
-        if frame is not None:
-            spinner.start()
-            stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
-        else:
-
-            text = stream_context.finishStream()
-
-            rec.append(text)
-            nones += 1
-            print(f"end utterence. Nones: {nones}")
-
-            if nones >= 2:
-                break
-
-            stream_context = model.createStream()
-
-    spinner.stop()
-    return rec
 
 
 def callback(event, max_time=10):
