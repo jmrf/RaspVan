@@ -10,16 +10,19 @@ services:
 
   test:
     image: python:3.7-slim
-    networks: ["fiona"]
     logging: *default-logging
+    networks:
+      - fiona
     command:
       - python
       - --version
 
   asr:
+    # TODO: TO be changed to Kaldi
     image: jmrf/w2l-worker
-    networks: ["fiona"]
     logging: *default-logging
+    networks:
+      - fiona
     volumes:
       - ./phiona/workers:/root/app/
       - ./ASR/models/wav2letter:/root/model/
@@ -32,11 +35,11 @@ services:
       - rabbit
 
   rabbit:
-    # image: rabbitmq:3
     # image: rabbitmq:3-management
     image: ronnyroos/rpi-rabbitmq:latest
-    networks: ["fiona"]
     logging: *default-logging
+    networks:
+      - fiona
     hostname: rabbitmq
     ports:
       - 5672:5672
@@ -44,6 +47,18 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+
+  node-red:
+    image: nodered/node-red:latest
+    logging: *default-logging
+    environment:
+      - TZ=Europe/Madrid
+    ports:
+      - "1880:1880"
+    networks:
+      - fiona
+    volumes:
+      - ${PWD}/data/NodeRed:/data
 
   # redis:
   #   image: redis
