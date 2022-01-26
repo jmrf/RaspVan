@@ -17,22 +17,17 @@ services:
       - python
       - --version
 
-  asr:
-    # TODO: TO be changed to Kaldi
-    image: jmrf/w2l-worker
-    logging: *default-logging
-    networks:
-      - fiona
+
+  asr-server:
+    image: jmrf/asr-server:latest
     volumes:
-      - ./phiona/workers:/root/app/
-      - ./ASR/models/wav2letter:/root/model/
-      - ./ASR/data/audio/test:/root/audios/
-    command:
-      - python
-      - -u
-      - /root/app/asr.py
-    depends_on:
-      - rabbit
+      - ${PWD}/asr/models:/app/models
+      - ${PWD}/asr/conf:/app/conf
+    ports:
+      - 5000:5000
+    devices:
+      - /dev/snd:/dev/snd # Access to ALSA device
+
 
   rabbit:
     # image: rabbitmq:3-management

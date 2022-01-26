@@ -29,12 +29,11 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 ## Requirements
 
-Apart from any other requirement defined in the root or any  of the sub-components we
+Apart from any other requirement defined in the root or any of the sub-components we
 need the follwing:
 
 *  [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
    ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
-*  [MQTT](https://mqtt.org/) (mosquitto)
 *  python >= 3.7
 *  Docker & Docker-compose
 
@@ -42,14 +41,14 @@ need the follwing:
 ## Structure
 
 This repo is organized in a series of sub-components plus the main solution code
-under [src](src/]).
+under [raspvan](raspvan/]).
 
 To understand how to train, configure, test and run each sub-component please refer to
 the individual readme files.
 
 ```bash
 .
-├── asr                     # ASR component (uses Mozilla DeepSpeech)
+├── asr                     # ASR component (uses pyKaldi)
 ├── assets
 ├── data
 ├── docker-compose.yml
@@ -61,10 +60,8 @@ the individual readme files.
 ├── requirements.txt
 ├── scripts
 ├── setup.cfg
-└── src                     # clients and servers of the entire solution
+└── raspvan                     # clients and servers of the entire solution
 
-
-20 directories
 ```
 
 
@@ -72,111 +69,51 @@ the individual readme files.
 
 ### Installation
 
+#### For development
+
+Create a virtual environment
+
+```bash
+python3.7 -m venv .venv
+source .venv/bin/activate
+```
+
+And install all the python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
+
+
+### Run
+
+
+#### Individual components
+
+ - hotword detection: `python -m raspvan.workers.hotword`
+ - pixel demo: `python -m respeaker.pixels`
+
+
+#### Production
+
+TBD
+
+
 
 ### WiFi and automatic hotspot
 
 In order to communicate with the RaspberryPi we will configure it to connect to
 a series of known WiFi networks when available and to create a Hotspot otherwise.
 
-Refer to
-[auto-wifi-hotspot](http://www.raspberryconnect.com/network/item/330-raspberry-pi-auto-wifi-hotspot-switch-internet)
+Refer to [auto-wifi-hotspot](http://www.raspberryconnect.com/network/item/330-raspberry-pi-auto-wifi-hotspot-switch-internet)
 from [raspberryconnect/network](http://www.raspberryconnect.com/network).
 
 By default the RaspberryPi will be accessible at the IP: `192.168.50.5` when the hotspot is active.
 
 
-### Voice Control
-
-
-### HTTP Control (Android app or similar)
-
-To run the HTTP server:
-```bash
-	python3 http_server.py
-```
-
-
-Ideally these processes should run on startup, for this we use `systemctl`.
-
-For example to configure a _unit_ for the `voice_action_server`:
-
-1. Create the `.service`:
-    ```bash
-    # voice-action_server server
-    sudo vim /lib/systemd/system/voice_action_ctl.service
-    ```
-
-    With the following content:
-    ```
-    [Unit]
-     Description=Python voice to action service
-     After=multi-user.target
-
-     [Service]
-     Type=idle
-     User=pi
-     StandardOutput=file:/home/pi/RaspVan/logs/voice_action_server.log
-     StandardError=file:/home/pi/RaspVan/logs/voice_action_server_err.log
-     ExecStart=/usr/bin/python3 /home/pi/RaspVan/voice_assistant/voice_action_server.py
-
-     [Install]
-     WantedBy=multi-user.target
-
-    ```
-
-2. Reload the systemctl daemon:
-    ```bash
-	sudo systemctl daemon-reload
-    ```
-
-3. Enable the service
-    ```bash
-	sudo systemctl enable voice_action_ctl.service
-    ```
-
-To start manually and test proper functioning:
-```bash
-    sudo systemctl start voice_action_ctl   # start the service
-    journalctl -u voice_action_ctl	        # show the logs
-    systemctl status voice_action_ctl	    # check status of the service
-```
-
-
-
-Similarly should be done for the `HTTP python server`.
-
-
-
-### Web Control Panel (optional)
-
-In addition we can configure an Apache server displaying several stats about the RaspberryPi:
-(temperature, work load, memory load, etc).
-
-Refer to [GumCP](https://github.com/gumslone/GumCP) for instructions.
-
-
 ## Wiring and Connections
 
-* Lights:
-
-  **Update**:
-  Instead of using the _MOSFET_ configuration, is prefered using an array of relays because of encapsulation.
-  Switching times increase when using relays but encapsulation of the devices makes life easier.
-  We use [these relays](https://amzn.to/2FRfuCP).
-
-  ~~Connections are done from the raspberryPi GPIO pins to the _positive_ side of the lights circuit (high-side switch) using a
-  _p-channel MOSFET_ transistor.
-  Discussion on low-side or high-side switching are out of the scope of this _readme_ document.~~
-
- An schematic view of the _switch_ mechanism follows (from this [partsim project](http://www.partsim.com/simulator#132504)):
-
-  ![high-side switch](assets/diagrams/high-side-switch.jpeg)
-
-
+TBD
 
 ## Misc
 
