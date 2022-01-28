@@ -69,8 +69,6 @@ the individual readme files.
 
 ### Installation
 
-#### For development
-
 Create a virtual environment
 
 ```bash
@@ -85,16 +83,15 @@ pip install -r requirements.txt
 ```
 
 
+
 ### Run
 
+Individual components can be run independently:
 
-#### Individual components
-
- - hotword detection: `python -m raspvan.workers.hotword`
+ - hotword detection demo: `python -m raspvan.workers.hotword`
+ - i2c relay demo: `python -m respeaker.workers.relay`
  - pixel demo: `python -m respeaker.pixels`
 
-
-#### Production
 
 TBD
 
