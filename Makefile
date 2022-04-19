@@ -83,7 +83,12 @@ pyupgrade:
 
 readme-toc:
 	# https://github.com/ekalinin/github-markdown-toc
-	find . -name README.md -exec gh-md-toc --insert {} \;
+	find . \
+		! -path './kaldi/*' \
+		! -path './external/*' \
+		! -path './hotword/mycroft-precise/*' \
+		-name README.md \
+		-exec gh-md-toc --insert {} \;
 
 
 test: clean

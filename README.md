@@ -7,25 +7,30 @@ complete domotic voice-controled system.
 
 Commands can be executed either by _voice_ or by sending _HTTP requests_ to a server.
 
+----
 
-Table of Contents
-=================
+## Table of Contents
 
-   * [RaspVan](#raspvan)
+<!--ts-->
+* [RaspVan (codename: Fiona)](#raspvan-codename-fiona)
    * [Table of Contents](#table-of-contents)
-      * [Requirements](#requirements)
-      * [Structure](#structure)
-      * [How to](#how-to)
-         * [Installation](#installation)
-            * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
-            * [Voice Control:](#voice-control)
-            * [HTTP Control (Android app or similar):](#http-control-android-app-or-similar)
-            * [Web Control Panel (optional)](#web-control-panel-optional)
-      * [Wiring and Connections](#wiring-and-connections)
-      * [Misc](#misc)
+   * [Requirements](#requirements)
+   * [Structure](#structure)
+      * [ASR](#asr)
+      * [Hotword](#hotword)
+      * [Respeaker](#respeaker)
+   * [How to](#how-to)
+      * [Installation](#installation)
+      * [Run](#run)
+      * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
+   * [Wiring and Connections](#wiring-and-connections)
+   * [Misc](#misc)
 
-Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: pi, at: Tue 19 Apr 2022 05:41:46 PM CEST -->
 
+<!--te-->
+----
 
 ## Requirements
 

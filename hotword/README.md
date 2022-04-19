@@ -9,18 +9,23 @@ We find that collecting the following samples yields acceptable results:
 - train: ~20 positive examples and ~300 negative
 - test:  ~10 positive examples and ~70 negative
 
-Table of Contents
------------------
+-----
 
-   * [Hotword detection](#hotword-detection)
+## Table of Contents
+
+<!--ts-->
+* [Hotword detection](#hotword-detection)
    * [Table of Contents](#table-of-contents)
-      * [Introduction](#introduction)
-      * [Requirements](#requirements)
-      * [Structure](#structure)
-      * [How To](#how-to)
-         * [Install](#install)
+   * [Requirements](#requirements)
+   * [Structure](#structure)
+   * [How To](#how-to)
+      * [Install](#install)
+      * [Train a custom hotword](#train-a-custom-hotword)
 
-Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: pi, at: Tue 19 Apr 2022 05:41:45 PM CEST -->
+
+<!--te-->
 
 
 ## Requirements
