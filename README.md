@@ -99,7 +99,6 @@ python ./scripts/asr_ws_mic_client.py
 ```
 
 
-
 ### Hotword
 
 > ⚠️ TBD
