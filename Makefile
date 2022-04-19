@@ -68,7 +68,11 @@ clean:
 	# rm -rf pip-wheel-metadata
 
 formatter:
-	black . --exclude external
+	black common raspvan scripts respeaker \
+		--exclude .venv/ \
+		--exclude kaldi/ \
+		--exclude external/ \
+		--exclude hotword/mycroft-precise/
 
 lint:
 	flake8 .

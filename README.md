@@ -75,7 +75,30 @@ the individual readme files.
 
 ### ASR
 
-> ⚠️ TBD
+We use the dockerized vosk-server from the [jmrf/pyvosk-rpi](https://github.com/jmrf/pyvosk-rpi) repo.
+
+This server listens via websocket to a `sounddevice` stream and performs STT on the fly.
+
+> 💡 For a complete list of compatible models check: [vosk/models](https://alphacephei.com/vosk/models)
+
+#### Running vosk-server:
+
+```bash
+# Run the dockerized server
+docker-compose up asr-server
+```
+
+Then, run one of the clients:
+
+```bash
+source .venv/bin/activate
+# ASR from a audio wav file
+python ./scripts/asr_ws_client.py <name-of-the-16kHz-wav-file>
+# Or run listening from the microphone
+python ./scripts/asr_ws_mic_client.py
+```
+
+
 
 ### Hotword
 

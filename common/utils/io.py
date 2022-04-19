@@ -140,10 +140,10 @@ def init_logger(
     log_dir: str = None,
     fmt="%(asctime)s,%(msecs)03d %(levelname)-8s %(name)-25s:%(lineno)3d - %(message)-50s",
 ):
-    """ Configures the given logger; format, logging level, style, etc """
+    """Configures the given logger; format, logging level, style, etc"""
 
     def add_notice_log_level():
-        """ Creates a new 'notice' logging level """
+        """Creates a new 'notice' logging level"""
         # inspired by:
         # https://stackoverflow.com/questions/2183233/how-to-add-a-custom-loglevel-to-pythons-logging-facility
         NOTICE_LEVEL_NUM = 25
