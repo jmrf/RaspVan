@@ -48,8 +48,10 @@ the individual readme files.
 
 ```bash
 .
-├── asr                     # ASR component (uses pyKaldi)
+├── asr                     # ASR component (uses vosk-kaldi)
 ├── assets
+├── common
+├── config
 ├── data
 ├── docker-compose.yml
 ├── external
@@ -58,11 +60,25 @@ the individual readme files.
 ├── README.md
 ├── requirements-dev.txt
 ├── requirements.txt
+├── respeaker
 ├── scripts
 ├── setup.cfg
-└── raspvan                     # clients and servers of the entire solution
+└── raspvan                 # client and server systems
 
 ```
+
+
+### ASR
+
+> ⚠️ TBD
+
+### Hotword
+
+> ⚠️ TBD
+
+### Respeaker
+
+> ⚠️ TBD
 
 
 ## How to
@@ -83,19 +99,20 @@ pip install -r requirements.txt
 ```
 
 
-
 ### Run
 
 Individual components can be run independently:
 
  - hotword detection demo: `python -m raspvan.workers.hotword`
- - i2c relay demo: `python -m respeaker.workers.relay`
+ - i2c relay demo: `python -m raspvan.workers.relay`
  - pixel demo: `python -m respeaker.pixels`
 
 
-TBD
+> ⚠️ TBD
 
 
+<details>
+  <summary>⚠️ Probably deprecated. Click to expand!</summary>
 
 ### WiFi and automatic hotspot
 
@@ -115,3 +132,5 @@ TBD
 ## Misc
 
 * Drawing and simulation tool: [partsim simulator](https://www.partsim.com/simulator)
+
+</details>

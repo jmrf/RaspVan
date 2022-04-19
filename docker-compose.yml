@@ -8,7 +8,7 @@ x-logging:
 
 services:
 
-  test:
+  py-test:
     image: python:3.7-slim
     logging: *default-logging
     networks:
@@ -17,17 +17,18 @@ services:
       - python
       - --version
 
-
   asr-server:
-    image: jmrf/asr-server:latest
+    image: jmrf/vosk-server-rpi:0.3.32-cp37
+    networks:
+      - fiona
     volumes:
       - ${PWD}/asr/models:/app/models
-      - ${PWD}/asr/conf:/app/conf
     ports:
-      - 5000:5000
+      - 2700:2700
+    command: >
+      python vosk-server/websocket/asr_server.py /app/model
     devices:
-      - /dev/snd:/dev/snd # Access to ALSA device
-
+      - /dev/snd:/dev/snd  # Access to ALSA device
 
   rabbit:
     # image: rabbitmq:3-management
