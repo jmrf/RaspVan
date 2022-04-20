@@ -82,6 +82,7 @@ class Pixels:
 pattern_map = {"google": GoogleHomeLedPattern, "alexa": AlexaLedPattern}
 
 # NOTE: 'pixels' var. must be global if we want to use pixels form several places
+# Or better, make the Pixels class a Singleton class
 pixels = Pixels(
     pattern=pattern_map[
         os.getenv("PIXELS_PATTERN", random.choice(list(pattern_map.keys())))

@@ -1,8 +1,8 @@
+import argparse
 import asyncio
 import websockets
 import logging
 import sounddevice as sd
-import argparse
 
 
 def int_or_str(text):
