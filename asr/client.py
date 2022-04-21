@@ -9,7 +9,7 @@ import websockets
 import sounddevice as sd
 
 from common.utils.io import init_logger
-from respeaker.pixels import pixels
+from respeaker.pixels import Pixels
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,7 @@ class ASRClient:
         self.loop = asyncio.get_running_loop()
         self.audio_queue = asyncio.Queue()
         self.vad = webrtcvad.Vad(vad_aggressiveness)
+        self.pixels = Pixels()
 
     async def from_wave(self, wave_file: str) -> Dict[str, str]:
         async with websockets.connect(self.asr_uri) as websocket:
@@ -68,7 +69,11 @@ class ASRClient:
         )  # 160 frames
         buffer_size = int(asr_block_ms / VAD_BLOCK_MS)
 
-        logger.debug(asr_block_ms, vad_block_size, buffer_size)
+        logger.debug(
+            f"ASR Block ms: {asr_block_ms} "
+            f"| VAD block size: {vad_block_size} "
+            f"| Buffer size: {buffer_size}"
+        )
 
         total_seconds_no_voice = 0
         buffer = []
@@ -88,7 +93,7 @@ class ASRClient:
                     '{ "config" : { "sample_rate" : %d } }' % (device.samplerate)
                 )
 
-                pixels.speak()
+                self.pixels.speak()
 
                 while True:
                     # Blocks of size 4000 @ 16kHz are 250 ms of audio
@@ -109,7 +114,7 @@ class ASRClient:
 
                         # Send to ASR
                         if _is_voice:
-                            pixels.think()
+                            self.pixels.think()
                             total_seconds_no_voice = 0
 
                             # ASR on the entire buffer
@@ -123,12 +128,11 @@ class ASRClient:
                                     f"💥 Voice detected. ASR result: {res['text']}"
                                 )
 
-                            pixels.off()
-                            pixels.speak()
+                            self.pixels.speak()
 
                         else:
                             if total_seconds_no_voice >= MAX_SECONDS_NO_VOICE:
-                                logger.info("🚧 Breaking")
+                                logger.debug("🚧 Breaking")
                                 break
 
                             total_seconds_no_voice += asr_block_ms / 1000
@@ -137,7 +141,7 @@ class ASRClient:
                         buffer = []
                         vads = []
 
-                pixels.off()
+                self.pixels.off()
 
                 await websocket.send('{"eof" : 1}')
 

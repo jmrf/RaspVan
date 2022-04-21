@@ -17,7 +17,7 @@ from raspvan.constants import Q_EXCHANGE_ENV_VAR
 from common.utils.context import no_alsa_err
 from common.utils.io import init_logger
 from common.utils.rabbit import BlockingQueuePublisher
-from respeaker.pixels import pixels
+from respeaker.pixels import Pixels
 
 import precise_runner
 from precise_runner import PreciseEngine
@@ -53,6 +53,7 @@ class SoundThread(threading.Thread):
 class Trigger:
     def __init__(self, publisher: BlockingQueuePublisher) -> None:
         self.publisher = publisher
+        self.pixels = Pixels()
 
     def on_activation(self):
         global COUNT
@@ -60,7 +61,7 @@ class Trigger:
 
         logger.info(f" 🔫 Hotword detected! ({COUNT})")
         try:
-            pixels.wakeup()
+            self.pixels.wakeup()
             SoundThread().start()
             # Send activation message through queue
             self.publisher.send_message(json.dumps(["active"]), topic=Q_TOPIC)
@@ -69,7 +70,7 @@ class Trigger:
             logger.error(f"Error sending Queue message: {e}")
         finally:
             time.sleep(0.5)
-            pixels.off()
+            self.pixels.off()
 
 
 def init_engine(on_activation_func: Callable, custom_stream: bool = False):

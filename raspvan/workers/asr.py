@@ -14,7 +14,7 @@ from common.utils.rabbit import BlockingQueueConsumer
 from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
 
-from respeaker.pixels import pixels
+from respeaker.pixels import Pixels
 
 
 logger = logging.getLogger(__name__)
@@ -77,9 +77,9 @@ def get_args():
 async def main():
 
     global asr
-    global sample_rate
     global device_id
-    global asr_max_time
+    global sample_rate
+    global pixels
 
     args = get_args()
 
@@ -93,7 +93,7 @@ async def main():
         # Init ASR parameters
         sample_rate = args.samplerate
         device_id = args.device
-        asr_max_time = 10
+        pixels = Pixels()
 
         # Init the ASR Client
         asr = ASRClient(args.uri, args.vad_aggressiveness)
@@ -113,7 +113,7 @@ async def main():
             exchange_type=exchange_type,
             queue_name="asr",
         )
-        logger.info("🚀 Starting consuming from queue...")
+        logger.info("👹 Starting consuming from queue...")
         consumer.consume()
     except KeyboardInterrupt:
         logger.info("Closing connection and unbinding")

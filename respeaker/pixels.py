@@ -10,15 +10,22 @@ try:
 except ImportError:
     import Queue as Queue
 
+from common import Singleton
 from respeaker.led import apa102
 from respeaker.led.alexa_led_pattern import AlexaLedPattern
 from respeaker.led.google_home_led_pattern import GoogleHomeLedPattern
 
 
-class Pixels:
-    PIXELS_N = 12
+class Pixels(metaclass=Singleton):
 
-    def __init__(self, pattern=AlexaLedPattern):
+    PIXELS_N = 12
+    PATTERN_MAP = {"google": GoogleHomeLedPattern, "alexa": AlexaLedPattern}
+
+    def __init__(self, pattern=None):
+
+        if pattern is None:
+            pattern = self._random_pattern()
+
         self.pattern = pattern(show=self.show)
 
         self.dev = apa102.APA102(num_led=self.PIXELS_N)
@@ -32,6 +39,17 @@ class Pixels:
         self.thread.start()
 
         self.last_direction = None
+
+    def _run(self):
+        while True:
+            func = self.queue.get()
+            self.pattern.stop = False
+            func()
+
+    def _random_pattern(self):
+        return self.PATTERN_MAP[
+            os.getenv("PIXELS_PATTERN", random.choice(list(self.PATTERN_MAP.keys())))
+        ]
 
     def wakeup(self, direction=0):
         self.last_direction = direction
@@ -64,12 +82,6 @@ class Pixels:
         self.pattern.stop = True
         self.queue.put(func)
 
-    def _run(self):
-        while True:
-            func = self.queue.get()
-            self.pattern.stop = False
-            func()
-
     def show(self, data):
         for i in range(self.PIXELS_N):
             self.dev.set_pixel(
@@ -79,18 +91,9 @@ class Pixels:
         self.dev.show()
 
 
-pattern_map = {"google": GoogleHomeLedPattern, "alexa": AlexaLedPattern}
-
-# NOTE: 'pixels' var. must be global if we want to use pixels form several places
-# Or better, make the Pixels class a Singleton class
-pixels = Pixels(
-    pattern=pattern_map[
-        os.getenv("PIXELS_PATTERN", random.choice(list(pattern_map.keys())))
-    ]
-)
-
-
 if __name__ == "__main__":
+
+    pixels = Pixels()
 
     while True:
         try:
