@@ -1,4 +1,6 @@
 import asyncio
+import nest_asyncio
+
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 from typing import Callable
@@ -9,10 +11,17 @@ from typing import Tuple
 from typing import Union
 
 
-def run_sync(fn, *args, **kwargs):
+# https://stackoverflow.com/questions/46827007/runtimeerror-this-event-loop-is-already-running-in-python#56434301
+nest_asyncio.apply()
+
+
+def run_sync(fn: Callable, *args, **kwargs):
     res = fn(*args, **kwargs)
     if asyncio.iscoroutine(res):
-        return asyncio.get_event_loop().run_until_complete(res)
+        try:
+            return asyncio.get_event_loop().run_until_complete(res)
+        except RuntimeError:
+            return asyncio.new_event_loop().run_until_complete(res)
     return res
 
 
@@ -75,5 +84,5 @@ def parallel_exec(
     return results
 
 
-def run_in_event_loop(f: Callable, args, kwargs):
-    return asyncio.get_event_loop().run_in_executor(None, f, *args, *kwargs)
+def run_in_event_loop(f: Callable, *args, **kwargs):
+    return asyncio.get_event_loop().run_in_executor(None, f, *args, **kwargs)

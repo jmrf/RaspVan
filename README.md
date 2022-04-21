@@ -16,18 +16,18 @@ Commands can be executed either by _voice_ or by sending _HTTP requests_ to a se
    * [Table of Contents](#table-of-contents)
    * [Requirements](#requirements)
    * [Structure](#structure)
-      * [ASR](#asr)
       * [Hotword](#hotword)
+      * [ASR](#asr)
       * [Respeaker](#respeaker)
+      * [Raspvan](#raspvan)
    * [How to](#how-to)
       * [Installation](#installation)
-      * [Run](#run)
       * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
-   * [Wiring and Connections](#wiring-and-connections)
+      * [Wiring and Connections](#wiring-and-connections)
    * [Misc](#misc)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: pi, at: Tue 19 Apr 2022 05:41:46 PM CEST -->
+<!-- Added by: pi, at: Thu 21 Apr 2022 03:58:39 PM CEST -->
 
 <!--te-->
 ----
@@ -73,15 +73,23 @@ the individual readme files.
 ```
 
 
+### Hotword
+
+> ⚠️ TBD
+
+```bash
+python -m raspvan.workers.hotword
+```
+
 ### ASR
 
-We use the dockerized vosk-server from the [jmrf/pyvosk-rpi](https://github.com/jmrf/pyvosk-rpi) repo.
+We use the dockerized vosk-server from the
+[jmrf/pyvosk-rpi](https://github.com/jmrf/pyvosk-rpi) repo.
 
 This server listens via websocket to a `sounddevice` stream and performs STT on the fly.
 
-> 💡 For a complete list of compatible models check: [vosk/models](https://alphacephei.com/vosk/models)
-
-#### Running vosk-server:
+> 💡 For a complete list of compatible models check:
+> [vosk/models](https://alphacephei.com/vosk/models)
 
 ```bash
 # Run the dockerized server
@@ -92,20 +100,38 @@ Then, run one of the clients:
 
 ```bash
 source .venv/bin/activate
+
 # ASR from a audio wav file
-python ./scripts/asr_ws_client.py <name-of-the-16kHz-wav-file>
-# Or run listening from the microphone
-python ./scripts/asr_ws_mic_client.py
+python -m  asr.client -v 2 -f <name-of-the-16kHz-wav-file>
+
+# Or ASR listening from the microphone
+python -m  asr.client -v 2 -d <microphone-ID>
+```
+
+Or run the rabbitMQ-triggered `raspvan ASR worker`:
+
+```bash
+python -m raspvan.workers.asr
 ```
 
 
-### Hotword
-
-> ⚠️ TBD
-
 ### Respeaker
 
-> ⚠️ TBD
+We use [respeaker 4mic hat]() as microphone and visual feedbac with its LED array.
+
+To run the LED pixel demo:
+
+```bash
+python -m respeaker.pixels
+```
+
+
+### Raspvan
+
+This is the main module which coordinates all the different components.
+
+ - i2c relay demo: `python -m raspvan.workers.relay`
+
 
 
 ## How to
@@ -125,19 +151,6 @@ And install all the python dependencies
 pip install -r requirements.txt
 ```
 
-
-### Run
-
-Individual components can be run independently:
-
- - hotword detection demo: `python -m raspvan.workers.hotword`
- - i2c relay demo: `python -m raspvan.workers.relay`
- - pixel demo: `python -m respeaker.pixels`
-
-
-> ⚠️ TBD
-
-
 <details>
   <summary>⚠️ Probably deprecated. Click to expand!</summary>
 
@@ -152,9 +165,10 @@ from [raspberryconnect/network](http://www.raspberryconnect.com/network).
 By default the RaspberryPi will be accessible at the IP: `192.168.50.5` when the hotspot is active.
 
 
-## Wiring and Connections
+### Wiring and Connections
 
 TBD
+
 
 ## Misc
 

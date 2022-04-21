@@ -23,7 +23,7 @@ We find that collecting the following samples yields acceptable results:
       * [Train a custom hotword](#train-a-custom-hotword)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: pi, at: Tue 19 Apr 2022 05:41:45 PM CEST -->
+<!-- Added by: pi, at: Thu 21 Apr 2022 03:58:37 PM CEST -->
 
 <!--te-->
 

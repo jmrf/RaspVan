@@ -1,3 +1,5 @@
+import json
+import os
 import pika
 
 # Pika (rabbitMQ) client setup
@@ -7,9 +9,14 @@ connection = pika.BlockingConnection(
 )
 channel = connection.channel()
 
-channel.exchange_declare(exchange="asr-task", exchange_type="fanout")
+# Fetch exchange name
+exchange = os.getenv("Q_EXCHANGE")
+assert exchange is not None, "env.var 'Q_EXCHANGE' not defined!"
 
-message = "pin"
-channel.basic_publish(exchange="asr-taks", routing_key="", body=message)
+# Send a message
+message = json.dumps(["hello"])
+channel.exchange_declare(exchange=exchange, exchange_type="topic")
+channel.basic_publish(exchange=exchange, routing_key="hotword.detected", body=message)
 print(" [x] Sent %r" % message)
+
 connection.close()

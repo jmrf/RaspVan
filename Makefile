@@ -88,6 +88,7 @@ pyupgrade:
 readme-toc:
 	# https://github.com/ekalinin/github-markdown-toc
 	find . \
+		! -path '.venv/*' \
 		! -path './kaldi/*' \
 		! -path './external/*' \
 		! -path './hotword/mycroft-precise/*' \
