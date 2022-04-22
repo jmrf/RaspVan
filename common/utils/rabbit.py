@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 import time
 from typing import Callable
 from typing import List
@@ -7,18 +7,16 @@ from typing import Tuple
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
-from common.utils.io import init_logger
 
-from raspvan.constants import (
-    DEFAULT_RABBITMQ_HOST,
-    DEFAULT_RABBITMQ_PORT,
-    RABBITMQ_HOST_ENV_VAR,
-    RABBITMQ_PORT_ENV_VAR,
-)
+from common.utils.io import init_logger
+from raspvan.constants import DEFAULT_RABBITMQ_HOST
+from raspvan.constants import DEFAULT_RABBITMQ_PORT
+from raspvan.constants import RABBITMQ_HOST_ENV_VAR
+from raspvan.constants import RABBITMQ_PORT_ENV_VAR
 
 
 logger = logging.getLogger(__name__)
-init_logger(level=logging.DEBUG, logger=logger)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 def get_amqp_uri_from_env():

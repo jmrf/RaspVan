@@ -2,22 +2,33 @@ import argparse
 import asyncio
 import json
 import logging
-from typing import Dict
+import os
+import time
 import wave
+from typing import Dict
+
+import sounddevice as sd
 import webrtcvad
 import websockets
-import sounddevice as sd
-from common import int_or_str
+from funcy import chunks
 
+from common import int_or_str
 from common.utils.io import init_logger
 from respeaker.pixels import Pixels
 
 
 logger = logging.getLogger(__name__)
-init_logger(level=logging.DEBUG, logger=logger)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 class ASRClient:
+
+    # TODO: Make as parameters
+    MAX_SECONDS_NO_VOICE = 3
+    ASR_BLOCK_SIZE = 4000
+    VAD_BLOCK_MS = 30
+    VOICE_TH = 0.9
+
     def __init__(self, asr_uri: str, vad_aggressiveness: int = 2) -> None:
         self.asr_uri = asr_uri
         self.loop = asyncio.get_running_loop()
@@ -45,93 +56,95 @@ class ASRClient:
 
             return json.loads(await websocket.recv())
 
-    async def stream_mic(self, sample_rate: float, device_id) -> Dict[str, str]:
+    def _is_voice(self, pcm_data, sample_rate, vad_block_size):
+        vads = []
+        # VAD: chop the pcm buffer is chunks of max 30ms and do VAD
+        vad_bytes = 2 * vad_block_size
+        for pcm_chunk in chunks(vad_bytes, pcm_data):
+            _is_speech = self.vad.is_speech(pcm_chunk, int(sample_rate))
+            vads.append(_is_speech)
+            # logger.debug(
+            #     f"VADing a pcm of {len(pcm_chunk)} bytes "
+            #     f"(total: {len(pcm_data)}) -> speech: {_is_speech}"
+            # )
+
+        # Are 90% of the frames voice?
+        is_voice = len(vads) and sum(vads) >= self.VOICE_TH * len(vads)
+        return is_voice
+
+    async def stream_mic(self, sample_rate: float, device_id: int) -> Dict[str, str]:
         def _callback(indata, frames, time, status):
             """This is called (from a separate thread) for each audio block."""
             self.loop.call_soon_threadsafe(self.audio_queue.put_nowait, bytes(indata))
 
-        # TODO: Make as parameters
-        MAX_SECONDS_NO_VOICE = 5
-        ASR_BLOCK_SIZE = 4000
-        VAD_BLOCK_MS = 10
-        VOICE_TH = 0.9
+        async def _do_asr(pcm_data):
+            # ASR on the entire buffer
+            await websocket.send(pcm_data)
 
-        asr_block_ms = ASR_BLOCK_SIZE / sample_rate * 1000  # 250ms
-        vad_block_size = int(
-            ASR_BLOCK_SIZE * VAD_BLOCK_MS // asr_block_ms
-        )  # 160 frames
-        buffer_size = int(asr_block_ms / VAD_BLOCK_MS)
+            res = json.loads(await websocket.recv())
+            logger.debug(res)
+
+            if "text" in res:
+                logger.info(f"ASR result: {res['text']}")
+
+        # Compute pcm buffer parameters
+        asr_block_ms = self.ASR_BLOCK_SIZE / sample_rate * 1000  # e.g: 250ms
+        vad_block_size = int(self.ASR_BLOCK_SIZE * self.VAD_BLOCK_MS // asr_block_ms)
 
         logger.debug(
-            f"ASR Block ms: {asr_block_ms} "
-            f"| VAD block size: {vad_block_size} "
-            f"| Buffer size: {buffer_size}"
+            f"ASR Block ms: {asr_block_ms} | VAD block size: {vad_block_size} "
         )
-
-        total_seconds_no_voice = 0
-        buffer = []
-        vads = []
 
         with sd.RawInputStream(
             samplerate=sample_rate,
-            blocksize=vad_block_size,
+            blocksize=self.ASR_BLOCK_SIZE,
             device=device_id,
             dtype="int16",
             channels=1,
             callback=_callback,
         ) as device:
-
+            # Blocks of size 4000 @ 16kHz are 250 ms of audio
+            # however for VAD we need 10,20 or 30 ms blocks
             async with websockets.connect(self.asr_uri) as websocket:
                 await websocket.send(
                     '{ "config" : { "sample_rate" : %d } }' % (device.samplerate)
                 )
 
                 self.pixels.speak()
-
+                start = time.time()
+                # t_last_voice = start
+                total_seconds_no_voice = 0
+                i = 0
                 while True:
-                    # Blocks of size 4000 @ 16kHz are 250 ms of audio
-                    # we need 10,20 or 30 ms blocks for VAD so we collect smaller
-                    # blocks and we only send to the ASR once we collected enough
+                    i += 1
                     data = await self.audio_queue.get()
 
-                    if len(buffer) < buffer_size:
-                        # PCM data buffer
-                        buffer.append(data)
-                        # VAD
-                        _is_speech = self.vad.is_speech(data, int(device.samplerate))
-                        vads.append(_is_speech)
-
+                    if self._is_voice(data, device.samplerate, vad_block_size):
+                        # self.pixels.think()
+                        # NOTE: While we run the ASR the microphone continues
+                        # to collect audio frames and potentially we can
+                        # break to having 'silent' audio blocks before
+                        # the ASR has compelted!
+                        logger.debug(f"🎙️ Running ASR! (block {i})")
+                        total_seconds_no_voice = 0
+                        await _do_asr(data)
+                        # t_last_voice = time.time()
+                        # self.pixels.speak()
                     else:
-                        # Are 90% of the frames voice?
-                        _is_voice = len(vads) and sum(vads) >= VOICE_TH * len(buffer)
+                        # time from microphone perspective
+                        total_seconds_no_voice += asr_block_ms / 1000
 
-                        # Send to ASR
-                        if _is_voice:
-                            self.pixels.think()
-                            total_seconds_no_voice = 0
+                    # Alternatively: time from last ASR result:
+                    # total_seconds_no_voice = time.time() - t_last_voice
 
-                            # ASR on the entire buffer
-                            await websocket.send(b"".join(buffer))
-
-                            res = json.loads(await websocket.recv())
-                            logger.debug(res)
-
-                            if "text" in res:
-                                logger.info(
-                                    f"💥 Voice detected. ASR result: {res['text']}"
-                                )
-
-                            self.pixels.speak()
-
-                    total_seconds_no_voice += asr_block_ms / 1000
-                    # Reset the buffers
-                    buffer = []
-                    vads = []
-
-                    if total_seconds_no_voice >= MAX_SECONDS_NO_VOICE:
-                        logger.debug("🚧 Breaking")
+                    if total_seconds_no_voice >= self.MAX_SECONDS_NO_VOICE:
+                        logger.debug(
+                            f"🛑 Stopped listening after {total_seconds_no_voice}s "
+                            f"without detecting voice (block {i})"
+                        )
                         break
 
+                logger.debug(f"⏳️ Total run time: {time.time() - start}")
                 self.pixels.off()
 
                 await websocket.send('{"eof" : 1}')
@@ -140,6 +153,7 @@ class ASRClient:
 
 
 async def main():
+    """Here just to serve as an example of how to run as standalone"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-u",

@@ -1,28 +1,24 @@
 import argparse
 import asyncio
-import os
 import json
 import logging
+import os
 
 from asr.client import ASRClient
-
 from common import int_or_str
-from common.utils.io import init_logger
 from common.utils.exec import run_sync
-from common.utils.rabbit import BlockingQueueConsumer, get_amqp_uri_from_env
-
-from raspvan.constants import (
-    AUDIO_DEVICE_ID_ENV_VAR,
-    DEFAULT_EXCHANGE,
-    DEFAULT_HOTWORD_ASR_TOPIC,
-)
+from common.utils.io import init_logger
+from common.utils.rabbit import BlockingQueueConsumer
+from common.utils.rabbit import get_amqp_uri_from_env
+from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
+from raspvan.constants import DEFAULT_EXCHANGE
+from raspvan.constants import DEFAULT_HOTWORD_ASR_TOPIC
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
-
 from respeaker.pixels import Pixels
 
 
 logger = logging.getLogger(__name__)
-init_logger(level=logging.DEBUG, logger=logger)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 async def callback(event):
@@ -38,7 +34,7 @@ async def callback(event):
     finally:
         pixels.off()
 
-    logger.debug(f"👂️ Recognized: {text}")
+    logger.info(f"👂️ Recognized: {text}")
 
 
 def get_args():

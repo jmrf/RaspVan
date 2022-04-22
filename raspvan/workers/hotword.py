@@ -1,38 +1,34 @@
 import argparse
-import os
 import json
-import time
 import logging
-import threading
-
+import os
 import subprocess
-
-from pyaudio import PyAudio, paInt16
+import threading
+import time
 from time import sleep
-
 from typing import Callable
-from common import int_or_str
-
-from raspvan.constants import (
-    AUDIO_DEVICE_ID_ENV_VAR,
-    DEFAULT_EXCHANGE,
-    DEFAULT_HOTWORD_ASR_TOPIC,
-    HOTWORD_MODEL_ENV_VAR,
-    PRECISE_ENGINE_ENV_VAR,
-)
-from raspvan.constants import Q_EXCHANGE_ENV_VAR
-
-from common.utils.context import no_alsa_err
-from common.utils.io import init_logger
-from common.utils.rabbit import BlockingQueuePublisher, get_amqp_uri_from_env
-from respeaker.pixels import Pixels
 
 import precise_runner
 from precise_runner import PreciseEngine
 from precise_runner import PreciseRunner
+from pyaudio import paInt16
+from pyaudio import PyAudio
+
+from common import int_or_str
+from common.utils.context import no_alsa_err
+from common.utils.io import init_logger
+from common.utils.rabbit import BlockingQueuePublisher
+from common.utils.rabbit import get_amqp_uri_from_env
+from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
+from raspvan.constants import DEFAULT_EXCHANGE
+from raspvan.constants import DEFAULT_HOTWORD_ASR_TOPIC
+from raspvan.constants import HOTWORD_MODEL_ENV_VAR
+from raspvan.constants import PRECISE_ENGINE_ENV_VAR
+from raspvan.constants import Q_EXCHANGE_ENV_VAR
+from respeaker.pixels import Pixels
 
 logger = logging.getLogger(__name__)
-init_logger(level=logging.DEBUG, logger=logger)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 Q_TOPIC = "hotword.detected"
 CHUNK_SIZE = 2048

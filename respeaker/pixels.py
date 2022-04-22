@@ -1,8 +1,9 @@
+import logging
 import os
 import random
-import time
 import threading
-import logging
+import time
+
 from gpiozero import LED
 
 from common.utils.io import init_logger
@@ -19,7 +20,7 @@ from respeaker.led.alexa_led_pattern import AlexaLedPattern
 from respeaker.led.google_home_led_pattern import GoogleHomeLedPattern
 
 logger = logging.getLogger(__name__)
-init_logger(level=logging.DEBUG, logger=logger)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 class Pixels(metaclass=Singleton):
@@ -48,9 +49,9 @@ class Pixels(metaclass=Singleton):
 
     def _run(self):
         while True:
-            logger.debug(f"💥💡 elements in the queue: {self.queue.qsize()}")
             func = self.queue.get()
-            logger.debug(f"💥💡 func: {func}")
+            # logger.debug(f"💡 elements in the queue: {self.queue.qsize()}")
+            # logger.debug(f"💡 func: {func.__name__}")
             self.pattern.stop = False
             func()
 

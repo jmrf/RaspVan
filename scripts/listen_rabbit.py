@@ -1,13 +1,14 @@
 import argparse
 import json
 import logging
+import os
 
-from common.utils.rabbit import BlockingQueueConsumer
 from common.utils.io import init_logger
+from common.utils.rabbit import BlockingQueueConsumer
 
 
 logger = logging.getLogger(__name__)
-init_logger(level=logging.DEBUG, logger=logger)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 def on_event(event):
