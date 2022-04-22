@@ -5,13 +5,17 @@ import json
 import logging
 
 from asr.client import ASRClient
-from asr.client import int_or_str
 
+from common import int_or_str
 from common.utils.io import init_logger
 from common.utils.exec import run_sync
-from common.utils.rabbit import BlockingQueueConsumer
+from common.utils.rabbit import BlockingQueueConsumer, get_amqp_uri_from_env
 
-from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
+from raspvan.constants import (
+    AUDIO_DEVICE_ID_ENV_VAR,
+    DEFAULT_EXCHANGE,
+    DEFAULT_HOTWORD_ASR_TOPIC,
+)
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
 
 from respeaker.pixels import Pixels
@@ -19,11 +23,6 @@ from respeaker.pixels import Pixels
 
 logger = logging.getLogger(__name__)
 init_logger(level=logging.DEBUG, logger=logger)
-
-AUDIO_DEVICE = int(os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0))
-
-
-logger.info(f"🎤 Using Audio Device: {AUDIO_DEVICE}")
 
 
 async def callback(event):
@@ -39,14 +38,25 @@ async def callback(event):
     finally:
         pixels.off()
 
-    logger.debug(f"🎤 Recognized: {text}")
+    logger.debug(f"👂️ Recognized: {text}")
 
 
 def get_args():
     parser = argparse.ArgumentParser()
 
     comm_opts = parser.add_argument_group("Routing options")
-    comm_opts.add_argument("--topic", "-t", help="topic as a routing key")
+    comm_opts.add_argument(
+        "--exchange",
+        "-x",
+        help="queue exchange name",
+        default=os.getenv(Q_EXCHANGE_ENV_VAR, DEFAULT_EXCHANGE),
+    )
+    comm_opts.add_argument(
+        "--topic",
+        "-t",
+        help="topic as a routing key",
+        default=DEFAULT_HOTWORD_ASR_TOPIC,
+    )
 
     vad_opts = parser.add_argument_group("VAD options")
     vad_opts.add_argument(
@@ -84,33 +94,37 @@ async def main():
     args = get_args()
 
     try:
-        if not args.topic:
-            raise ValueError(
-                "A topic must be provided when consuming from an exchange "
-                f"via '--topic' or setting '{Q_EXCHANGE_ENV_VAR}' env.variable."
-            )
-
         # Init ASR parameters
         sample_rate = args.samplerate
         device_id = args.device
+
+        logger.info(
+            f"🎙️ Using Audio Device: {args.device} "
+            f"(sampling rate: {args.samplerate} Hz)"
+        )
+
+        # Init the Pixels client
         pixels = Pixels()
 
         # Init the ASR Client
         asr = ASRClient(args.uri, args.vad_aggressiveness)
 
         # Init the triggering queue
-        exchange_name = os.getenv(Q_EXCHANGE_ENV_VAR)
-        exchange_type = "topic"
-        routing_keys = [args.topic]
+        amqp_host, amqp_port = get_amqp_uri_from_env()
+        logger.debug(f"rabbit hot: {amqp_host}, rabbit port: {amqp_port}")
+        logger.info(
+            f"🐇 Connecting to exchange: {args.exchange} " f"(topics: {args.topic})"
+        )
 
         consumer = BlockingQueueConsumer(
-            "localhost",
+            host=amqp_host,
+            port=amqp_port,
             on_event=lambda e: run_sync(callback, e),
             on_done=lambda: pixels.off(),
             load_func=json.loads,
-            routing_keys=routing_keys,
-            exchange_name=exchange_name,
-            exchange_type=exchange_type,
+            routing_keys=[args.topic],
+            exchange_name=args.exchange,
+            exchange_type="topic",
             queue_name="asr",
         )
         logger.info("👹 Starting consuming from queue...")

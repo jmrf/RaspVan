@@ -115,6 +115,8 @@ python -m raspvan.workers.asr
 ```
 
 
+
+
 ### Respeaker
 
 We use [respeaker 4mic hat]() as microphone and visual feedbac with its LED array.
@@ -150,6 +152,41 @@ And install all the python dependencies
 ```bash
 pip install -r requirements.txt
 ```
+
+
+### Finding the sound input device ID
+
+First list all audio devices:
+
+```bash
+python -m respeaker.get_audio_device_index
+```
+
+You should get a table simlar to this:
+
+```bash
+┏━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index ┃ Name     ┃ Max Input Channels ┃ Max Output Channels ┃
+┡━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┩
+│     0 │ upmix    │                  0 │                   8 │
+│     1 │ vdownmix │                  0 │                   6 │
+│     2 │ dmix     │                  0 │                   2 │
+│     3 │ default  │                128 │                 128 │
+└───────┴──────────┴────────────────────┴─────────────────────┘
+```
+
+Device with **index 3**, which can handle several input and output channels,
+is the one to pass to the `hotword` and `ASR` workers.
+
+> ⚠️ ALSA won't allow for audio devices to be shared,
+> i.e.: accessed simultaneously by more than one application
+> when using the sound card directly. ⚠️
+>
+> Solution: Use the pcm devices, i.e.: plugins. Specifically the dsnoop
+> (to have shared input between processes) and dmix (to have several audio outputs on one card).
+>
+> Copy [config/.asoundrc](config/.asoundrc) to `~./asoundrc`
+
 
 <details>
   <summary>⚠️ Probably deprecated. Click to expand!</summary>

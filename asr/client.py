@@ -7,6 +7,7 @@ import wave
 import webrtcvad
 import websockets
 import sounddevice as sd
+from common import int_or_str
 
 from common.utils.io import init_logger
 from respeaker.pixels import Pixels
@@ -14,14 +15,6 @@ from respeaker.pixels import Pixels
 
 logger = logging.getLogger(__name__)
 init_logger(level=logging.DEBUG, logger=logger)
-
-
-def int_or_str(text):
-    """Helper function for argument parsing."""
-    try:
-        return int(text)
-    except ValueError:
-        return text
 
 
 class ASRClient:
@@ -130,16 +123,14 @@ class ASRClient:
 
                             self.pixels.speak()
 
-                        else:
-                            if total_seconds_no_voice >= MAX_SECONDS_NO_VOICE:
-                                logger.debug("🚧 Breaking")
-                                break
+                    total_seconds_no_voice += asr_block_ms / 1000
+                    # Reset the buffers
+                    buffer = []
+                    vads = []
 
-                            total_seconds_no_voice += asr_block_ms / 1000
-
-                        # Reset the buffers
-                        buffer = []
-                        vads = []
+                    if total_seconds_no_voice >= MAX_SECONDS_NO_VOICE:
+                        logger.debug("🚧 Breaking")
+                        break
 
                 self.pixels.off()
 

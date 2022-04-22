@@ -1,3 +1,4 @@
+import os
 import logging
 import time
 from typing import Callable
@@ -6,9 +7,38 @@ from typing import Tuple
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
+from common.utils.io import init_logger
+
+from raspvan.constants import (
+    DEFAULT_RABBITMQ_HOST,
+    DEFAULT_RABBITMQ_PORT,
+    RABBITMQ_HOST_ENV_VAR,
+    RABBITMQ_PORT_ENV_VAR,
+)
 
 
 logger = logging.getLogger(__name__)
+init_logger(level=logging.DEBUG, logger=logger)
+
+
+def get_amqp_uri_from_env():
+    rabbit_host = os.getenv(RABBITMQ_HOST_ENV_VAR)
+    if rabbit_host is None:
+        logger.warning(
+            f"🐇 env.var '{RABBITMQ_HOST_ENV_VAR}' not set. "
+            f"Defaulting to: '{DEFAULT_RABBITMQ_HOST}'"
+        )
+        rabbit_host = DEFAULT_RABBITMQ_HOST
+
+    rabbit_port = os.getenv(RABBITMQ_PORT_ENV_VAR)
+    if rabbit_port is None:
+        logger.warning(
+            f"🐇 env.var '{RABBITMQ_PORT_ENV_VAR}' not set. "
+            f"Defaulting to: '{DEFAULT_RABBITMQ_PORT}'"
+        )
+        rabbit_port = DEFAULT_RABBITMQ_PORT
+
+    return rabbit_host, int(rabbit_port)
 
 
 def get_q_count(channel, q_name):
@@ -30,7 +60,8 @@ class BaseQueueClient:
 
     def __init__(
         self,
-        amqp_uri: str,
+        host: str = None,
+        port: int = None,
         blocked_timeout: int = 10,
         q_lim: int = None,
         *args,
@@ -40,7 +71,8 @@ class BaseQueueClient:
         self.queue_name = None
         self.exchange_name = None
         self.exchange_type = None
-        self._amqp_uri = amqp_uri
+        self.host = host
+        self.port = port
         self._timeout = blocked_timeout
         self.q_lim = q_lim or -1
 
@@ -57,7 +89,11 @@ class BaseQueueClient:
         if self.q_lim > 0 and self.exchange_name:
             logger.warning(f"🐇 Queue limit will be ignored when sending to an exchange")
 
-        logger.info(f"🐇 @ {self._amqp_uri} | {self.queue_name or self.exchange_name}")
+        logger.info(
+            f"🐇 @ {self.host}:{self.port} "
+            f"| queue: {self.queue_name} "
+            f"| exchange: {self.exchange_name}"
+        )
 
     def declare_queue(
         self,
@@ -100,7 +136,10 @@ class BaseQueueClient:
             # for connection no to die while blocked waiting for inputs
             # we must set the heartbeat to 0 (although is discouraged)
             pika.ConnectionParameters(
-                self._amqp_uri, blocked_connection_timeout=self._timeout, heartbeat=0
+                self.host,
+                self.port,
+                blocked_connection_timeout=self._timeout,
+                heartbeat=0,
             )
         )
         channel = connection.channel()
@@ -111,14 +150,15 @@ class BaseQueueClient:
 class BlockingQueuePublisher(BaseQueueClient):
     def __init__(
         self,
-        amqp_uri: str,
+        host: str = None,
+        port: int = None,
         queue_name: str = None,
         exchange_name: str = None,
         exchange_type: str = None,
         *args,
         **kwargs,
     ):
-        super().__init__(amqp_uri, *args, **kwargs)
+        super().__init__(host, port, *args, **kwargs)
         self.queue_name = queue_name
         self.exchange_name = exchange_name or ""
         self.exchange_type = exchange_type
@@ -138,7 +178,7 @@ class BlockingQueuePublisher(BaseQueueClient):
                 wait_on_q_limit(channel, self.queue_name, lim=self.q_lim)
 
         logger.debug(
-            f"Publishing to: {self.exchange_name} | {self.queue_name} ({topic})"
+            f"Publishing to: {self.exchange_name} | q:{self.queue_name} (topic:{topic})"
         )
         channel.basic_publish(
             exchange=self.exchange_name,
@@ -159,7 +199,6 @@ class BlockingQueueConsumer(BaseQueueClient):
 
     def __init__(
         self,
-        amqp_uri: str,
         on_event: Callable,
         on_done: Callable,
         load_func: Callable,
@@ -168,11 +207,14 @@ class BlockingQueueConsumer(BaseQueueClient):
         exchange_type: str = None,
         routing_keys: List = None,
         prefetch_count: int = None,
+        host: str = None,
+        port: int = None,
         *args,
         **kwargs,
     ):
         super().__init__(
-            amqp_uri,
+            host,
+            port,
             *args,
             **kwargs,
         )
