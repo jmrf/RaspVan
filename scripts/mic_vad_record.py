@@ -12,6 +12,7 @@ from asr import calc_block_ms
 from asr import raw_stream_to_numpy
 from asr.vad import VAD
 from common import int_or_str
+from respeaker.pixels import Pixels
 
 
 console = Console()
@@ -82,6 +83,7 @@ def record_to_file(
         q.put(bytes(indata))
 
     try:
+        pixels = Pixels()
         q = queue.Queue()
 
         stop = 0
@@ -109,12 +111,14 @@ def record_to_file(
                 dtype="int16",
             ) as device:
                 with Halo(f"Recoding to {fname}...\n"):
+                    pixels.think()
                     while True:
                         pcm_data = q.get()
 
                         # check VAD
                         stop += int(not vad.is_voice(pcm_data, sample_rate))
                         if stop > max_silence_blocks:
+                            pixels.off()
                             console.print("\nStopping recoding...", style="dim")
                             break
 
@@ -149,7 +153,7 @@ def main():
             )
             i += 1
 
-            input("Press Enter when ready to record the next audio clip")
+            input("Press Enter when ready to record the next audio clip\n\n")
     except KeyboardInterrupt:
         console.print("Exiting...", style="cyan")
     except Exception as e:
