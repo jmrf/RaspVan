@@ -8,17 +8,17 @@ import wave
 from typing import Dict
 
 import sounddevice as sd
-import webrtcvad
 import websockets
-from funcy import chunks
 
+from asr import calc_block_size
+from asr.vad import VAD
 from common import int_or_str
 from common.utils.io import init_logger
 from respeaker.pixels import Pixels
 
 
 logger = logging.getLogger(__name__)
-init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
+init_logger(level=os.getenv("LOG_LEVEL", logging.DEBUG), logger=logger)
 
 
 class ASRClient:
@@ -29,12 +29,12 @@ class ASRClient:
     VAD_BLOCK_MS = 30
     VOICE_TH = 0.9
 
-    def __init__(self, asr_uri: str, vad_aggressiveness: int = 2) -> None:
+    def __init__(self, asr_uri: str, vad: VAD) -> None:
         self.asr_uri = asr_uri
         self.loop = asyncio.get_running_loop()
         self.audio_queue = asyncio.Queue()
-        self.vad = webrtcvad.Vad(vad_aggressiveness)
         self.pixels = Pixels()
+        self.vad = vad
 
     async def from_wave(self, wave_file: str) -> Dict[str, str]:
         async with websockets.connect(self.asr_uri) as websocket:
@@ -56,22 +56,6 @@ class ASRClient:
 
             return json.loads(await websocket.recv())
 
-    def _is_voice(self, pcm_data, sample_rate, vad_block_size):
-        vads = []
-        # VAD: chop the pcm buffer is chunks of max 30ms and do VAD
-        vad_bytes = 2 * vad_block_size
-        for pcm_chunk in chunks(vad_bytes, pcm_data):
-            _is_speech = self.vad.is_speech(pcm_chunk, int(sample_rate))
-            vads.append(_is_speech)
-            # logger.debug(
-            #     f"VADing a pcm of {len(pcm_chunk)} bytes "
-            #     f"(total: {len(pcm_data)}) -> speech: {_is_speech}"
-            # )
-
-        # Are 90% of the frames voice?
-        is_voice = len(vads) and sum(vads) >= self.VOICE_TH * len(vads)
-        return is_voice
-
     async def stream_mic(self, sample_rate: float, device_id: int) -> Dict[str, str]:
         def _callback(indata, frames, time, status):
             """This is called (from a separate thread) for each audio block."""
@@ -89,7 +73,7 @@ class ASRClient:
 
         # Compute pcm buffer parameters
         asr_block_ms = self.ASR_BLOCK_SIZE / sample_rate * 1000  # e.g: 250ms
-        vad_block_size = int(self.ASR_BLOCK_SIZE * self.VAD_BLOCK_MS // asr_block_ms)
+        vad_block_size = calc_block_size(self.VAD_BLOCK_MS, sample_rate)
 
         logger.debug(
             f"ASR Block ms: {asr_block_ms} | VAD block size: {vad_block_size} "
@@ -119,7 +103,7 @@ class ASRClient:
                     i += 1
                     data = await self.audio_queue.get()
 
-                    if self._is_voice(data, device.samplerate, vad_block_size):
+                    if self.vad.is_voice(data, device.samplerate, self.VAD_BLOCK_MS):
                         # self.pixels.think()
                         # NOTE: While we run the ASR the microphone continues
                         # to collect audio frames and potentially we can
@@ -180,7 +164,8 @@ async def main():
 
     args = parser.parse_args()
 
-    asr = ASRClient(args.uri, args.vad_aggressiveness)
+    vad = VAD(args.vad_aggressiveness)
+    asr = ASRClient(args.uri, vad)
     if args.file:
         res = await asr.from_wave(args.file)
     else:

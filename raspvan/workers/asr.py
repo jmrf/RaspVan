@@ -5,6 +5,7 @@ import logging
 import os
 
 from asr.client import ASRClient
+from asr.vad import VAD
 from common import int_or_str
 from common.utils.exec import run_sync
 from common.utils.io import init_logger
@@ -103,7 +104,8 @@ async def main():
         pixels = Pixels()
 
         # Init the ASR Client
-        asr = ASRClient(args.uri, args.vad_aggressiveness)
+        vad = VAD(args.vad_aggressiveness)
+        asr = ASRClient(args.uri, vad)
 
         # Init the triggering queue
         amqp_host, amqp_port = get_amqp_uri_from_env()
