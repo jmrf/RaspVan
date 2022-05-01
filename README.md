@@ -115,6 +115,21 @@ python -m raspvan.workers.asr
 ```
 
 
+### NLU
+
+> TBD
+
+> 💡 It is advices to collect some voice samples and run them through ASR to use
+> these as training samples for the NLU component to train it on real data.
+
+To collect voice samples and apply ASR for the NLU, run:
+
+```bash
+# discover the audio input device to use and how many input channel are available
+python -m scripts.mic_vad_record -l
+# Run voice recording
+python -m scripts.mic_vad_record sample.wav -d 5 -c 4
+```
 
 
 ### Respeaker
