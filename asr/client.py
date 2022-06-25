@@ -144,6 +144,7 @@ class ASRClient:
 
                 logger.debug(f"⏳️ Total run time: {time.time() - start}")
                 await websocket.send('{"eof" : 1}')
+
                 return text
 
 
