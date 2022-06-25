@@ -9,6 +9,8 @@ x-logging:
 services:
 
   asr-server:
+    # To run with the default english model:
+    #   python vosk-server/websocket/asr_server.py /app/model
     # Other models can be loaded using the mount volume:
     # e.g: python vosk-server/websocket/asr_server.py /app/models/vosk-model-small-es-0.22
     image: jmrf/vosk-server-rpi:0.3.32-cp37
@@ -20,7 +22,7 @@ services:
     ports:
       - 2700:2700
     command: >
-      python vosk-server/websocket/asr_server.py /app/model
+      python vosk-server/websocket/asr_server.py /app/models/vosk-model-small-es-0.22
     devices:
       - /dev/snd:/dev/snd  # Access to ALSA device
 

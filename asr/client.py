@@ -18,14 +18,14 @@ from respeaker.pixels import Pixels
 
 
 logger = logging.getLogger(__name__)
-init_logger(level=os.getenv("LOG_LEVEL", logging.DEBUG), logger=logger)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 class ASRClient:
 
     # TODO: Make as parameters
     MAX_SECONDS_NO_VOICE = 3
-    MAX_SECONDS_VOICE = 3
+    MAX_SECONDS_VOICE = 5
     ASR_BLOCK_SIZE = 4000
     VAD_BLOCK_MS = 30
     VOICE_TH = 0.9
@@ -69,8 +69,10 @@ class ASRClient:
             res = json.loads(await websocket.recv())
             logger.debug(res)
 
-            if "text" in res:
-                logger.info(f"ASR result: {res['text']}")
+            return res.get("text", "")
+
+            # if "text" in res:
+            #     logger.notice(f"ASR result: {res['text']}")
 
         # Compute pcm buffer parameters
         asr_block_ms = self.ASR_BLOCK_SIZE / sample_rate * 1000  # e.g: 250ms
@@ -88,6 +90,9 @@ class ASRClient:
             channels=1,
             callback=_callback,
         ) as device:
+
+            text = ""
+
             # Blocks of size 4000 @ 16kHz are 250 ms of audio
             # however for VAD we need 10, 20 or 30 ms blocks
             async with websockets.connect(self.asr_uri) as websocket:
@@ -105,46 +110,41 @@ class ASRClient:
                     data = await self.audio_queue.get()
 
                     if self.vad.is_voice(data, device.samplerate, self.VAD_BLOCK_MS):
-                        # self.pixels.think()
-                        # NOTE: While we run the ASR the microphone continues
-                        # to collect audio frames and potentially we can
-                        # break due to having 'silent' audio blocks before
-                        # the ASR has completed!
-                        logger.debug(f"🎙️ [block {i}] Running ASR! ({len(data)})")
-                        await _do_asr(data)
-                        # t_last_voice = time.time()
-                        # self.pixels.speak()
                         total_seconds_no_voice = 0
                         total_seconds_voice += asr_block_ms / 1000
                     else:
                         # time from microphone perspective
                         total_seconds_no_voice += asr_block_ms / 1000
 
-                    # Alternatively: time from last ASR result:
-                    # total_seconds_no_voice = time.time() - t_last_voice
                     if total_seconds_no_voice >= self.MAX_SECONDS_NO_VOICE:
-                        logger.notice(
+                        logger.info(
                             f"🛑 Stopped listening after {total_seconds_no_voice}s "
                             f"without detecting voice (block {i})"
                         )
                         break
 
                     if total_seconds_voice >= self.MAX_SECONDS_VOICE:
-                        logger.notice(
+                        logger.info(
                             f"🛑 Stopped listening after {total_seconds_voice}s "
                             f"capturing voice (block {i})"
                         )
                         break
 
+                    # NOTE: While we run the ASR the microphone continues
+                    # to collect audio frames and potentially we can
+                    # break due to having 'silent' audio blocks before
+                    # the ASR has completed!
+                    logger.debug(f"🎙️ [block {i}] Running ASR! ({len(data)})")
+                    text += await _do_asr(data)
+
                 self.pixels.off()
                 # empty the queue
                 for _ in range(self.audio_queue.qsize()):
-                    self.audio_queue.get_no_wait()
+                    self.audio_queue.get_nowait()
 
                 logger.debug(f"⏳️ Total run time: {time.time() - start}")
                 await websocket.send('{"eof" : 1}')
-
-                return json.loads(await websocket.recv())
+                return text
 
 
 async def main():

@@ -28,20 +28,19 @@ last_time_asr_completed = dt.now().isoformat()
 
 async def callback(event):
     global last_time_asr_completed
-    logger.info(f"🚀 Received a request to launch ASR: {event}")
     text = "😕"
     try:
         if event["timestamp"] <= last_time_asr_completed:
             return
-        res = await asr.stream_mic(sample_rate, device_id)
-        text = res["text"]
+
+        logger.info(f"🚀 Launching ASR: {event}")
+        text = await asr.stream_mic(sample_rate, device_id)
+        logger.info(f"👂️ Recognized: {text}")
     except Exception as e:
         logger.exception(f"Unknown error while runnig VAD/ASR callback: {e}")
     finally:
         last_time_asr_completed = dt.now().isoformat()
         pixels.off()
-
-    logger.info(f"👂️ Recognized: {text}")
 
 
 def get_args():
