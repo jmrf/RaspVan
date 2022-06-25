@@ -1,6 +1,5 @@
-import pkg_resources
-
 import _webrtcvad
+import pkg_resources
 
 __author__ = "John Wiseman jjwiseman@gmail.com"
 __copyright__ = "Copyright (C) 2016 John Wiseman"

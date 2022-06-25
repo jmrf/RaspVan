@@ -52,7 +52,7 @@ run-hotword:
 	python -m raspvan.workers.hotword -t hotword
 
 run-asr:
-	docker-compose up -d rabbit
+	docker-compose up -d rabbit asr-server
 	python -m raspvan.workers.asr -t hotword
 
 clean:

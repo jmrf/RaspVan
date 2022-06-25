@@ -1,5 +1,6 @@
 import json
 import os
+
 import pika
 
 # Pika (rabbitMQ) client setup

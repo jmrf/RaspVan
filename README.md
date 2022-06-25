@@ -69,15 +69,26 @@ the individual readme files.
 ├── scripts
 ├── setup.cfg
 └── raspvan                 # client and server systems
-
 ```
 
+
+Most of the following components communicate through `AMQP` using `rabbitMQ`.
+
+To run the broker backbone glueing all together:
+
+```bash
+docker-compose up -d rabbit
+```
 
 ### Hotword
 
 > ⚠️ TBD
 
+To run:
+
 ```bash
+source .env
+source .venv/bin/activate
 python -m raspvan.workers.hotword
 ```
 
@@ -99,11 +110,10 @@ docker-compose up asr-server
 Then, run one of the clients:
 
 ```bash
+source .env
 source .venv/bin/activate
-
 # ASR from a audio wav file
 python -m  asr.client -v 2 -f <name-of-the-16kHz-wav-file>
-
 # Or ASR listening from the microphone
 python -m  asr.client -v 2 -d <microphone-ID>
 ```

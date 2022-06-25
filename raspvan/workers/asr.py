@@ -3,6 +3,7 @@ import asyncio
 import json
 import logging
 import os
+from datetime import datetime as dt
 
 from asr.client import ASRClient
 from asr.vad import VAD
@@ -22,17 +23,22 @@ logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
+last_time_asr_completed = dt.now().isoformat()
+
+
 async def callback(event):
-    logger.info("🚀 Received a request to launch ASR")
+    global last_time_asr_completed
+    logger.info(f"🚀 Received a request to launch ASR: {event}")
     text = "😕"
     try:
-        # async with no_alsa_err:
-        #     async with timeout(asr_max_time):
+        if event["timestamp"] <= last_time_asr_completed:
+            return
         res = await asr.stream_mic(sample_rate, device_id)
         text = res["text"]
     except Exception as e:
         logger.exception(f"Unknown error while runnig VAD/ASR callback: {e}")
     finally:
+        last_time_asr_completed = dt.now().isoformat()
         pixels.off()
 
     logger.info(f"👂️ Recognized: {text}")

@@ -1,8 +1,9 @@
-import pyaudio
 import wave
 
-from respeaker.constants import RESPEAKER_RATE
+import pyaudio
+
 from respeaker.constants import RESPEAKER_CHANNELS
+from respeaker.constants import RESPEAKER_RATE
 from respeaker.constants import RESPEAKER_WIDTH
 
 RESPEAKER_RATE = 16000

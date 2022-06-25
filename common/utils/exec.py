@@ -1,14 +1,13 @@
 import asyncio
-import nest_asyncio
-
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
-from typing import Text
 from typing import Tuple
 from typing import Union
+
+import nest_asyncio
 
 
 # https://stackoverflow.com/questions/46827007/runtimeerror-this-event-loop-is-already-running-in-python#56434301
@@ -26,14 +25,14 @@ def run_sync(fn: Callable, *args, **kwargs):
 
 
 async def async_parallel_exec(
-    func_calls: List[Tuple[Union[Text, int], Callable, Tuple]],
+    func_calls: List[Tuple[Union[str, int], Callable, Tuple]],
     max_workers: int = 20,
     as_mapping: bool = True,
 ) -> Union[Dict[Any, Any], List[Any]]:
     """Calls a series of functions in parallel. Maps each result to the
     function key provided to return results in the same order as requested
     Args:
-        func_calls (List[Tuple[Union[Text, int], Callable, Tuple[Any]]]):
+        func_calls (List[Tuple[Union[str, int], Callable, Tuple[Any]]]):
             list of tuples; (function ID, function, function parameters)
         max_workers (int, optional): [description]. Defaults to 10.
     """

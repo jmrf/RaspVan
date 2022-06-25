@@ -1,6 +1,6 @@
 import os
-import time
 import random
+import time
 
 import precise_runner
 from precise_runner import PreciseEngine

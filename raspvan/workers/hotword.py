@@ -5,6 +5,7 @@ import os
 import subprocess
 import threading
 import time
+from datetime import datetime as dt
 from time import sleep
 from typing import Callable
 
@@ -68,7 +69,10 @@ class ASRTrigger:
             self.pixels.wakeup()
             SoundThread().start()
             # Send activation message through queue
-            self.publisher.send_message(json.dumps(["active"]), topic=Q_TOPIC)
+            self.publisher.send_message(
+                json.dumps([{"status": "detected", "timestamp": dt.now().isoformat()}]),
+                topic=Q_TOPIC,
+            )
         except Exception as e:
             logger.error(f"Error sending Queue message: {e}")
         finally:

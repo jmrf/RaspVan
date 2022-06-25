@@ -3,6 +3,7 @@ import os
 import time
 from typing import Callable
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 import pika
@@ -55,6 +56,7 @@ def wait_on_q_limit(channel: BlockingChannel, q_name: str, lim: int, sleep: int 
 class BaseQueueClient:
 
     VALID_EXCHANGE_TYPES = ["fanout", "topic", "headers"]
+    DEFAULT_TCP_KEEPIDLE = 60 * 5  # 5 minutes
 
     def __init__(
         self,
@@ -129,7 +131,10 @@ class BaseQueueClient:
             durable=durable,
         )
 
-    def connect(self) -> Tuple[pika.BlockingConnection, BlockingChannel]:
+    def connect(
+        self, tcp_keepidle: Optional[int] = None
+    ) -> Tuple[pika.BlockingConnection, BlockingChannel]:
+        tcp_options = dict(TCP_KEEPIDLE=tcp_keepidle or self.DEFAULT_TCP_KEEPIDLE)
         connection = pika.BlockingConnection(
             # for connection no to die while blocked waiting for inputs
             # we must set the heartbeat to 0 (although is discouraged)
@@ -138,6 +143,7 @@ class BaseQueueClient:
                 self.port,
                 blocked_connection_timeout=self._timeout,
                 heartbeat=0,
+                tcp_options=tcp_options,
             )
         )
         channel = connection.channel()
