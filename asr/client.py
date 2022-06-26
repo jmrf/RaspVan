@@ -112,23 +112,23 @@ class ASRClient:
                     if self.vad.is_voice(data, device.samplerate, self.VAD_BLOCK_MS):
                         total_seconds_no_voice = 0
                         total_seconds_voice += asr_block_ms / 1000
+
+                        if total_seconds_voice >= self.MAX_SECONDS_VOICE:
+                            logger.info(
+                                f"🛑 Stopped listening after {total_seconds_voice}s "
+                                f"capturing voice (block {i})"
+                            )
+                            break
                     else:
                         # time from microphone perspective
                         total_seconds_no_voice += asr_block_ms / 1000
 
-                    if total_seconds_no_voice >= self.MAX_SECONDS_NO_VOICE:
-                        logger.info(
-                            f"🛑 Stopped listening after {total_seconds_no_voice}s "
-                            f"without detecting voice (block {i})"
-                        )
-                        break
-
-                    if total_seconds_voice >= self.MAX_SECONDS_VOICE:
-                        logger.info(
-                            f"🛑 Stopped listening after {total_seconds_voice}s "
-                            f"capturing voice (block {i})"
-                        )
-                        break
+                        if total_seconds_no_voice >= self.MAX_SECONDS_NO_VOICE:
+                            logger.info(
+                                f"🛑 Stopped listening after {total_seconds_no_voice}s "
+                                f"without detecting voice (block {i})"
+                            )
+                            break
 
                     # NOTE: While we run the ASR the microphone continues
                     # to collect audio frames and potentially we can
@@ -137,13 +137,15 @@ class ASRClient:
                     logger.debug(f"🎙️ [block {i}] Running ASR! ({len(data)})")
                     text += await _do_asr(data)
 
+                # close up pixels and asr-server sock stream
                 self.pixels.off()
+                await websocket.send('{"eof" : 1}')
+
                 # empty the queue
                 for _ in range(self.audio_queue.qsize()):
                     self.audio_queue.get_nowait()
 
                 logger.debug(f"⏳️ Total run time: {time.time() - start}")
-                await websocket.send('{"eof" : 1}')
 
                 return text
 

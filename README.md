@@ -127,7 +127,13 @@ python -m raspvan.workers.asr
 
 ### NLU
 
-> TBD
+The NLU engine has two parts:
+
+ - A Spacy vectorizer + SVM classifier for **intent classification**
+ - A `Conditional Random Field` (CRF) for **entity extraction**
+
+> 💡 Check the details in this Colab notebook: [simple-NLU.ipynb](https://colab.research.google.com/drive/1q6Ei9SRdD8Pdg65Pvp8porRyFlQXD4w6#scrollTo=mK2GbpHan6k7)
+
 
 > 💡 It is advices to collect some voice samples and run them through ASR to use
 > these as training samples for the NLU component to train it on real data.

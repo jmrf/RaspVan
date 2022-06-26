@@ -1,0 +1,25 @@
+,text,id,annotator,annotation_id,created_at,updated_at,lead_time,entities,intent
+1,Switch on the front light,1,1,51,2022-04-27T13:11:44.530686Z,2022-04-27T13:11:44.530762Z,6.803999999999999,"[{""start"": 14, ""end"": 19, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-on
+2,Switch on the main light,2,1,50,2022-04-27T13:10:43.290835Z,2022-04-27T13:10:50.218199Z,654.835,"[{""start"": 14, ""end"": 18, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+3,turn on all the lights,3,1,49,2022-04-27T13:10:41.092146Z,2022-04-27T13:10:41.092236Z,4.5489999999999995,"[{""start"": 8, ""end"": 11, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-on
+4,"please, turn off the back light",4,1,48,2022-04-27T13:10:35.092738Z,2022-04-27T13:10:35.092793Z,3.5010000000000003,"[{""start"": 21, ""end"": 25, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+5,Switch on the front light,5,1,47,2022-04-27T13:10:23.745837Z,2022-04-27T13:10:23.745940Z,3.215,"[{""start"": 14, ""end"": 19, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-on
+6,put all the lights off,6,1,46,2022-04-27T13:10:18.104217Z,2022-04-27T13:10:18.104322Z,2.336,"[{""start"": 4, ""end"": 7, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+7,turn the middle light on,7,1,45,2022-04-27T13:10:14.419465Z,2022-04-27T13:10:14.419520Z,1.742,"[{""start"": 9, ""end"": 15, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-on
+8,make the front light off,8,1,44,2022-04-27T13:10:11.440771Z,2022-04-27T13:10:11.440877Z,3.002,"[{""start"": 9, ""end"": 14, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-off
+9,Switch off the main lights,9,1,43,2022-04-27T13:10:05.521179Z,2022-04-27T13:10:05.521282Z,1.464,"[{""start"": 15, ""end"": 19, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-off
+10,Switch on the front light,10,1,42,2022-04-27T13:10:02.831542Z,2022-04-27T13:10:02.831645Z,1.4809999999999999,"[{""start"": 14, ""end"": 19, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-on
+11,Switch on the main light,11,1,41,2022-04-27T13:09:59.931792Z,2022-04-27T13:09:59.932040Z,1.199,"[{""start"": 14, ""end"": 18, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+12,turn on all the lights,12,1,40,2022-04-27T13:09:57.775684Z,2022-04-27T13:09:57.775788Z,2.342,"[{""start"": 8, ""end"": 11, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-on
+13,"please, turn off the back light",13,1,39,2022-04-27T13:09:53.971811Z,2022-04-27T13:09:53.971950Z,5.035,"[{""start"": 21, ""end"": 25, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+14,Switch on the front light,14,1,38,2022-04-27T13:09:47.267117Z,2022-04-27T13:09:47.267344Z,5.11,"[{""start"": 14, ""end"": 19, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-on
+15,put all the lights off,15,1,37,2022-04-27T13:09:40.462214Z,2022-04-27T13:09:40.462270Z,5.305,"[{""start"": 4, ""end"": 7, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+16,turn the middle light on,16,1,36,2022-04-27T13:09:33.996159Z,2022-04-27T13:09:33.996257Z,4.446000000000001,"[{""start"": 9, ""end"": 15, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-on
+17,make the front light off,17,1,35,2022-04-27T13:09:28.128723Z,2022-04-27T13:09:28.128788Z,4.335,"[{""start"": 9, ""end"": 14, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-off
+18,get the middle light off,18,1,34,2022-04-27T10:31:06.429295Z,2022-04-27T10:31:06.429340Z,40.06,"[{""start"": 8, ""end"": 14, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-off
+19,turn off the back and front lights,19,1,33,2022-04-27T10:30:21.351647Z,2022-04-27T10:30:21.351766Z,20.095,"[{""start"": 13, ""end"": 17, ""text"": ""back"", ""labels"": [""light_name""]}, {""start"": 22, ""end"": 27, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-off
+20,switch on the middle and main lights,20,1,32,2022-04-27T10:29:59.870459Z,2022-04-27T10:29:59.870497Z,12.92,"[{""start"": 14, ""end"": 20, ""text"": ""middle"", ""labels"": [""light_name""]}, {""start"": 25, ""end"": 29, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+21,put off all the lights,21,1,31,2022-04-27T10:29:45.554105Z,2022-04-27T10:29:45.554149Z,3.802,"[{""start"": 8, ""end"": 11, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+22,get those main lights on,22,1,30,2022-04-27T10:29:40.421336Z,2022-04-27T10:29:40.421401Z,5.652,"[{""start"": 10, ""end"": 14, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+23,please turn off the front and back lights,23,1,29,2022-04-27T10:29:32.859410Z,2022-04-27T10:29:32.859501Z,1.857,"[{""start"": 20, ""end"": 25, ""text"": ""front"", ""labels"": [""light_name""]}, {""start"": 30, ""end"": 34, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+24,turn off the main light please,24,1,28,2022-04-27T10:10:52.467077Z,2022-04-27T10:10:52.467116Z,64.146,"[{""start"": 13, ""end"": 17, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-off

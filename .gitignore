@@ -11,11 +11,11 @@
 *.bak
 
 # directories
-__pycache__/
+**/__pycache__/
+**/.nlu_env/
+**/.venv/
 .cache/
 .vscode/
-.venv/
-
 
 imgs/
 **/data/
