@@ -13,7 +13,6 @@
 
 # directories
 **/__pycache__/
-**/.nlu_env/
 **/.venv/
 .cache/
 .vscode/
