@@ -51,13 +51,3 @@ class IntentDetector:
         intent_probs = self.clf.predict_proba(x_vecs)
 
         return zip(intent_preds, intent_probs)
-
-
-if __name__ == "__main__":
-
-    import pandas as pd
-
-    train_df = pd.read_csv("nlu/samples/fiona-nlu-at-2022-04-27-13-12.csv")
-
-    intd = IntentDetector()
-    intd.train(train_df["text"].to_list(), train_df["label"].to_list())
