@@ -9,16 +9,18 @@ from sklearn.model_selection import train_test_split
 
 from nlu.entity_extractor import EntityTagger
 from nlu.entity_extractor import to_conll_format
-from nlu.intent_clf import IntentDetector
+from nlu.intent_clf import IntentPredictor
 
 
 def df_to_conll(df: pd.DataFrame, nlp):
     """Transform into CONLL format.
     The dataframe must have the following keys:
     - text (str): sentence sample
-    - entities: (str): json string with the entities list. Each with {text,start,end} keys
+    - entities: (str): json string with the entities list.
+                       Each with {text,start,end} keys
 
-    Returns a List of conll sentences. Each sentence is a list of tuples; (token, POS-tag, label)
+    Returns a List of conll sentences.
+    Each sentence is a list of tuples; (token, POS-tag, label)
     """
     sents = []
     for i, row in df.iterrows():
@@ -56,28 +58,32 @@ if __name__ == "__main__":
     x_train, x_test = df_train["text"], df_test["text"]
     y_train, y_test = df_train["intent"], df_test["intent"]
 
-    # Init the Intent classifier
-    intd = IntentDetector(C=C)
-    intd.train(x_train, y_train)
-
     # Load the just downloaded model
     nlp = spacy.load("en_core_web_sm")
+
+    # Init the Intent classifier
+    intd = IntentPredictor(nlp=nlp, C=C)
+    intd.train(x_train, y_train)
 
     # Transform to CoNLL 2002 format
     train_conll = df_to_conll(df_train, nlp)
     test_conll = df_to_conll(df_test, nlp)
 
     # Train the CRF tagger
-    entity_tagger = EntityTagger(c1=L1_c, c2=L2_c, max_iterations=max_iterations)
+    entity_tagger = EntityTagger(
+        c1=L1_c, c2=L2_c, max_iterations=max_iterations, nlp=nlp
+    )
     entity_tagger.fit(train_conll)
 
     if not os.path.exists(out_dir):
         os.makedirs(out_dir, exists_ok=True)
 
     print(f"💾 Saving Intent Detector to disk")
-    with open(os.path.join(out_dir, "intent-detecor.pkl"), "wb") as f:
-        pickle.dump(intd, f)
+    with open(os.path.join(out_dir, "intent-clf.pkl"), "wb") as f:
+        pickle.dump(intd.clf, f)
+    with open(os.path.join(out_dir, "intent-le.pkl"), "wb") as f:
+        pickle.dump(intd.le, f)
 
     print(f"💾 Saving Entity Tagger to disk")
     with open(os.path.join(out_dir, "entity-tagger.pkl"), "wb") as f:
-        pickle.dump(entity_tagger, f)
+        pickle.dump(entity_tagger.tagger, f)

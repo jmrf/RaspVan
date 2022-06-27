@@ -1,10 +1,13 @@
 import logging
 import os
+import pickle
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 import sklearn_crfsuite
+import spacy
 
 from common.utils.io import init_logger
 
@@ -19,6 +22,7 @@ conll_sent = List[Tuple[str, str, str]]
 class EntityTagger:
 
     default_config = {
+        "spacy_pos_model": "en_core_web_sm",
         "L1_c": 0.1,  # coefficient for L1 penalty
         "L2_c": 0.1,  # coefficient for L2 penalty
         "max_iterations": 50,  # early stopping,
@@ -32,7 +36,14 @@ class EntityTagger:
         max_iterations: int = None,
         all_transitions: bool = True,
         verbose: bool = False,
+        nlp: Optional[spacy.language.Language] = None,
     ):
+        if nlp is not None:
+            self.nlp_pos = nlp
+        else:
+            logger.info(f"Loading Spacy POS model")
+            self.nlp_pos = nlp or spacy.load(self.default_config["spacy_pos_model"])
+
         self.tagger = sklearn_crfsuite.CRF(
             algorithm="lbfgs",
             c1=c1 or self.default_config["L1_c"],
@@ -43,12 +54,28 @@ class EntityTagger:
             verbose=verbose,
         )
 
+    @classmethod
+    def from_pretrained(
+        cls, tagger_pkl: str, nlp: Optional[spacy.language.Language] = None
+    ):
+        et = cls(nlp=nlp)
+
+        logger.info(f"Loading tagger CRF model")
+        with open(tagger_pkl, "rb") as f:
+            et.tagger = pickle.load(f)
+
+        return et
+
     def fit(self, sents: List[conll_sent]):
         x = [self._sent2features(s) for s in sents]
         y = [self._sent2labels(s) for s in sents]
         self.tagger.fit(x, y)
 
-    def predict(self, sents: List[conll_sent]) -> List[List[Tuple[str, str]]]:
+    def predict(self, sentences: List[str]) -> List[List[Tuple[str, str]]]:
+        # encode
+        sents = [
+            [(str(tok), tok.pos_) for tok in self.nlp_pos(sent)] for sent in sentences
+        ]
         x = [self._sent2features(s) for s in sents]
         y = self.tagger.predict(x)
         preds = []
