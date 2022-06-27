@@ -1,3 +1,5 @@
+import logging
+import os
 from typing import Any
 from typing import Dict
 from typing import List
@@ -5,8 +7,12 @@ from typing import Union
 
 import spacy
 
+from common.utils.io import init_logger
 from nlu.entity_extractor import EntityTagger
 from nlu.intent_clf import IntentPredictor
+
+logger = logging.getLogger(__name__)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 class NLUPipeline:
@@ -23,18 +29,17 @@ class NLUPipeline:
         self.et = EntityTagger.from_pretrained(tagger_pkl, nlp)
 
     def __call__(self, sentences: Union[List[str], str]) -> List[Dict[str, Any]]:
-        self.run(sentences)
-
-    def run(self, sentences: Union[List[str], str]) -> List[Dict[str, Any]]:
         if isinstance(sentences, str):
             sentences = [sentences]
 
         intents = self.ip.predict(sentences)
         entities = [
-            {"entity": tok[1].split("-")[1], "value": tok[0]}
+            [
+                {"entity": tok[1].split("-")[1], "value": tok[0]}
+                for tok in ent
+                if tok[1] != "O"
+            ]
             for ent in self.et.predict(sentences)
-            for tok in ent
-            if tok[1] != "O"
         ]
 
         return [
@@ -51,5 +56,4 @@ if __name__ == "__main__":
     )
 
     res = nlp(["switch off the back light", "turn on all the lights!"])
-
     print(res)
