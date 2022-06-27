@@ -127,6 +127,14 @@ python -m raspvan.workers.asr
 
 ### NLU
 
+> ⚠️ While the rest of the components use `numpy~=1.16` the NLU components requires
+> a newer version in order to work with `scikit`.
+>
+> The best thing if running locally is to **create a separate virtual environment**
+>
+> See [nlu/README.md](nlu/README.md)
+
+
 The NLU engine has two parts:
 
  - A Spacy vectorizer + SVM classifier for **intent classification**

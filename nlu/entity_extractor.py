@@ -16,7 +16,7 @@ init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 conll_sent = List[Tuple[str, str, str]]
 
 
-class Tagger:
+class EntityTagger:
 
     default_config = {
         "L1_c": 0.1,  # coefficient for L1 penalty

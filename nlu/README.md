@@ -25,23 +25,37 @@ We use [sklearn-crfsuite](https://github.com/TeamHG-Memex/sklearn-crfsuite) to e
 
 ## How To
 
-While the rest of the components use `numpy~=1.16` the NLU components requires
-a newer version in order to work with `scikit`.
+### Install
 
-Building the numpy wheel in the RPI can be a painfully slow process so to avoid
-the pain a possible solution is to cross-compile using docker `buildx`.
+
+Installing `Spacy` can be challenging in an Raspberry Pi.
+The advice is either to cross-compile or to use pre-built wheels.
+
+`Blis` and `Spacy` wheels can be found [here](https://github.com/hoefling/so-59927844)
+
+Alternatively you can cross-compile / build your own:
+
+<details>
+  <summary>Click to expand!</summary>
+
+
+Building the `blis`, `spacy` or `numpy` wheels in the RPI can be a painfully
+slow process so to avoid the suffering a possible solution is to cross-compile
+using docker `buildx`.
+
+The steps are as follows:
 
 1. Install buildx
 
-  https://github.com/jmrf/pyvosk-rpi/blob/main/scripts/init_multi-build.sh
+  You can use [this script](https://github.com/jmrf/pyvosk-rpi/blob/main/scripts/init_multi-build.sh)
 
 2. Run docker build (**in a work-station, not in the RPI!**):
 
   ```bash
   docker buildx build --push \
     --platform linux/arm/v7 \
-    -t jmrf/numpy-rpi:1.21.6-cp37 \
-    -f numpy_build.Dockerfile .
+    -t jmrf/simple-nlu-rpi:cp37 \
+    -f Dockerfile .
   ```
 
 3. Run the container (**in the RPI**)
@@ -54,6 +68,10 @@ the pain a possible solution is to cross-compile using docker `buildx`.
 
     ```bash
     docker container ls  # copy the container ID
+
+    # Copy the wheels back to the target system
     docker cp <your-container-ID>:/numpy/dist/numpy-1.21.6-cp37-cp37m-linux_armv7l.whl .
     pip install numpy-1.21.6-cp37-cp37m-linux_armv7l.whl
     ```
+
+</details>

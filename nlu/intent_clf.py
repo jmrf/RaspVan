@@ -31,7 +31,7 @@ class IntentDetector:
         self, sentences: List[str], labels: Optional[List[str]] = None
     ) -> List[np.ndarray]:
         x_vecs = [self.nlp_vec(sent).vector for sent in sentences]
-        if labels:
+        if labels is not None:
             return x_vecs, self.le.transform(labels)
 
         return x_vecs
