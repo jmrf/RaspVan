@@ -1,4 +1,4 @@
-# NLU
+# NLU (aka Natural Language Understanding)
 
 We build a very simple, lightweight intent classifier. Aimed to be comfortably run in
 a Raspberry Pi 3b 🍓

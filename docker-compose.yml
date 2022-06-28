@@ -26,6 +26,18 @@ services:
     devices:
       - /dev/snd:/dev/snd  # Access to ALSA device
 
+  nlu:
+    image: jmrf/raspvan-nlu:0.1.0
+    logging: *default-logging
+    networks:
+      - fiona
+    volumes:
+      - ${PWD}/nlu/:/app/nlu
+      - ${PWD}/common/:/app/common
+    command: >
+      python -m nlu.__init__
+
+
   rabbit:
     # image: rabbitmq:3-management
     image: ronnyroos/rpi-rabbitmq:latest
