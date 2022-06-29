@@ -61,13 +61,22 @@ build-nlu:
 		-f ./nlu/dockerfiles/Dockerfile \
 		./nlu
 
+.ONESHELL:
 run-hotword:
+	source .venv/bin/activate
 	docker-compose up -d rabbit
-	python -m raspvan.workers.hotword -t hotword
+	python -m raspvan.workers.hotword -pt hotword.detected
 
+.ONESHELL:
 run-asr:
+	source .venv/bin/activate
 	docker-compose up -d rabbit asr-server
-	python -m raspvan.workers.asr -t hotword
+	python -m raspvan.workers.asr \
+		-ct hotword.detected -pt asr.complete
+
+run-nlu:
+	source ./nlu/.venv/bin/activate \
+		&& python -m raspvan.workers.nlu -ct asr.complete
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +

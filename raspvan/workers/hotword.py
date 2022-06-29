@@ -31,7 +31,7 @@ from respeaker.pixels import Pixels
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
-Q_TOPIC = "hotword.detected"
+
 CHUNK_SIZE = 2048
 COUNT = 0
 
@@ -56,12 +56,15 @@ class SoundThread(threading.Thread):
 
 
 class ASRTrigger:
-    def __init__(self, pixels: Pixels, publisher: BlockingQueuePublisher) -> None:
+    def __init__(
+        self, q_topic: str, pixels: Pixels, publisher: BlockingQueuePublisher
+    ) -> None:
         self.publisher = publisher
         self.pixels = pixels
 
     def on_activation(self):
         global COUNT
+        global publish_topic
         COUNT += 1
 
         logger.info(f" 🔫 Hotword detected! ({COUNT})")
@@ -71,7 +74,7 @@ class ASRTrigger:
             # Send activation message through queue
             self.publisher.send_message(
                 json.dumps([{"status": "detected", "timestamp": dt.now().isoformat()}]),
-                topic=Q_TOPIC,
+                topic=publish_topic,
             )
         except Exception as e:
             logger.error(f"Error sending Queue message: {e}")
@@ -134,9 +137,9 @@ def get_args():
         default=os.getenv(Q_EXCHANGE_ENV_VAR, DEFAULT_EXCHANGE),
     )
     comm_opts.add_argument(
-        "--topic",
-        "-t",
-        help="topic as a routing key",
+        "--publish-topic",
+        "-pt",
+        help="HOTWORD --> ASR topic as a routing key",
         default=DEFAULT_HOTWORD_ASR_TOPIC,
     )
     # microphone options
@@ -176,6 +179,9 @@ def main():
     args = get_args()
 
     try:
+        global publish_topic
+
+        publish_topic = args.publish_topic
         logger.info(
             f"🎙️ Using Audio Device: {args.device} "
             f"(sampling rate: {args.samplerate} Hz)"
@@ -194,7 +200,7 @@ def main():
         raise Exception(f"Error initializing 🐇 publisher: {e}")
 
     try:
-        trigger = ASRTrigger(Pixels(), publisher)
+        trigger = ASRTrigger(args.publish_topic, Pixels(), publisher)
     except Exception as e:
         raise Exception(f"Error initializing ASR Trigger: {e}")
 

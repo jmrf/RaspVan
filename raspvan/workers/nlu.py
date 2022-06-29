@@ -1,22 +1,17 @@
 import argparse
-import asyncio
 import json
 import logging
 import os
 from datetime import datetime as dt
 
-from asr.client import ASRClient
-from asr.vad import VAD
-from common import int_or_str
-from common.utils.exec import run_sync
 from common.utils.io import init_logger
 from common.utils.rabbit import BlockingQueueConsumer
 from common.utils.rabbit import BlockingQueuePublisher
 from common.utils.rabbit import get_amqp_uri_from_env
-from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
+from nlu import NLUPipeline
 from raspvan.constants import DEFAULT_ASR_NLU_TOPIC
 from raspvan.constants import DEFAULT_EXCHANGE
-from raspvan.constants import DEFAULT_HOTWORD_ASR_TOPIC
+from raspvan.constants import DEFAULT_NLU_ACTION_TOPIC
 from raspvan.constants import Q_EXCHANGE_ENV_VAR
 from respeaker.pixels import Pixels
 
@@ -25,26 +20,24 @@ logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
-last_time_asr_completed = dt.now().isoformat()
-
-
-async def callback(event):
-    global last_time_asr_completed
+def callback(event):
     global publish_topic
+    global nlp
 
     text = "😕"
     try:
-        if event["timestamp"] <= last_time_asr_completed:
+        text = event.get("text", "")
+        if not text:
             return
 
-        logger.info(f"🚀 Launching ASR: {event}")
-        text = await asr.stream_mic(sample_rate, device_id)
-        logger.info(f"👂️ Recognized: {text}")
+        logger.info(f"🚀 Running NLU on: {text}")
+        res = nlp([text])
+        logger.info(f"🤔 Results: {res}")
         publisher.send_message(
             json.dumps(
                 [
                     {
-                        "text": text,
+                        "results": res,
                         "status": "completed",
                         "timestamp": dt.now().isoformat(),
                     }
@@ -53,9 +46,8 @@ async def callback(event):
             topic=publish_topic,
         )
     except Exception as e:
-        logger.exception(f"Unknown error while runnig VAD/ASR callback: {e}")
+        logger.exception(f"Unknown error while runnig NLU callback: {e}")
     finally:
-        last_time_asr_completed = dt.now().isoformat()
         pixels.off()
 
 
@@ -72,47 +64,41 @@ def get_args():
     comm_opts.add_argument(
         "--consume-topic",
         "-ct",
-        help="ASR --> NLU topic as a routing key",
-        default=DEFAULT_HOTWORD_ASR_TOPIC,
+        help="topic as a routing key",
+        default=DEFAULT_ASR_NLU_TOPIC,
     )
     comm_opts.add_argument(
         "--publish-topic",
         "-pt",
         help="ASR --> NLU topic as a routing key",
-        default=DEFAULT_ASR_NLU_TOPIC,
+        default=DEFAULT_NLU_ACTION_TOPIC,
     )
-
-    vad_opts = parser.add_argument_group("VAD options")
-    vad_opts.add_argument(
-        "-u",
-        "--uri",
-        type=str,
-        metavar="URL",
-        help="Server URL",
-        default="ws://localhost:2700",
+    model_opts = parser.add_argument_group("Model options")
+    model_opts.add_argument(
+        "--classifier",
+        "-clf",
+        help="intent classifier model pkl file",
+        default="nlu/models/intent-clf.pkl",
     )
-    vad_opts.add_argument(
-        "-d",
-        "--device",
-        type=int_or_str,
-        help="input device (numeric ID or substring)",
-        default=os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0),
+    model_opts.add_argument(
+        "--label-encoder",
+        "-le",
+        help="intent label encoder pkl file",
+        default="nlu/models/intent-le.pkl",
     )
-    vad_opts.add_argument(
-        "-r", "--samplerate", type=int, help="sampling rate", default=16000
-    )
-    vad_opts.add_argument(
-        "-v", "--vad-aggressiveness", type=int, help="VAD aggressiveness", default=2
+    model_opts.add_argument(
+        "--tagger",
+        "-tg",
+        help="entity extractor pkl file",
+        default="nlu/models/entity-tagger.pkl",
     )
 
     return parser.parse_args()
 
 
-async def main():
+def main():
 
-    global asr
-    global device_id
-    global sample_rate
+    global nlp
     global pixels
     global publisher
     global publish_topic
@@ -120,21 +106,11 @@ async def main():
     args = get_args()
 
     try:
-        # Init ASR parameters
-        sample_rate = args.samplerate
-        device_id = args.device
-
-        logger.info(
-            f"🎙️ Using Audio Device: {args.device} "
-            f"(sampling rate: {args.samplerate} Hz)"
-        )
-
         # Init the Pixels client
         pixels = Pixels()
 
-        # Init the ASR Client
-        vad = VAD(args.vad_aggressiveness)
-        asr = ASRClient(args.uri, vad)
+        # Init the NLU model pipeline
+        nlp = NLUPipeline(args.classifier, args.label_encoder, args.tagger)
 
         # Init the triggering queue
         amqp_host, amqp_port = get_amqp_uri_from_env()
@@ -148,7 +124,7 @@ async def main():
         consumer = BlockingQueueConsumer(
             host=amqp_host,
             port=amqp_port,
-            on_event=lambda e: run_sync(callback, e),
+            on_event=lambda e: callback(e),
             on_done=lambda: pixels.off(),
             load_func=json.loads,
             routing_keys=[args.consume_topic],
@@ -157,11 +133,11 @@ async def main():
             queue_name="asr",
         )
         # Init the rabbit MQ sender
+        publish_topic = args.publish_topic
         logger.info(
             f"🐇 Initializing publisher. Exchange: {args.exchange}"
-            f"(topics: {args.publish_topic})"
+            f"(topics: {publish_topic})"
         )
-        publish_topic = args.publish_topic
         publisher = BlockingQueuePublisher(
             host=amqp_host,
             port=amqp_port,
@@ -169,6 +145,7 @@ async def main():
             exchange_type="topic",
             queue_name="nlu",
         )
+
         logger.info("👹 Starting consuming from queue...")
         consumer.consume()
     except KeyboardInterrupt:
@@ -178,6 +155,6 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        main()
     except Exception as e:
-        logger.error(f"Error while running ASR: {e}")
+        logger.error(f"Error while running NLU: {e}")

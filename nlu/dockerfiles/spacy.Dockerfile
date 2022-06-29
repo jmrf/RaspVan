@@ -6,10 +6,11 @@ FROM python:3.7-slim
 # To build with:
 # 1. Install buildx
 #   https://github.com/jmrf/pyvosk-rpi/blob/main/scripts/init_multi-build.sh
+#
 # 2. run docker build:
-  # docker buildx build --push \
+  # docker buildx build --squash --push \
   #   --platform linux/arm/v7 \
-  #   -t jmrf/numpy-rpi:1.21.6-cp37 \
+  #   -t jmrf/spacy-rpi:3.3.1-cp37 \
   #   -f np_build.Dockerfile .
 
 

@@ -1,6 +1,9 @@
 coloredlogs
+gpiozero~=1.6.2
 pandas~=1.3.5
+pika~=1.21
 PyYAML>=6.0
 scikit-learn<0.24
 spacy-crfsuite~=1.3.0
 spacy~=3.3.1
+spidev~=3.5
