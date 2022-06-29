@@ -106,7 +106,7 @@ class BaseQueueClient:
     ) -> None:
 
         # Create the channel **persistent** queue
-        logger.info(f"🐇 Connecting to queue: {self.queue_name}")
+        logger.debug(f"🐇 Connecting to queue: {self.queue_name}")
         channel.queue_declare(
             queue=queue_name,
             passive=passive,  # message persistance
@@ -122,7 +122,7 @@ class BaseQueueClient:
         exchange_type: str,
         durable: bool = False,
     ) -> None:
-        logger.info(
+        logger.debug(
             f"🐇 Connecting to a '{self.exchange_type}' exchange: {self.exchange_name}"
         )
         channel.exchange_declare(
@@ -194,7 +194,7 @@ class BlockingQueuePublisher(BaseQueueClient):
         )
 
         connection.close()
-        logger.info("🐇🍻 Sent!")
+        logger.debug("🐇🍻 Sent!")
 
 
 class BlockingQueueConsumer(BaseQueueClient):
@@ -273,21 +273,20 @@ class BlockingQueueConsumer(BaseQueueClient):
         finally:
             # Send basic acknowledge back (no matter what)
             ch.basic_ack(delivery_tag=method.delivery_tag)
-            logger.info("🐇 Done!")
+            logger.debug("🐇 Done!")
 
     def consume(self):
         self._channel.basic_consume(
             queue=self.queue_name, on_message_callback=self._callback
         )
-
-        logger.info(
+        logger.debug(
             f"🐇 Waiting for messages on {self.queue_name}. To exit press CTRL+C"
         )
         self._channel.start_consuming()
 
     def unbind(self):
         for k in self.routing_keys:
-            logger.info(f"🐇 Unbinding queue '{self.queue_name}' and key: '{k}'")
+            logger.debug(f"🐇 Unbinding queue '{self.queue_name}' and key: '{k}'")
             self._channel.queue_unbind(
                 exchange=self.exchange_name, queue=self.queue_name, routing_key=k
             )

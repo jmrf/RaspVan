@@ -12,7 +12,7 @@ services:
     # To run with the default english model:
     #   python vosk-server/websocket/asr_server.py /app/model
     # Other models can be loaded using the mount volume:
-    # e.g: python vosk-server/websocket/asr_server.py /app/models/vosk-model-small-es-0.22
+    # [ES] e.g: python vosk-server/websocket/asr_server.py /app/models/vosk-model-small-es-0.22
     image: jmrf/vosk-server-rpi:0.3.32-cp37
     logging: *default-logging
     networks:
