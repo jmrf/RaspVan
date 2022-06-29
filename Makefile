@@ -1,4 +1,7 @@
-.PHONY: clean test lint init check-readme
+.PHONY: build-nlu check-readme clean formatter help init lint print-audio-cards print-audio-devices pyupgrade readme-toc rpi-install run-asr run-hotword setup-dvc tag test types
+
+SHELL := /bin/bash
+
 
 help:
 	@echo "    train-lm"
@@ -34,6 +37,7 @@ help:
 
 
 
+.ONESHELL:
 rpi-install:
 	/usr/bin/python3 -m venv .venv/
 	source .venv/bin/activate
@@ -42,10 +46,20 @@ rpi-install:
 print-audio-devices:
 	python -m respeaker.get_audio_device_index
 
-# print-audio-cards:
-# 	cat /proc/asound/cards
-# 	arecord -L
-# 	aplay -L
+print-audio-cards:
+	cat /proc/asound/cards
+	arecord -L
+	aplay -L
+
+.ONESHELL:
+build-nlu:
+	source .venv/bin/activate
+	VERSION=$$( python -c "from raspvan.version import __version__; print(__version__)" )
+	echo "** Building image: jmrf/nlu-rpi:$$VERSION"
+	docker build --squash --rm \
+		-t jmrf/nlu-rpi:$$VERSION \
+		-f ./nlu/dockerfiles/Dockerfile \
+		./nlu
 
 run-hotword:
 	docker-compose up -d rabbit
@@ -91,13 +105,14 @@ readme-toc:
 		-name README.md \
 		-exec gh-md-toc --insert {} \;
 
-
 test: clean
 	# OMP_NUM_THREADS can improve overral performance using one thread by process (on tensorflow), avoiding overload
 	OMP_NUM_THREADS=1 pytest tests -n $(JOBS) --cov gnes
 
+.ONESHELL:
 tag:
-	git tag $$( python -c 'import src; print(raspvan.__version__)' )
+	source .venv/bin/activate
+	git tag $$( python -c "from raspvan.version import __version__; print(__version__)" )
 	git push --tags
 
 setup-dvc:
@@ -105,3 +120,6 @@ setup-dvc:
 	dvc init
 	dvc remote add -d $(remote) s3://mai-dvc/$(remote)
 	dvc remote modify $(remote) endpointurl https://ams3.digitaloceanspaces.com
+
+list:
+	@LC_ALL=C $(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'

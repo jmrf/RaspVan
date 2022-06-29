@@ -1,4 +1,4 @@
-FROM jmrf/spacy-rpi:2.2.3-cp37
+FROM jmrf/spacy-rpi:3.3.1-cp37
 
 
 RUN pip install \
