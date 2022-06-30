@@ -105,3 +105,27 @@ And finally:
 
 2. follow the [this wiki instructions](https://github.com/jmrf/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word)
 
+
+<details>
+  <summary>Additional instructions. Click to expand!</summary>
+
+======================== In the Raspeberry Pi ========================
+
+Collect audio samples
+
+```bash
+cd fiona-rpi/wake-word/
+./hotword/mycroft-precise/.venv/bin/precise-collect -c 4
+```
+
+======================== In the work-station ========================
+
+```bash
+# The firt train
+precise-train -e 60 models/fiona/fiona.net fiona-rpi/
+
+# Incremental taining
+precise-train-incremental models/fiona/fiona.net fiona-rpi/ -r data/random/
+```
+
+</details>
