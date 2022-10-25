@@ -27,7 +27,7 @@ services:
       - /dev/snd:/dev/snd  # Access to ALSA device
 
   nlu:
-    image: jmrf/raspvan-nlu:0.1.0
+    image: jmrf/nlu-rpi:0.1.0
     logging: *default-logging
     networks:
       - fiona

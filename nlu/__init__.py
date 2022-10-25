@@ -49,11 +49,15 @@ class NLUPipeline:
 
 
 if __name__ == "__main__":
+
+    import sys
+
     nlp = NLUPipeline(
         "nlu/models/intent-clf.pkl",
         "nlu/models/intent-le.pkl",
         "nlu/models/entity-tagger.pkl",
     )
 
-    res = nlp(["switch off the back light", "turn on all the lights!"])
-    print(res)
+    for line in sys.stdin:
+        res = nlp([line.strip()])[0]
+        print(res)
