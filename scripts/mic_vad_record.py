@@ -39,7 +39,7 @@ def get_args():
         "filename",
         nargs="?",
         metavar="FILENAME",
-        help="audio file to store recording to",
+        help="audio file to store recording to (without extension)",
     )
     parser.add_argument(
         "-b", "--blocksize", type=int, default=4000, help="mic stream block size"
@@ -74,6 +74,7 @@ def record_to_file(
     n_channels: int,
     audio_subtype: str,
     device: str,
+    max_silence_ms: int = 1500,
 ):
     def _callback(indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""
@@ -87,7 +88,6 @@ def record_to_file(
         q = queue.Queue()
 
         stop = 0
-        max_silence_ms = 6000
         block_ms = calc_block_ms(block_size, sample_rate)
         max_silence_blocks = int(max_silence_ms / block_ms)
 

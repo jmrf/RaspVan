@@ -22,7 +22,7 @@ services:
     ports:
       - 2700:2700
     command: >
-      python vosk-server/websocket/asr_server.py /app/models/vosk-model-small-es-0.22
+      python vosk-server/websocket/asr_server.py /app/model
     devices:
       - /dev/snd:/dev/snd  # Access to ALSA device
 
