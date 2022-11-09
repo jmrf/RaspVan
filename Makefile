@@ -62,6 +62,16 @@ build-nlu:
 		./nlu
 
 .ONESHELL:
+run-relays:
+	source .venv/bin/activate
+	python -m raspvan.workers.relay
+
+.ONESHELL:
+ble-server:
+	sudo hciconfig hci0 piscan
+	sudo .venv/bin/python -m raspvan.ble_server
+
+.ONESHELL:
 run-hotword:
 	source .venv/bin/activate
 	docker-compose up -d rabbit
