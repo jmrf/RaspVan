@@ -67,7 +67,7 @@ run-relays:
 	python -m raspvan.workers.relay
 
 .ONESHELL:
-ble-server:
+run-ble-server:
 	sudo hciconfig hci0 piscan
 	sudo .venv/bin/python -m raspvan.ble_server
 
