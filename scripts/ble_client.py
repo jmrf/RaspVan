@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 
@@ -41,9 +42,12 @@ if __name__ == "__main__":
 
     logger.info("Connected!")
     while True:
-        data = input("Type something...\t")
-        if not data:
-            break
-        sock.send(data)
+        channels = input("Input channels\t")
+        channels = list(map(int, channels.split(" ")))
+
+        mode = input("Input ON (1) / OFF (0)\t")
+
+        sock.send(json.dumps({"channels": channels, "mode": int(mode)}))
+        print("-" * 40)
 
     sock.close()
