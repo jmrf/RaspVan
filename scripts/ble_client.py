@@ -22,7 +22,7 @@ if __name__ == "__main__":
         logger.info("Searching for SampleServer on {}...".format(addr))
 
     # search for the SampleServer service
-    uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
+    uuid = "616d3aa1-689e-4e71-8fed-09f3c7c4ad91"
     service_matches = bluetooth.find_service(uuid=uuid, address=addr)
 
     if len(service_matches) == 0:
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     name = first_match["name"]
     host = first_match["host"]
 
-    logger.info('Connecting to "{}" on {}'.format(name, host))
+    logger.info(f"Connecting to {name} @ {host}:{port}")
 
     # Create the client socket
     sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
@@ -42,12 +42,16 @@ if __name__ == "__main__":
 
     logger.info("Connected!")
     while True:
-        channels = input("Input channels\t")
+        channels = input("Input channels\t").strip()
         channels = list(map(int, channels.split(" ")))
 
         mode = input("Input ON (1) / OFF (0)\t")
 
-        sock.send(json.dumps({"channels": channels, "mode": int(mode)}))
+        sock.send(
+            json.dumps({"cmd": "switch", "channels": channels, "mode": int(mode)})
+        )
+        res = sock.recv(1024)
+        print(res)
         print("-" * 40)
 
     sock.close()

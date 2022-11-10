@@ -12,8 +12,8 @@ MAX_CHANNEL = 4
 DEVICE_ADDR = 0x27
 
 OFF_STATE = [1] * 4
-ON = 1
-OFF = 0
+ON = True
+OFF = False
 
 
 class Relayer:
@@ -50,7 +50,7 @@ class Relayer:
 
         return val
 
-    def switch(self, channels: List[int], mode: int):
+    def switch(self, channels: List[int], mode: int) -> List[int]:
         try:
             self.validate(channels, mode)
         except ValueError as ve:
@@ -58,6 +58,8 @@ class Relayer:
         else:
             switch_val = self.calc_state(channels, mode)
             self.write_relay(switch_val)
+        finally:
+            return self.state
 
 
 if __name__ == "__main__":
