@@ -1,8 +1,10 @@
 import copy
+import json
 import logging
 import time
 from typing import List
 
+import redis
 from smbus2 import SMBus
 
 logger = logging.getLogger(__name__)
@@ -16,9 +18,24 @@ ON = True
 OFF = False
 
 
-class Relayer:
+class RedisLightsMemory:
+    def __init__(self, redis_host: str = "localhost", redis_port: int = 6379):
+        self.key = "lights_state"
+        self.r = redis.Redis(host=redis_host, port=redis_port)
+        self.r.ping()  # to raise exception if couldn't connect
+
+    def set(self, state):
+        self.r.set(self.key, json.dumps(state))
+
+    def get(self):
+        return json.loads(self.r.get(self.key))
+
+
+class RelayClient:
     def __init__(self):
-        self.state = OFF_STATE  # store this in Redis or similar!
+        self.state_store = RedisLightsMemory()
+        if self.state_store.get() is None:
+            self.state_store.set(OFF_STATE)
 
     @staticmethod
     def write_relay(value: int):
@@ -34,7 +51,7 @@ class Relayer:
             raise ValueError(f"Invalid mode: {mode}")
 
     def calc_state(self, channels, mode):
-        new_state = copy.copy(self.state)
+        new_state = copy.copy(self.state_store.get())
         # new_state[channel - 1] = mode ^ 1
 
         if isinstance(channels, int):
@@ -44,11 +61,9 @@ class Relayer:
             new_state[c - 1] = mode ^ 1  # flip state
 
         mask = "".join(map(str, new_state))
-        val = eval(f"0b{mask}1111")
+        mask_val = eval(f"0b{mask}1111")
 
-        self.state = copy.copy(new_state)
-
-        return val
+        return new_state, mask_val
 
     def switch(self, channels: List[int], mode: int) -> List[int]:
         try:
@@ -56,22 +71,26 @@ class Relayer:
         except ValueError as ve:
             logger.warning(f"Error validating channels and mode: {ve}")
         else:
-            switch_val = self.calc_state(channels, mode)
+            new_state, switch_val = self.calc_state(channels, mode)
             self.write_relay(switch_val)
-        finally:
-            return self.state
+            self.state_store.set(new_state)
+
+        return self.state_store.get()
+
+    def read(self):
+        return self.state_store.get()
 
 
 if __name__ == "__main__":
-    relayer = Relayer()
+    RelayClient = RelayClient()
 
     # switch all one by one
     r = OFF_STATE
     for c in range(MIN_CHANNEL, MAX_CHANNEL + 1):
-        relayer.switch([c], ON)
+        RelayClient.switch([c], ON)
         time.sleep(1)
 
     # switch off one by one
     for c in range(MAX_CHANNEL, MIN_CHANNEL - 1, -1):
-        relayer.switch([c], OFF)
+        RelayClient.switch([c], OFF)
         time.sleep(1)

@@ -1,59 +1,112 @@
 import json
 import logging
+from typing import Any
+from typing import Dict
 
 import bluetooth as bt
 import coloredlogs
 
-from raspvan.workers.relay import Relayer
+from raspvan.workers.relay import RelayClient
 
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(logger=logger, level=logging.DEBUG)
 
 
-def process_request(data, relayer):
-    logger.debug(f"Rx data: {data}")
+class BLEServer:
+    def __init__(self, server_name: str = "RPI-BT-Server", port: int = 1):
+        # TODO: Change this UUID
+        self.uuid = "616d3aa1-689e-4e71-8fed-09f3c7c4ad91"
+        self.server_name = server_name
+        # init the relay controler
+        self.RelayClient = RelayClient()
+        # Advertise the server
+        self.port = port
+        self.server_sock = self._advertise()
 
-    payload = json.loads(data.decode("utf-8"))
-    cmd = payload.get("cmd", None)
+    def _advertise(self):
+        logger.debug(
+            f"Advertising with: server name: {self.server_name} "
+            f"| port: {self.port} "
+            f"| uuid: {self.uuid}"
+        )
+        server_sock = bt.BluetoothSocket(bt.RFCOMM)
+        server_sock.bind(("", bt.PORT_ANY))
+        server_sock.listen(self.port)
 
-    if cmd == "disconnect":
-        logger.info("Client wanted to disconnect")
-        raise KeyboardInterrupt
-    elif cmd == "switch":
-        c = payload.get("channels", [])
-        s = int(payload.get("mode", False))
-        return relayer.switch(c, s)
-    elif cmd == "read":
-        return relayer.state
+        bt.advertise_service(
+            server_sock,
+            self.server_name,
+            service_id=self.uuid,
+            service_classes=[self.uuid, bt.SERIAL_PORT_CLASS],
+            profiles=[bt.SERIAL_PORT_PROFILE],
+        )
+        return server_sock
 
+    def _accept_connection(self) -> bt.BluetoothSocket:
+        # Accept a connection
+        client_sock, client_info = self.server_sock.accept()
+        logger.info(f"Accepted connection from {client_info}")
 
-def advertise():
-    server_sock = bt.BluetoothSocket(bt.RFCOMM)
-    server_sock.bind(("", bt.PORT_ANY))
-    server_sock.listen(1)
+        return client_sock
 
-    # TODO: Change this UUID
-    uuid = "616d3aa1-689e-4e71-8fed-09f3c7c4ad91"
+    def run(self):
+        # TODO: Go back to accepting connections after client closes
+        # TODO: Accept more than 1 connection
 
-    bt.advertise_service(
-        server_sock,
-        "RPI-BT-Server",
-        service_id=uuid,
-        service_classes=[uuid, bt.SERIAL_PORT_CLASS],
-        profiles=[bt.SERIAL_PORT_PROFILE],
-    )
+        # Wait for an incoming connection
+        _ = self.server_sock.getsockname()[self.port]
+        client_sock = self._accept_connection()
 
-    return server_sock
+        while True:
+            # TODO: Handle reconnections!
+            try:
+                data = client_sock.recv(1024)
+                ret = self.process_request(data)
 
+                logger.debug(f"request process returned: {ret}")
+                client_sock.send(json.dumps(ret))
+            except bt.BluetoothError as be:
 
-def accept_connection(port: int) -> bt.BluetoothSocket:
-    logger.info(f"Waiting for connection on RFCOMM channel: {port}")
-    # Accept a connection
-    client_sock, client_info = server_sock.accept()
-    logger.info(f"Accepted connection from {client_info}")
+                if be.errno == 104:
+                    logger.warning(f"Connection reset by peer...")
+                    client_sock.close()
+                    # Accept a new connection
+                    client_sock = self._accept_connection()
+                else:
+                    logger.debug(be.errno)
+                    logger.error(f"Something wrong with bluetooth: {be}")
+            except KeyboardInterrupt:
+                logger.warning("\nDisconnected")
+                client_sock.close()
+                self.server_sock.close()
+                break
+            except Exception as e:
+                logger.error(f"BT Server Unknown error: {e}")
 
-    return client_sock
+    def process_request(self, data: Dict[str, Any]):
+        try:
+            logger.debug(f"Rx data: {data}")
+            payload = json.loads(data.decode("utf-8"))
+            cmd = payload.get("cmd", None)
+
+            if cmd == "/disconnect":
+                logger.info("Client wanted to disconnect")
+                raise KeyboardInterrupt
+            elif cmd == "/switch":
+                c = payload.get("channels", [])
+                s = int(payload.get("mode", False))
+                state = self.RelayClient.switch(c, s)
+                return {"ok": True, "state": state}
+            elif cmd == "/read":
+                return {"ok": True, "state": self.RelayClient.read()}
+            else:
+                return {"ok": False, "error": f"Unknown command '{cmd}'"}
+
+        except Exception as e:
+            logger.error(f"Error processing request to BT server: {e}")
+            logger.exception(e)
+            return {"ok": False, "error": str(e)}
 
 
 if __name__ == "__main__":
@@ -61,38 +114,5 @@ if __name__ == "__main__":
     For an example for RFCOMM server form pybluez:
     # https://github.com/pybluez/pybluez/blob/master/examples/simple/rfcomm-server.py
     """
-
-    # TODO: Go back to accepting connections after client closes
-    # TODO: Accept more than 1 connection
-
-    # Advertise the server
-    server_sock = advertise()
-    # Wait for an incoming connection
-    port = server_sock.getsockname()[1]
-    client_sock = accept_connection(port)
-
-    # init the relay controler
-    relayer = Relayer()
-
-    while True:
-        # TODO: Handle reconnections!
-        try:
-            data = client_sock.recv(1024)
-            ret = process_request(data, relayer)
-            client_sock.send(json.dumps(ret))
-        except bt.BluetoothError as be:
-
-            if be.errno == 104:
-                logger.warning(f"Connection reset by peer...")
-                client_sock.close()
-                # Accept a new connection
-                client_sock = accept_connection(port)
-            else:
-                logger.debug(be.errno)
-                logger.error(f"Something wrong with bluetooth: {be}")
-
-        except KeyboardInterrupt:
-            logger.warning("\nDisconnected")
-            client_sock.close()
-            server_sock.close()
-            break
+    ble = BLEServer()
+    ble.run()

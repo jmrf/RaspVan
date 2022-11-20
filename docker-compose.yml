@@ -64,16 +64,16 @@ services:
     volumes:
       - ${PWD}/data/NodeRed:/data
 
-  # redis:
-  #   image: redis
-  #   networks: ["fiona"]
-  #   logging: *default-logging
-  #   ports:
-  #     - "6379:6379"
-  #   command:
-  #     - redis-server
-  #     - --protected-mode
-  #     - "no"
+  redis:
+    image: redis
+    networks: ["fiona"]
+    logging: *default-logging
+    ports:
+      - "6379:6379"
+    command:
+      - redis-server
+      - --protected-mode
+      - "no"
 
 networks:
   "fiona":
