@@ -69,7 +69,7 @@ class RelayClient:
         try:
             self.validate(channels, mode)
         except ValueError as ve:
-            logger.warning(f"Error validating channels and mode: {ve}")
+            logger.warning(ve)
         else:
             new_state, switch_val = self.calc_state(channels, mode)
             self.write_relay(switch_val)

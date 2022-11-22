@@ -68,6 +68,7 @@ run-relays:
 
 .ONESHELL:
 run-ble-server:
+	docker-compose up -d redis
 	sudo hciconfig hci0 piscan
 	sudo .venv/bin/python -m raspvan.ble_server
 

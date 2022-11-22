@@ -7,6 +7,7 @@ import bluetooth as bt
 import coloredlogs
 
 from raspvan.workers.relay import RelayClient
+from raspvan.workers.scheduler import LightTimer
 
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,9 @@ class BLEServer:
         self.uuid = "616d3aa1-689e-4e71-8fed-09f3c7c4ad91"
         self.server_name = server_name
         # init the relay controler
-        self.RelayClient = RelayClient()
+        self.relay_client = RelayClient()
+        # init the Scheduler
+        self.scheduler = LightTimer()
         # Advertise the server
         self.port = port
         self.server_sock = self._advertise()
@@ -51,15 +54,11 @@ class BLEServer:
         return client_sock
 
     def run(self):
-        # TODO: Go back to accepting connections after client closes
-        # TODO: Accept more than 1 connection
-
         # Wait for an incoming connection
         _ = self.server_sock.getsockname()[self.port]
         client_sock = self._accept_connection()
 
         while True:
-            # TODO: Handle reconnections!
             try:
                 data = client_sock.recv(1024)
                 ret = self.process_request(data)
@@ -93,13 +92,38 @@ class BLEServer:
             if cmd == "/disconnect":
                 logger.info("Client wanted to disconnect")
                 raise KeyboardInterrupt
+
             elif cmd == "/switch":
-                c = payload.get("channels", [])
+                channels = payload.get("channels", [])
                 s = int(payload.get("mode", False))
-                state = self.RelayClient.switch(c, s)
+                state = self.relay_client.switch(channels, s)
                 return {"ok": True, "state": state}
+
+            elif cmd == "/schedule":
+                channels = payload.get("channels", [])
+                mode = int(payload.get("mode", False))
+                delay = payload.get("delay")
+                if delay:
+                    self.scheduler.put(
+                        delay=delay,
+                        func=self.relay_client.switch,
+                        f_kwargs={"mode": mode, "channels": channels},
+                    )
+                    return {
+                        "ok": True,
+                        "state": self.relay_client.read(),
+                        "scheduled": self.scheduler.get(),
+                    }
+
+                return {"ok": False, "error": "Invalid delay value"}
+
             elif cmd == "/read":
-                return {"ok": True, "state": self.RelayClient.read()}
+                # TODO: Format the scheduled task accordingly
+                return {
+                    "ok": True,
+                    "state": self.relay_client.read(),
+                    "scheduled": self.scheduler.get(),
+                }
             else:
                 return {"ok": False, "error": f"Unknown command '{cmd}'"}
 
