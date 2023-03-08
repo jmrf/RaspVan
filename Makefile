@@ -1,8 +1,8 @@
 .PHONY: rpi-install print-audio-devices print-audio-cards build-nlu \
-	run-relays run-ble-server run-hotword run-asr run-nlu \
+	run-pixels run-relays run-ble-server run-hotword run-asr run-nlu \
 	clean formatter lint types pyupgrade readme-toc test clean tag list
 .SILENT: rpi-install print-audio-devices print-audio-cards build-nlu \
-	run-relays run-ble-server run-hotword run-asr run-nlu \
+	run-pixels run-relays run-ble-server run-hotword run-asr run-nlu \
 	clean formatter lint types pyupgrade readme-toc test clean tag list
 
 
@@ -18,6 +18,8 @@ help:
 	@echo "        Print a list of detected audio cards"
 	@echo "    build-nlu"
 	@echo "        Build the NLU docker image"
+	@echo "    run-pixels"
+	@echo "        Run the respeaker pixels demo"
 	@echo "    run-relays"
 	@echo "        Run a relay worker test control logic"
 	@echo "    run-ble-server"
@@ -74,6 +76,11 @@ build-nlu:
 		-t jmrf/nlu-rpi:$$VERSION \
 		-f ./nlu/dockerfiles/Dockerfile \
 		./nlu
+
+.ONESHELL:
+run-pixels:
+	source .venv/bin/activate
+	python -m respeaker.pixels
 
 .ONESHELL:
 run-relays:
