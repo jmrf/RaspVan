@@ -1,29 +1,33 @@
-.PHONY: build-nlu check-readme clean formatter help init lint print-audio-cards print-audio-devices pyupgrade readme-toc rpi-install run-asr run-hotword setup-dvc tag test types
+.PHONY: rpi-install print-audio-devices print-audio-cards build-nlu \
+	run-relays run-ble-server run-hotword run-asr run-nlu \
+	clean formatter lint types pyupgrade readme-toc test clean tag list
+.SILENT: rpi-install print-audio-devices print-audio-cards build-nlu \
+	run-relays run-ble-server run-hotword run-asr run-nlu \
+	clean formatter lint types pyupgrade readme-toc test clean tag list
+
 
 SHELL := /bin/bash
 
 
 help:
-	@echo "    train-lm"
-	@echo "        Train the speech language model"
-	@echo "    train-nlu"
-	@echo "        Train the NLU engine"
-	@echo "    train-dialogue"
-	@echo "        Train the dialogue-engine"
-	@echo "    train-mai"
-	@echo "        Train the MAI engine"
+	@echo "    rpi-install"
+	@echo "        Install requirements"
+	@echo "    print-audio-devices"
+	@echo "        Print a list of detected audio devices"
+	@echo "    print-audio-cards"
+	@echo "        Print a list of detected audio cards"
+	@echo "    build-nlu"
+	@echo "        Build the NLU docker image"
+	@echo "    run-relays"
+	@echo "        Run a relay worker test control logic"
+	@echo "    run-ble-server"
+	@echo "        Run the Bluetooth server (plays with the Android app)"
+	@echo "    run-hotword"
+	@echo "        Run the hotword detection worker"
+	@echo "    run-asr"
+	@echo "        Run the ASR worker"
 	@echo "    run-nlu"
-	@echo "        Run the NLU engine"
-	@echo "    run-dialogue"
-	@echo "        Run the Dialogue engine"
-	@echo "    run-mai"
-	@echo "        Run the MAI engine"
-	@echo "    run-actions"
-	@echo "        Run the Action Server"
-	@echo "    run-response-server"
-	@echo "        Run the Response Server"
-	@echo "    build-docker-actions"
-	@echo "        Build Docker image for the Action Server"
+	@echo "        Run the NLU worker"
 	@echo "    clean"
 	@echo "        Remove Python/build artifacts."
 	@echo "    formatter"
@@ -32,9 +36,16 @@ help:
 	@echo "        Lint code with flake8, and check if black formatter should be applied."
 	@echo "    types"
 	@echo "        Check for type errors using pytype."
+	@echo "    pyupgrade"
+	@echo "        Run pyupgrade tool"
+	@echo "    readme-toc"
+	@echo "        Create README Table of Contents (ToC)"
 	@echo "    test"
-	@echo "        Run pytest on tests/."
-
+	@echo "        Run python tests"
+	@echo "    tag"
+	@echo "        Create a git tag with the current version"
+	@echo "    list"
+	@echo "        List all of this Makefile targets"
 
 
 .ONESHELL:
@@ -43,9 +54,12 @@ rpi-install:
 	source .venv/bin/activate
 	pip install requirements.txt
 
+.ONESHELL:
 print-audio-devices:
+	source .venv/bin/activate
 	python -m respeaker.get_audio_device_index
 
+.ONESHELL:
 print-audio-cards:
 	cat /proc/asound/cards
 	arecord -L
@@ -54,7 +68,7 @@ print-audio-cards:
 .ONESHELL:
 build-nlu:
 	source .venv/bin/activate
-	VERSION=$$( python -c "from raspvan.version import __version__; print(__version__)" )
+	VERSION=$$( python -c 'from raspvan.version import __version__; print(__version__)' )
 	echo "** Building image: jmrf/nlu-rpi:$$VERSION"
 	docker build --squash --rm \
 		-t jmrf/nlu-rpi:$$VERSION \
@@ -134,12 +148,6 @@ tag:
 	source .venv/bin/activate
 	git tag $$( python -c "from raspvan.version import __version__; print(__version__)" )
 	git push --tags
-
-setup-dvc:
-	# Configure https://mai-dvc.ams3.digitaloceanspaces.com as remote storage
-	dvc init
-	dvc remote add -d $(remote) s3://mai-dvc/$(remote)
-	dvc remote modify $(remote) endpointurl https://ams3.digitaloceanspaces.com
 
 list:
 	@LC_ALL=C $(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
