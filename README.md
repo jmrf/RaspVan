@@ -7,34 +7,38 @@ complete domotic voice-controled system.
 
 Commands can be executed either by _voice_ or by sending _HTTP requests_ to a server.
 
+----
 
-Table of Contents
-=================
+## Table of Contents
 
-   * [RaspVan](#raspvan)
+<!--ts-->
+* [RaspVan (codename: Fiona)](#raspvan-codename-fiona)
    * [Table of Contents](#table-of-contents)
-      * [Requirements](#requirements)
-      * [Structure](#structure)
-      * [How to](#how-to)
-         * [Installation](#installation)
-            * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
-            * [Voice Control:](#voice-control)
-            * [HTTP Control (Android app or similar):](#http-control-android-app-or-similar)
-            * [Web Control Panel (optional)](#web-control-panel-optional)
+   * [Requirements](#requirements)
+   * [Structure](#structure)
+      * [Hotword](#hotword)
+      * [ASR](#asr)
+      * [Respeaker](#respeaker)
+      * [Raspvan](#raspvan)
+   * [How to](#how-to)
+      * [Installation](#installation)
+      * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
       * [Wiring and Connections](#wiring-and-connections)
-      * [Misc](#misc)
+   * [Misc](#misc)
 
-Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: pi, at: Thu 21 Apr 2022 03:58:39 PM CEST -->
 
+<!--te-->
+----
 
 ## Requirements
 
-Apart from any other requirement defined in the root or any  of the sub-components we
+Apart from any other requirement defined in the root or any of the sub-components we
 need the follwing:
 
 *  [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
    ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
-*  [MQTT](https://mqtt.org/) (mosquitto)
 *  python >= 3.7
 *  Docker & Docker-compose
 
@@ -42,15 +46,17 @@ need the follwing:
 ## Structure
 
 This repo is organized in a series of sub-components plus the main solution code
-under [src](src/]).
+under [raspvan](raspvan/]).
 
 To understand how to train, configure, test and run each sub-component please refer to
 the individual readme files.
 
 ```bash
 .
-├── asr                     # ASR component (uses Mozilla DeepSpeech)
+├── asr                     # ASR component (uses vosk-kaldi)
 ├── assets
+├── common
+├── config
 ├── data
 ├── docker-compose.yml
 ├── external
@@ -59,125 +65,189 @@ the individual readme files.
 ├── README.md
 ├── requirements-dev.txt
 ├── requirements.txt
+├── respeaker
 ├── scripts
 ├── setup.cfg
-└── src                     # clients and servers of the entire solution
-
-
-20 directories
+└── raspvan                 # client and server systems
 ```
+
+
+Most of the following components communicate through `AMQP` using `rabbitMQ`.
+
+To run the broker backbone glueing all together:
+
+```bash
+docker-compose up -d rabbit
+```
+
+### Hotword
+
+> ⚠️ TBD
+
+To run:
+
+```bash
+source .env
+source .venv/bin/activate
+python -m raspvan.workers.hotword
+```
+
+### ASR
+
+We use the dockerized vosk-server from the
+[jmrf/pyvosk-rpi](https://github.com/jmrf/pyvosk-rpi) repo.
+
+This server listens via websocket to a `sounddevice` stream and performs STT on the fly.
+
+> 💡 For a complete list of compatible models check:
+> [vosk/models](https://alphacephei.com/vosk/models)
+
+```bash
+# Run the dockerized server
+docker-compose up asr-server
+```
+
+Then, run one of the clients:
+
+```bash
+source .env
+source .venv/bin/activate
+# ASR from a audio wav file
+python -m  asr.client -v 2 -f <name-of-the-16kHz-wav-file>
+# Or ASR listening from the microphone
+python -m  asr.client -v 2 -d <microphone-ID>
+```
+
+Or run the rabbitMQ-triggered `raspvan ASR worker`:
+
+```bash
+python -m raspvan.workers.asr
+```
+
+
+### NLU
+
+> ⚠️ While the rest of the components use `numpy~=1.16` the NLU components requires
+> a newer version in order to work with `scikit`.
+>
+> The best thing if running locally is to **create a separate virtual environment**
+>
+> See [nlu/README.md](nlu/README.md)
+
+
+The NLU engine has two parts:
+
+ - A Spacy vectorizer + SVM classifier for **intent classification**
+ - A `Conditional Random Field` (CRF) for **entity extraction**
+
+> 💡 Check the details in this Colab notebook: [simple-NLU.ipynb](https://colab.research.google.com/drive/1q6Ei9SRdD8Pdg65Pvp8porRyFlQXD4w6#scrollTo=mK2GbpHan6k7)
+
+
+> 💡 It is advices to collect some voice samples and run them through ASR to use
+> these as training samples for the NLU component to train it on real data.
+
+To collect voice samples and apply ASR for the NLU, run:
+
+```bash
+# discover the audio input device to use and how many input channel are available
+python -m scripts.mic_vad_record -l
+# Run voice recording
+python -m scripts.mic_vad_record sample.wav -d 5 -c 4
+```
+
+
+### Respeaker
+
+We use [respeaker 4mic hat]() as microphone and visual feedbac with its LED array.
+
+To run the LED pixel demo:
+
+```bash
+python -m respeaker.pixels
+```
+
+
+### Raspvan
+
+This is the main module which coordinates all the different components.
+
+ - i2c relay demo: `python -m raspvan.workers.relay`
+
 
 
 ## How to
 
 ### Installation
 
+Create a virtual environment
+
+```bash
+python3.7 -m venv .venv
+source .venv/bin/activate
+```
+
+And install all the python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
+
+
+### Finding the sound input device ID
+
+First list all audio devices:
+
+```bash
+python -m respeaker.get_audio_device_index
+```
+
+You should get a table simlar to this:
+
+```bash
+┏━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
+┃ Index ┃ Name     ┃ Max Input Channels ┃ Max Output Channels ┃
+┡━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┩
+│     0 │ upmix    │                  0 │                   8 │
+│     1 │ vdownmix │                  0 │                   6 │
+│     2 │ dmix     │                  0 │                   2 │
+│     3 │ default  │                128 │                 128 │
+└───────┴──────────┴────────────────────┴─────────────────────┘
+```
+
+Device with **index 3**, which can handle several input and output channels,
+is the one to pass to the `hotword` and `ASR` workers.
+
+> ⚠️ ALSA won't allow for audio devices to be shared,
+> i.e.: accessed simultaneously by more than one application
+> when using the sound card directly. ⚠️
+>
+> Solution: Use the pcm devices, i.e.: plugins. Specifically the dsnoop
+> (to have shared input between processes) and dmix (to have several audio outputs on one card).
+>
+> Copy [config/.asoundrc](config/.asoundrc) to `~./asoundrc`
+
+
+<details>
+  <summary>⚠️ Probably deprecated. Click to expand!</summary>
 
 ### WiFi and automatic hotspot
 
 In order to communicate with the RaspberryPi we will configure it to connect to
 a series of known WiFi networks when available and to create a Hotspot otherwise.
 
-Refer to
-[auto-wifi-hotspot](http://www.raspberryconnect.com/network/item/330-raspberry-pi-auto-wifi-hotspot-switch-internet)
+Refer to [auto-wifi-hotspot](http://www.raspberryconnect.com/network/item/330-raspberry-pi-auto-wifi-hotspot-switch-internet)
 from [raspberryconnect/network](http://www.raspberryconnect.com/network).
 
 By default the RaspberryPi will be accessible at the IP: `192.168.50.5` when the hotspot is active.
 
 
-### Voice Control
+### Wiring and Connections
 
-
-### HTTP Control (Android app or similar)
-
-To run the HTTP server:
-```bash
-	python3 http_server.py
-```
-
-
-Ideally these processes should run on startup, for this we use `systemctl`.
-
-For example to configure a _unit_ for the `voice_action_server`:
-
-1. Create the `.service`:
-    ```bash
-    # voice-action_server server
-    sudo vim /lib/systemd/system/voice_action_ctl.service
-    ```
-
-    With the following content:
-    ```
-    [Unit]
-     Description=Python voice to action service
-     After=multi-user.target
-
-     [Service]
-     Type=idle
-     User=pi
-     StandardOutput=file:/home/pi/RaspVan/logs/voice_action_server.log
-     StandardError=file:/home/pi/RaspVan/logs/voice_action_server_err.log
-     ExecStart=/usr/bin/python3 /home/pi/RaspVan/voice_assistant/voice_action_server.py
-
-     [Install]
-     WantedBy=multi-user.target
-
-    ```
-
-2. Reload the systemctl daemon:
-    ```bash
-	sudo systemctl daemon-reload
-    ```
-
-3. Enable the service
-    ```bash
-	sudo systemctl enable voice_action_ctl.service
-    ```
-
-To start manually and test proper functioning:
-```bash
-    sudo systemctl start voice_action_ctl   # start the service
-    journalctl -u voice_action_ctl	        # show the logs
-    systemctl status voice_action_ctl	    # check status of the service
-```
-
-
-
-Similarly should be done for the `HTTP python server`.
-
-
-
-### Web Control Panel (optional)
-
-In addition we can configure an Apache server displaying several stats about the RaspberryPi:
-(temperature, work load, memory load, etc).
-
-Refer to [GumCP](https://github.com/gumslone/GumCP) for instructions.
-
-
-## Wiring and Connections
-
-* Lights:
-
-  **Update**:
-  Instead of using the _MOSFET_ configuration, is prefered using an array of relays because of encapsulation.
-  Switching times increase when using relays but encapsulation of the devices makes life easier.
-  We use [these relays](https://amzn.to/2FRfuCP).
-
-  ~~Connections are done from the raspberryPi GPIO pins to the _positive_ side of the lights circuit (high-side switch) using a
-  _p-channel MOSFET_ transistor.
-  Discussion on low-side or high-side switching are out of the scope of this _readme_ document.~~
-
- An schematic view of the _switch_ mechanism follows (from this [partsim project](http://www.partsim.com/simulator#132504)):
-
-  ![high-side switch](assets/diagrams/high-side-switch.jpeg)
-
+TBD
 
 
 ## Misc
 
 * Drawing and simulation tool: [partsim simulator](https://www.partsim.com/simulator)
+
+</details>

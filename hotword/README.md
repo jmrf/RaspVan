@@ -9,18 +9,23 @@ We find that collecting the following samples yields acceptable results:
 - train: ~20 positive examples and ~300 negative
 - test:  ~10 positive examples and ~70 negative
 
-Table of Contents
------------------
+-----
 
-   * [Hotword detection](#hotword-detection)
+## Table of Contents
+
+<!--ts-->
+* [Hotword detection](#hotword-detection)
    * [Table of Contents](#table-of-contents)
-      * [Introduction](#introduction)
-      * [Requirements](#requirements)
-      * [Structure](#structure)
-      * [How To](#how-to)
-         * [Install](#install)
+   * [Requirements](#requirements)
+   * [Structure](#structure)
+   * [How To](#how-to)
+      * [Install](#install)
+      * [Train a custom hotword](#train-a-custom-hotword)
 
-Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: pi, at: Thu 21 Apr 2022 03:58:37 PM CEST -->
+
+<!--te-->
 
 
 ## Requirements
@@ -100,3 +105,27 @@ And finally:
 
 2. follow the [this wiki instructions](https://github.com/jmrf/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word)
 
+
+<details>
+  <summary>Additional instructions. Click to expand!</summary>
+
+======================== In the Raspeberry Pi ========================
+
+Collect audio samples
+
+```bash
+cd fiona-rpi/wake-word/
+./hotword/mycroft-precise/.venv/bin/precise-collect -c 4
+```
+
+======================== In the work-station ========================
+
+```bash
+# The firt train
+precise-train -e 60 models/fiona/fiona.net fiona-rpi/
+
+# Incremental taining
+precise-train-incremental models/fiona/fiona.net fiona-rpi/ -r data/random/
+```
+
+</details>

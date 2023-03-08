@@ -1,24 +1,38 @@
+import logging
 import os
 import random
-import time
 import threading
+import time
 
 from gpiozero import LED
+
+from common.utils.io import init_logger
 
 try:
     import queue as Queue
 except ImportError:
     import Queue as Queue
 
+
+from common import Singleton
 from respeaker.led import apa102
 from respeaker.led.alexa_led_pattern import AlexaLedPattern
 from respeaker.led.google_home_led_pattern import GoogleHomeLedPattern
 
+logger = logging.getLogger(__name__)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
-class Pixels:
+
+class Pixels(metaclass=Singleton):
+
     PIXELS_N = 12
+    PATTERN_MAP = {"google": GoogleHomeLedPattern, "alexa": AlexaLedPattern}
 
-    def __init__(self, pattern=AlexaLedPattern):
+    def __init__(self, pattern=None):
+
+        if pattern is None:
+            pattern = self._random_pattern()
+
         self.pattern = pattern(show=self.show)
 
         self.dev = apa102.APA102(num_led=self.PIXELS_N)
@@ -32,6 +46,19 @@ class Pixels:
         self.thread.start()
 
         self.last_direction = None
+
+    def _run(self):
+        while True:
+            func = self.queue.get()
+            # logger.debug(f"💡 elements in the queue: {self.queue.qsize()}")
+            # logger.debug(f"💡 func: {func.__name__}")
+            self.pattern.stop = False
+            func()
+
+    def _random_pattern(self):
+        return self.PATTERN_MAP[
+            os.getenv("PIXELS_PATTERN", random.choice(list(self.PATTERN_MAP.keys())))
+        ]
 
     def wakeup(self, direction=0):
         self.last_direction = direction
@@ -64,12 +91,6 @@ class Pixels:
         self.pattern.stop = True
         self.queue.put(func)
 
-    def _run(self):
-        while True:
-            func = self.queue.get()
-            self.pattern.stop = False
-            func()
-
     def show(self, data):
         for i in range(self.PIXELS_N):
             self.dev.set_pixel(
@@ -79,17 +100,9 @@ class Pixels:
         self.dev.show()
 
 
-pattern_map = {"google": GoogleHomeLedPattern, "alexa": AlexaLedPattern}
-
-# NOTE: 'pixels' var. must be global if we want to use pixels form several places
-pixels = Pixels(
-    pattern=pattern_map[
-        os.getenv("PIXELS_PATTERN", random.choice(list(pattern_map.keys())))
-    ]
-)
-
-
 if __name__ == "__main__":
+
+    pixels = Pixels()
 
     while True:
         try:

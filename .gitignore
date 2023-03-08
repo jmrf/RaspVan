@@ -1,5 +1,6 @@
 # python files
 *.pyc
+*.whl
 
 # datafiles
 *.wav
@@ -9,13 +10,13 @@
 # other files
 *.log
 *.bak
+out.txt
 
 # directories
-__pycache__/
+**/__pycache__/
+**/.venv/
 .cache/
 .vscode/
-.venv/
-
 
 imgs/
 **/data/

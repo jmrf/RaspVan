@@ -1,14 +1,43 @@
 import logging
+import os
 import time
 from typing import Callable
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 
+from common.utils.io import init_logger
+from raspvan.constants import DEFAULT_RABBITMQ_HOST
+from raspvan.constants import DEFAULT_RABBITMQ_PORT
+from raspvan.constants import RABBITMQ_HOST_ENV_VAR
+from raspvan.constants import RABBITMQ_PORT_ENV_VAR
+
 
 logger = logging.getLogger(__name__)
+init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
+
+
+def get_amqp_uri_from_env():
+    rabbit_host = os.getenv(RABBITMQ_HOST_ENV_VAR)
+    if rabbit_host is None:
+        logger.warning(
+            f"🐇 env.var '{RABBITMQ_HOST_ENV_VAR}' not set. "
+            f"Defaulting to: '{DEFAULT_RABBITMQ_HOST}'"
+        )
+        rabbit_host = DEFAULT_RABBITMQ_HOST
+
+    rabbit_port = os.getenv(RABBITMQ_PORT_ENV_VAR)
+    if rabbit_port is None:
+        logger.warning(
+            f"🐇 env.var '{RABBITMQ_PORT_ENV_VAR}' not set. "
+            f"Defaulting to: '{DEFAULT_RABBITMQ_PORT}'"
+        )
+        rabbit_port = DEFAULT_RABBITMQ_PORT
+
+    return rabbit_host, int(rabbit_port)
 
 
 def get_q_count(channel, q_name):
@@ -27,10 +56,12 @@ def wait_on_q_limit(channel: BlockingChannel, q_name: str, lim: int, sleep: int 
 class BaseQueueClient:
 
     VALID_EXCHANGE_TYPES = ["fanout", "topic", "headers"]
+    DEFAULT_TCP_KEEPIDLE = 60 * 5  # 5 minutes
 
     def __init__(
         self,
-        amqp_uri: str,
+        host: str = None,
+        port: int = None,
         blocked_timeout: int = 10,
         q_lim: int = None,
         *args,
@@ -40,7 +71,8 @@ class BaseQueueClient:
         self.queue_name = None
         self.exchange_name = None
         self.exchange_type = None
-        self._amqp_uri = amqp_uri
+        self.host = host
+        self.port = port
         self._timeout = blocked_timeout
         self.q_lim = q_lim or -1
 
@@ -57,7 +89,11 @@ class BaseQueueClient:
         if self.q_lim > 0 and self.exchange_name:
             logger.warning(f"🐇 Queue limit will be ignored when sending to an exchange")
 
-        logger.info(f"🐇 @ {self._amqp_uri} | {self.queue_name or self.exchange_name}")
+        logger.info(
+            f"🐇 @ {self.host}:{self.port} "
+            f"| queue: {self.queue_name} "
+            f"| exchange: {self.exchange_name}"
+        )
 
     def declare_queue(
         self,
@@ -70,7 +106,7 @@ class BaseQueueClient:
     ) -> None:
 
         # Create the channel **persistent** queue
-        logger.info(f"🐇 Connecting to queue: {self.queue_name}")
+        logger.debug(f"🐇 Connecting to queue: {self.queue_name}")
         channel.queue_declare(
             queue=queue_name,
             passive=passive,  # message persistance
@@ -86,7 +122,7 @@ class BaseQueueClient:
         exchange_type: str,
         durable: bool = False,
     ) -> None:
-        logger.info(
+        logger.debug(
             f"🐇 Connecting to a '{self.exchange_type}' exchange: {self.exchange_name}"
         )
         channel.exchange_declare(
@@ -95,12 +131,19 @@ class BaseQueueClient:
             durable=durable,
         )
 
-    def connect(self) -> Tuple[pika.BlockingConnection, BlockingChannel]:
+    def connect(
+        self, tcp_keepidle: Optional[int] = None
+    ) -> Tuple[pika.BlockingConnection, BlockingChannel]:
+        tcp_options = dict(TCP_KEEPIDLE=tcp_keepidle or self.DEFAULT_TCP_KEEPIDLE)
         connection = pika.BlockingConnection(
             # for connection no to die while blocked waiting for inputs
             # we must set the heartbeat to 0 (although is discouraged)
             pika.ConnectionParameters(
-                self._amqp_uri, blocked_connection_timeout=self._timeout, heartbeat=0
+                self.host,
+                self.port,
+                blocked_connection_timeout=self._timeout,
+                heartbeat=0,
+                tcp_options=tcp_options,
             )
         )
         channel = connection.channel()
@@ -111,14 +154,15 @@ class BaseQueueClient:
 class BlockingQueuePublisher(BaseQueueClient):
     def __init__(
         self,
-        amqp_uri: str,
+        host: str = None,
+        port: int = None,
         queue_name: str = None,
         exchange_name: str = None,
         exchange_type: str = None,
         *args,
         **kwargs,
     ):
-        super().__init__(amqp_uri, *args, **kwargs)
+        super().__init__(host, port, *args, **kwargs)
         self.queue_name = queue_name
         self.exchange_name = exchange_name or ""
         self.exchange_type = exchange_type
@@ -138,7 +182,7 @@ class BlockingQueuePublisher(BaseQueueClient):
                 wait_on_q_limit(channel, self.queue_name, lim=self.q_lim)
 
         logger.debug(
-            f"Publishing to: {self.exchange_name} | {self.queue_name} ({topic})"
+            f"Publishing to: {self.exchange_name} | q:{self.queue_name} (topic:{topic})"
         )
         channel.basic_publish(
             exchange=self.exchange_name,
@@ -150,7 +194,7 @@ class BlockingQueuePublisher(BaseQueueClient):
         )
 
         connection.close()
-        logger.info("🐇🍻 Sent!")
+        logger.debug("🐇🍻 Sent!")
 
 
 class BlockingQueueConsumer(BaseQueueClient):
@@ -159,7 +203,6 @@ class BlockingQueueConsumer(BaseQueueClient):
 
     def __init__(
         self,
-        amqp_uri: str,
         on_event: Callable,
         on_done: Callable,
         load_func: Callable,
@@ -168,11 +211,14 @@ class BlockingQueueConsumer(BaseQueueClient):
         exchange_type: str = None,
         routing_keys: List = None,
         prefetch_count: int = None,
+        host: str = None,
+        port: int = None,
         *args,
         **kwargs,
     ):
         super().__init__(
-            amqp_uri,
+            host,
+            port,
             *args,
             **kwargs,
         )
@@ -227,21 +273,20 @@ class BlockingQueueConsumer(BaseQueueClient):
         finally:
             # Send basic acknowledge back (no matter what)
             ch.basic_ack(delivery_tag=method.delivery_tag)
-            logger.info("🐇 Done!")
+            logger.debug("🐇 Done!")
 
     def consume(self):
         self._channel.basic_consume(
             queue=self.queue_name, on_message_callback=self._callback
         )
-
-        logger.info(
+        logger.debug(
             f"🐇 Waiting for messages on {self.queue_name}. To exit press CTRL+C"
         )
         self._channel.start_consuming()
 
     def unbind(self):
         for k in self.routing_keys:
-            logger.info(f"🐇 Unbinding queue '{self.queue_name}' and key: '{k}'")
+            logger.debug(f"🐇 Unbinding queue '{self.queue_name}' and key: '{k}'")
             self._channel.queue_unbind(
                 exchange=self.exchange_name, queue=self.queue_name, routing_key=k
             )

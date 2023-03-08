@@ -2,8 +2,9 @@
 from https://github.com/tinue/APA102_Pi
 This is the main driver module for APA102 LEDs
 """
-import spidev
 from math import ceil
+
+import spidev
 
 RGB_MAP = {
     "rgb": [3, 2, 1],

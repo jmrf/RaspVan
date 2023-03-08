@@ -8,31 +8,35 @@ x-logging:
 
 services:
 
-  test:
-    image: python:3.7-slim
-    logging: *default-logging
-    networks:
-      - fiona
-    command:
-      - python
-      - --version
-
-  asr:
-    # TODO: TO be changed to Kaldi
-    image: jmrf/w2l-worker
+  asr-server:
+    # To run with the default english model:
+    #   python vosk-server/websocket/asr_server.py /app/model
+    # Other models can be loaded using the mount volume:
+    # [ES] e.g: python vosk-server/websocket/asr_server.py /app/models/vosk-model-small-es-0.22
+    image: jmrf/vosk-server-rpi:0.3.32-cp37
     logging: *default-logging
     networks:
       - fiona
     volumes:
-      - ./phiona/workers:/root/app/
-      - ./ASR/models/wav2letter:/root/model/
-      - ./ASR/data/audio/test:/root/audios/
-    command:
-      - python
-      - -u
-      - /root/app/asr.py
-    depends_on:
-      - rabbit
+      - ${PWD}/asr/models:/app/models
+    ports:
+      - 2700:2700
+    command: >
+      python vosk-server/websocket/asr_server.py /app/model
+    devices:
+      - /dev/snd:/dev/snd  # Access to ALSA device
+
+  nlu:
+    image: jmrf/nlu-rpi:0.1.0
+    logging: *default-logging
+    networks:
+      - fiona
+    volumes:
+      - ${PWD}/nlu/:/app/nlu
+      - ${PWD}/common/:/app/common
+    command: >
+      python -m nlu.__init__
+
 
   rabbit:
     # image: rabbitmq:3-management
@@ -60,16 +64,16 @@ services:
     volumes:
       - ${PWD}/data/NodeRed:/data
 
-  # redis:
-  #   image: redis
-  #   networks: ["fiona"]
-  #   logging: *default-logging
-  #   ports:
-  #     - "6379:6379"
-  #   command:
-  #     - redis-server
-  #     - --protected-mode
-  #     - "no"
+  redis:
+    image: redis
+    networks: ["fiona"]
+    logging: *default-logging
+    ports:
+      - "6379:6379"
+    command:
+      - redis-server
+      - --protected-mode
+      - "no"
 
 networks:
   "fiona":

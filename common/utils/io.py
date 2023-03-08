@@ -1,7 +1,6 @@
 import logging.config
 import os
 import sys
-
 from logging import Logger
 
 import tqdm
@@ -10,12 +9,11 @@ LOG_DIR = os.getenv("LOG_DIR", "logs")
 
 from typing import Any
 from typing import Dict
-from typing import Text
 
 import yaml
 
 
-def read_config(conf_file: Text) -> Dict[Any, Any]:
+def read_config(conf_file: str) -> Dict[Any, Any]:
     def env_replace(elem: Any) -> Any:
         if isinstance(elem, dict):
             return {k: env_replace(v) for k, v in elem.items()}
@@ -140,10 +138,10 @@ def init_logger(
     log_dir: str = None,
     fmt="%(asctime)s,%(msecs)03d %(levelname)-8s %(name)-25s:%(lineno)3d - %(message)-50s",
 ):
-    """ Configures the given logger; format, logging level, style, etc """
+    """Configures the given logger; format, logging level, style, etc"""
 
     def add_notice_log_level():
-        """ Creates a new 'notice' logging level """
+        """Creates a new 'notice' logging level"""
         # inspired by:
         # https://stackoverflow.com/questions/2183233/how-to-add-a-custom-loglevel-to-pythons-logging-facility
         NOTICE_LEVEL_NUM = 25

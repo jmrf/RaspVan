@@ -1,27 +1,16 @@
-import logging
-
-from deepspeech import Model
-
-from common.utils.io import init_logger
-from common.utils.decorators import timeit
-
-logger = logging.getLogger(__name__)
-init_logger(level=logging.DEBUG, logger=logger)
+import numpy as np
 
 
-@timeit
-def load_model(model, scorer):
-    """Load the pre-trained model into the memory
+def raw_stream_to_numpy(buffer, dtype: str, channels: int):
+    data = np.frombuffer(buffer, dtype=dtype)
+    data = data.reshape(-1, channels)
 
-    Args:
-        models ([type]): Output Grapgh Protocol Buffer file
-        scorer ([type]): Scorer file
+    return data
 
-    Returns:
-        [DeepSpeech Object]: A DeepSpeech Model
-    """
 
-    ds = Model(model)
-    ds.enableExternalScorer(scorer)
+def calc_block_size(block_ms: int, sample_rate: int) -> int:
+    return int(block_ms * sample_rate / 1000)
 
-    return ds
+
+def calc_block_ms(block_size: int, sample_rate: int) -> int:
+    return int(block_size / sample_rate * 1000)
