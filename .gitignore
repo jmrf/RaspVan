@@ -10,6 +10,7 @@
 # other files
 *.log
 *.bak
+out.txt
 
 # directories
 **/__pycache__/
