@@ -8,10 +8,14 @@ import coloredlogs
 
 from raspvan.workers.relay import RelayClient
 from raspvan.workers.scheduler import LightTimer
+from respeaker.pixels import Pixels
 
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(logger=logger, level=logging.DEBUG)
+
+
+pixels = Pixels()
 
 
 class BLEServer:
@@ -84,6 +88,7 @@ class BLEServer:
                 logger.error(f"BT Server Unknown error: {e}")
 
     def process_request(self, data: Dict[str, Any]):
+        pixels.wakeup()
         try:
             logger.debug(f"Rx data: {data}")
             payload = json.loads(data.decode("utf-8"))
@@ -131,6 +136,8 @@ class BLEServer:
             logger.error(f"Error processing request to BT server: {e}")
             logger.exception(e)
             return {"ok": False, "error": str(e)}
+        finally:
+            pixels.off()
 
 
 if __name__ == "__main__":
