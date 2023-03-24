@@ -13,10 +13,12 @@ MIN_CHANNEL = 1
 MAX_CHANNEL = 4
 DEVICE_ADDR = 0x27
 
+# NOTE: Flip values accordingly to the relay wiring. i.e:
+# connected in NO (normally open) => ON = True / OFF = False
+# connected in NC (normally close) => ON = False / OFF = True
+ON = False
+OFF = True
 OFF_STATE = [1] * 4
-ON = True
-OFF = False
-
 
 class RedisLightsMemory:
     def __init__(self, redis_host: str = "localhost", redis_port: int = 6379):
