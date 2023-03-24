@@ -60,7 +60,7 @@ sh -c "$(curl -fsSL https://raw.github.com/ohmybash/oh-my-bash/master/tools/inst
 
 # Oh-my-bash custom themes
 say @blue[["> .oh-my-bash"]]
-git clone https://github.com/jmrf/oh-my-bash-custom-dir.git
+git clone https://github.com/josemarcosrf/oh-my-bash-custom-dir.git
 yes | cp -r oh-my-bash-custom-dir/* .oh-my-bash/custom
 
 # powerline fonts

@@ -33,12 +33,12 @@ TAR_FILE="precise-engine.tar.gz"
 
 say @yellow[["🚧 WARNING: This will download an older version (v0.1.1) of the precise-runner!"]]
 say @yellow[["🚧 WARNING: To get the latest (v0.3.1) you need to compile from source:"]]
-say @yellow[["🛠️  https://github.com/jmrf/mycroft-precise#source-install"]]
+say @yellow[["🛠️  https://github.com/josemarcosrf/mycroft-precise#source-install"]]
 
 
 if [ ! -f $TAR_FILE ]; then
     say @blue[["⏬ Downloading binaries for '$ARCH'"]]
-    wget  https://github.com/jmrf/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
+    wget  https://github.com/josemarcosrf/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
 fi
 
 if [ -f $TAR_FILE ]; then

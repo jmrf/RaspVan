@@ -5,7 +5,7 @@ FROM python:3.7-slim
 
 # To build with:
 # 1. Install buildx
-#   https://github.com/jmrf/pyvosk-rpi/blob/main/scripts/init_multi-build.sh
+#   https://github.com/josemarcosrf/pyvosk-rpi/blob/main/scripts/init_multi-build.sh
 #
 # 2. run docker build:
   # docker buildx build --squash --push \

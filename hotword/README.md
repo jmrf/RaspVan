@@ -1,8 +1,8 @@
 # Hotword detection
 
-We use a custom [mycroft/precise fork](https://github.com/jmrf/mycroft-precise) for hot-word detection.
+We use a custom [mycroft/precise fork](https://github.com/josemarcosrf/mycroft-precise) for hot-word detection.
 
-We collect some recordings and [train a custom word ](https://github.com/jmrf/mycroft-precise/wiki/Training-your-own-wake-word)by combining with [public sounds](http://pdsounds.tuxfamily.org/).
+We collect some recordings and [train a custom word ](https://github.com/josemarcosrf/mycroft-precise/wiki/Training-your-own-wake-word)by combining with [public sounds](http://pdsounds.tuxfamily.org/).
 
 We find that collecting the following samples yields acceptable results:
 
@@ -14,16 +14,15 @@ We find that collecting the following samples yields acceptable results:
 ## Table of Contents
 
 <!--ts-->
-* [Hotword detection](#hotword-detection)
-   * [Table of Contents](#table-of-contents)
-   * [Requirements](#requirements)
-   * [Structure](#structure)
-   * [How To](#how-to)
-      * [Install](#install)
-      * [Train a custom hotword](#train-a-custom-hotword)
+   * [Hotword detection](#hotword-detection)
+      * [Table of Contents](#table-of-contents)
+      * [Requirements](#requirements)
+      * [Structure](#structure)
+      * [How To](#how-to)
+         * [Install](#install)
+         * [Train a custom hotword](#train-a-custom-hotword)
 
-<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: pi, at: Thu 21 Apr 2022 03:58:37 PM CEST -->
+<!-- Added by: jose, at: vie 24 mar 2023 22:54:28 CET -->
 
 <!--te-->
 
@@ -31,7 +30,7 @@ We find that collecting the following samples yields acceptable results:
 ## Requirements
 
 - python >= 3.6
-- [mycroft/precise](https://github.com/jmrf/mycroft-precise#source-install)
+- [mycroft/precise](https://github.com/josemarcosrf/mycroft-precise#source-install)
 
 > ‼️ Important:
 > Ensure `h5py==2.10.0` otherwise keras will fail to load models
@@ -78,7 +77,7 @@ We find that collecting the following samples yields acceptable results:
 
 To train a `custom model` we need to install from source:
 ```
-    git clone https://github.com/jmrf/mycroft-precise
+    git clone https://github.com/josemarcosrf/mycroft-precise
     cd mycroft-precise
     ./setup.sh
 ```
@@ -86,7 +85,7 @@ To train a `custom model` we need to install from source:
 Once deployed in the `RaspberryPi`, we can use the binary installs:
 ```
     ARCH=armv7l
-    wget https://github.com/jmrf/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
+    wget https://github.com/josemarcosrf/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
     tar xvf precise-engine.tar.gz
 ```
 
@@ -103,7 +102,7 @@ And finally:
    ./scripts/crate_dirs.sh
    ```
 
-2. follow the [this wiki instructions](https://github.com/jmrf/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word)
+2. follow the [this wiki instructions](https://github.com/josemarcosrf/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word)
 
 
 <details>
