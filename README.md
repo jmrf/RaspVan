@@ -12,22 +12,25 @@ Commands can be executed either by _voice_ or by sending _HTTP requests_ to a se
 ## Table of Contents
 
 <!--ts-->
-* [RaspVan (codename: Fiona)](#raspvan-codename-fiona)
-   * [Table of Contents](#table-of-contents)
-   * [Requirements](#requirements)
-   * [Structure](#structure)
-      * [Hotword](#hotword)
-      * [ASR](#asr)
-      * [Respeaker](#respeaker)
-      * [Raspvan](#raspvan)
-   * [How to](#how-to)
-      * [Installation](#installation)
-      * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
-      * [Wiring and Connections](#wiring-and-connections)
-   * [Misc](#misc)
+   * [RaspVan (codename: Fiona)](#raspvan-codename-fiona)
+      * [Table of Contents](#table-of-contents)
+      * [Requirements](#requirements)
+      * [Structure](#structure)
+         * [Hotword](#hotword)
+         * [ASR](#asr)
+         * [NLU](#nlu)
+         * [Respeaker](#respeaker)
+         * [Raspvan](#raspvan)
+            * [Relays](#relays)
+            * [Bluetoth](#bluetoth)
+      * [How to](#how-to)
+         * [Installation](#installation)
+         * [Finding the sound input device ID](#finding-the-sound-input-device-id)
+         * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
+         * [Wiring and Connections](#wiring-and-connections)
+      * [Misc](#misc)
 
-<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: pi, at: Thu 21 Apr 2022 03:58:39 PM CEST -->
+<!-- Added by: jose, at: vie 24 mar 2023 22:54:27 CET -->
 
 <!--te-->
 ----
@@ -95,7 +98,7 @@ python -m raspvan.workers.hotword
 ### ASR
 
 We use the dockerized vosk-server from the
-[jmrf/pyvosk-rpi](https://github.com/jmrf/pyvosk-rpi) repo.
+[jmrf/pyvosk-rpi](https://github.com/josemarcosrf/pyvosk-rpi) repo.
 
 This server listens via websocket to a `sounddevice` stream and performs STT on the fly.
 
@@ -171,8 +174,42 @@ python -m respeaker.pixels
 
 This is the main module which coordinates all the different components.
 
- - i2c relay demo: `python -m raspvan.workers.relay`
+#### Relays
 
+i2c relay demo: `python -m raspvan.workers.relay`
+
+#### Bluetoth
+
+To run the bluetooth server `make run-ble-server`
+
+<details>
+
+<summary>Setting BLE server as a service</summary>
+
+Create `/etc/systemd/system/ble_server.service` with the following content:
+
+```
+[Unit]
+Description=RaspVan BLE Server + Redis container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStart=/bin/bash /home/pi/start_ble.sh
+ExecStop=
+
+[Install]
+WantedBy=default.target
+```
+
+> Enable on startup: `sudo systemctl enable ble_server.service`
+
+> Start with : `sudo systemctl start ble_server`
+
+> Check its status with: `sudo systemctl status ble_server`
+
+</details>
 
 
 ## How to

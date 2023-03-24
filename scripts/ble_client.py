@@ -1,3 +1,4 @@
+import click
 import json
 import logging
 import sys
@@ -9,20 +10,17 @@ import coloredlogs
 logger = logging.getLogger(__name__)
 coloredlogs.install(logger=logger, level=logging.DEBUG)
 
-if __name__ == "__main__":
-    addr = None
 
-    if len(sys.argv) < 2:
-        logger.info(
-            "No device specified. Searching all nearby bluetooth devices for "
-            "the SampleServer service..."
-        )
+@click.command()
+@click.option("--uuid", default="616d3aa1-689e-4e71-8fed-09f3c7c4ad91")
+@click.option("--addr")
+def main(uuid: str, addr: str = None):
+    if addr:
+        logger.info(f"Searching for BT Server with address={addr}...")
     else:
-        addr = sys.argv[1]
-        logger.info("Searching for SampleServer on {}...".format(addr))
+        logger.info("Searching all nearby bluetooth devices for the BT Server")
 
-    # search for the SampleServer service
-    uuid = "616d3aa1-689e-4e71-8fed-09f3c7c4ad91"
+    # search for the BT Server service
     service_matches = bluetooth.find_service(uuid=uuid, address=addr)
 
     if len(service_matches) == 0:
@@ -48,10 +46,14 @@ if __name__ == "__main__":
         mode = input("Input ON (1) / OFF (0)\t")
 
         sock.send(
-            json.dumps({"cmd": "switch", "channels": channels, "mode": int(mode)})
+            json.dumps({"cmd": "/switch", "channels": channels, "mode": int(mode)})
         )
         res = sock.recv(1024)
         print(res)
         print("-" * 40)
 
     sock.close()
+
+
+if __name__ == "__main__":
+    main()

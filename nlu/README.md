@@ -47,7 +47,7 @@ The steps are as follows:
 
 1. Install buildx
 
-  You can use [this script](https://github.com/jmrf/pyvosk-rpi/blob/main/scripts/init_multi-build.sh)
+  You can use [this script](https://github.com/josemarcosrf/pyvosk-rpi/blob/main/scripts/init_multi-build.sh)
 
 2. Run docker build (**in a work-station, not in the RPI!**):
 

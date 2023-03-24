@@ -4,6 +4,7 @@ from typing import Any
 from typing import Dict
 
 import bluetooth as bt
+import click
 import coloredlogs
 
 from raspvan.workers.relay import RelayClient
@@ -19,9 +20,14 @@ pixels = Pixels()
 
 
 class BLEServer:
-    def __init__(self, server_name: str = "RPI-BT-Server", port: int = 1):
+    def __init__(
+        self,
+        uuid: str = "616d3aa1-689e-4e71-8fed-09f3c7c4ad91",
+        server_name: str = "RPI-BT-Server",
+        port: int = 1,
+    ):
         # TODO: Change this UUID
-        self.uuid = "616d3aa1-689e-4e71-8fed-09f3c7c4ad91"
+        self.uuid = uuid
         self.server_name = server_name
         # init the relay controler
         self.relay_client = RelayClient()
@@ -81,9 +87,6 @@ class BLEServer:
                     logger.error(f"Something wrong with bluetooth: {be}")
             except KeyboardInterrupt:
                 logger.warning("\nDisconnected")
-                client_sock.close()
-                self.server_sock.close()
-                break
             except Exception as e:
                 logger.error(f"BT Server Unknown error: {e}")
 
@@ -140,10 +143,18 @@ class BLEServer:
             pixels.off()
 
 
+@click.command()
+@click.option("--uuid", default="616d3aa1-689e-4e71-8fed-09f3c7c4ad91")
+@click.option("--server-name", default="RPI-BT-Server")
+@click.option("--port", default=1)
+def main(uuid: str, server_name: str, port: int):
+    ble = BLEServer(uuid, server_name, port)
+    ble.run()
+
+
 if __name__ == "__main__":
     """
-    For an example for RFCOMM server form pybluez:
+    For an example for RFCOMM server from pybluez:
     # https://github.com/pybluez/pybluez/blob/master/examples/simple/rfcomm-server.py
     """
-    ble = BLEServer()
-    ble.run()
+    main()
