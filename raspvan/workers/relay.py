@@ -9,16 +9,24 @@ from smbus2 import SMBus
 
 logger = logging.getLogger(__name__)
 
+import coloredlogs
+
+coloredlogs.install(logger=logger, level=logging.DEBUG)
+
 MIN_CHANNEL = 1
 MAX_CHANNEL = 4
 DEVICE_ADDR = 0x27
 
-# NOTE: Flip values accordingly to the relay wiring. i.e:
+ON = True
+OFF = False
+OFF_STATE = [0] * 4
+
+# NOTE:
 # connected in NO (normally open) => ON = True / OFF = False
 # connected in NC (normally close) => ON = False / OFF = True
-ON = False
-OFF = True
-OFF_STATE = [1] * 4
+# So we invert the passed switch mode in case of NC
+RELAY_MODE = "NC"
+
 
 class RedisLightsMemory:
     def __init__(self, redis_host: str = "localhost", redis_port: int = 6379):
@@ -65,9 +73,13 @@ class RelayClient:
         mask = "".join(map(str, new_state))
         mask_val = eval(f"0b{mask}1111")
 
+        logger.debug(f"Calculated state: {new_state} (mask: {mask_val})")
+
         return new_state, mask_val
 
     def switch(self, channels: List[int], mode: int) -> List[int]:
+        if RELAY_MODE == "NC":
+            mode ^= 1  # invert the mode
         try:
             self.validate(channels, mode)
         except ValueError as ve:
