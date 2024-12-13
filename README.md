@@ -12,23 +12,23 @@ Commands can be executed either by _voice_ or by sending _HTTP requests_ to a se
 ## Table of Contents
 
 <!--ts-->
-   * [RaspVan (codename: Fiona)](#raspvan-codename-fiona)
-      * [Table of Contents](#table-of-contents)
-      * [Requirements](#requirements)
-      * [Structure](#structure)
-         * [Hotword](#hotword)
-         * [ASR](#asr)
-         * [NLU](#nlu)
-         * [Respeaker](#respeaker)
-         * [Raspvan](#raspvan)
-            * [Relays](#relays)
-            * [Bluetoth](#bluetoth)
-      * [How to](#how-to)
-         * [Installation](#installation)
-         * [Finding the sound input device ID](#finding-the-sound-input-device-id)
-         * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
-         * [Wiring and Connections](#wiring-and-connections)
-      * [Misc](#misc)
+* [RaspVan (codename: Fiona)](#raspvan-codename-fiona)
+  * [Table of Contents](#table-of-contents)
+  * [Requirements](#requirements)
+  * [Structure](#structure)
+    * [Hotword](#hotword)
+    * [ASR](#asr)
+    * [NLU](#nlu)
+    * [Respeaker](#respeaker)
+    * [Raspvan](#raspvan)
+      * [Relays](#relays)
+      * [Bluetoth](#bluetoth)
+  * [How to](#how-to)
+    * [Installation](#installation)
+    * [Finding the sound input device ID](#finding-the-sound-input-device-id)
+    * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
+    * [Wiring and Connections](#wiring-and-connections)
+  * [Misc](#misc)
 
 <!-- Added by: jose, at: vie 24 mar 2023 22:54:27 CET -->
 
@@ -40,11 +40,10 @@ Commands can be executed either by _voice_ or by sending _HTTP requests_ to a se
 Apart from any other requirement defined in the root or any of the sub-components we
 need the follwing:
 
-*  [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
+* [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
    ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
-*  python >= 3.7
-*  Docker & Docker-compose
-
+* python >= 3.7
+* Docker & Docker-compose
 
 ## Structure
 
@@ -73,7 +72,6 @@ the individual readme files.
 ├── setup.cfg
 └── raspvan                 # client and server systems
 ```
-
 
 Most of the following components communicate through `AMQP` using `rabbitMQ`.
 
@@ -127,7 +125,6 @@ Or run the rabbitMQ-triggered `raspvan ASR worker`:
 python -m raspvan.workers.asr
 ```
 
-
 ### NLU
 
 > ⚠️ While the rest of the components use `numpy~=1.16` the NLU components requires
@@ -137,15 +134,12 @@ python -m raspvan.workers.asr
 >
 > See [nlu/README.md](nlu/README.md)
 
-
 The NLU engine has two parts:
 
- - A Spacy vectorizer + SVM classifier for **intent classification**
- - A `Conditional Random Field` (CRF) for **entity extraction**
+* A Spacy vectorizer + SVM classifier for **intent classification**
+* A `Conditional Random Field` (CRF) for **entity extraction**
 
 > 💡 Check the details in this Colab notebook: [simple-NLU.ipynb](https://colab.research.google.com/drive/1q6Ei9SRdD8Pdg65Pvp8porRyFlQXD4w6#scrollTo=mK2GbpHan6k7)
-
-
 > 💡 It is advices to collect some voice samples and run them through ASR to use
 > these as training samples for the NLU component to train it on real data.
 
@@ -158,17 +152,15 @@ python -m scripts.mic_vad_record -l
 python -m scripts.mic_vad_record sample.wav -d 5 -c 4
 ```
 
-
 ### Respeaker
 
-We use [respeaker 4mic hat]() as microphone and visual feedbac with its LED array.
+We use `respeaker 4mic hat` as microphone and visual feedbac with its LED array.
 
 To run the LED pixel demo:
 
 ```bash
 python -m respeaker.pixels
 ```
-
 
 ### Raspvan
 
@@ -204,13 +196,12 @@ WantedBy=default.target
 ```
 
 > Enable on startup: `sudo systemctl enable ble_server.service`
-
+>
 > Start with : `sudo systemctl start ble_server`
-
+>
 > Check its status with: `sudo systemctl status ble_server`
 
 </details>
-
 
 ## How to
 
@@ -226,9 +217,9 @@ source .venv/bin/activate
 And install all the python dependencies
 
 ```bash
-pip install -r requirements.txt
+# pip install -r requirements.txt
+pdm sync
 ```
-
 
 ### Finding the sound input device ID
 
@@ -263,7 +254,6 @@ is the one to pass to the `hotword` and `ASR` workers.
 >
 > Copy [config/.asoundrc](config/.asoundrc) to `~./asoundrc`
 
-
 <details>
   <summary>⚠️ Probably deprecated. Click to expand!</summary>
 
@@ -277,11 +267,9 @@ from [raspberryconnect/network](http://www.raspberryconnect.com/network).
 
 By default the RaspberryPi will be accessible at the IP: `192.168.50.5` when the hotspot is active.
 
-
 ### Wiring and Connections
 
 TBD
-
 
 ## Misc
 
