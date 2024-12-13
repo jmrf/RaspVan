@@ -1,0 +1,171 @@
+[project]
+name = "RaspVan"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "josemarcosrf", email = "josemarcosrf@gmail.com"},
+    {name = "Jose Marcos RF", email = "josemarcosrf@gmail.com"},
+]
+dependencies = [
+    "sounddevice~=0.4.4",
+    "vosk~=0.3.32",
+    "webrtcvad~=2.0.10",
+    "websockets~=10.3",
+    "h5py==2.10.0",
+    "numpy==1.16.0",
+    "precise-runner~=0.3.1",
+    "APScheduler==3.5.1",
+    "coloredlogs",
+    "click>=8.1.7",
+    "Flask==2.0.2",
+    "Flask-RESTful==0.3.6",
+    "funcy>=1.16",
+    "halo>=0.0.31",
+    "nest-asyncio~=1.5.5",
+    "pika==1.2.0",
+    "playsound>=1.3.0",
+    "PyYAML>=6.0",
+    "rich>=10.14.0",
+    "soundfile~=0.10.3.post1",
+    "tqdm>=4.62.3",
+]
+requires-python = "==3.9.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[project.optional-dependencies]
+asr = [
+    "sounddevice~=0.4.4",
+    "vosk~=0.3.32",
+    "webrtcvad~=2.0.10",
+    "websockets~=10.3",
+]
+hotword = [
+    "h5py==2.10.0",
+    "numpy==1.16.0",
+    "precise-runner~=0.3.1",
+]
+bluetooth = [
+    "pybluez>=0.23",
+]
+nlu = [
+    "coloredlogs",
+    "gpiozero~=1.6.2",
+    "pandas~=1.3.5",
+    "pika~=1.21",
+    "PyYAML>=6.0",
+    "scikit-learn<0.24",
+    "spacy-crfsuite~=1.3.0",
+    "spacy~=3.3.1",
+    "spidev~=3.5",
+]
+respeaker = [
+    "gpiozero~=1.6.2",
+    "numpy>=1.16.0",
+    "PyAudio>=0.2.11",
+    "respeaker~=0.6.2",
+    "spidev==3.5",
+]
+dev = [
+    "invoke>=2.2.0",
+    "isort>=5.13.2",
+    "mypy>=1.9.0",
+    "mypy-extensions",
+    "ruff>=0.3.2",
+    "coveralls==1.7.0",
+    "flake8==3.7.8",
+    "pluggy==0.13.1",
+    "pre-commit==1.21.0",
+    "pre-commit-hooks==2.4.0",
+    "pytest==5.1.3",
+    "pytest-cov==2.7.1",
+    "pytest-localserver==0.5.0",
+    "pytest-sanic==1.0.0",
+    "pytest-xdist==1.29.0",
+    "pytype==2019.7.11",
+    "responses==0.9.0",
+    "six==1.14.0",
+]
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.scripts.tests]
+cmd = "pytest --cov -m 'not integration'"
+help = "Run unit tests and coverage."
+
+[tool.pdm.scripts.check-lint]
+shell = """
+    ruff format --check .
+    isort --check .
+    ruff check .
+"""
+help = "Run linting and formating checks."
+
+[tool.pdm.scripts.check-typing]
+cmd = "mypy --install-types --non-interactive"
+help = "Run static typing analysis."
+
+[tool.pdm.scripts.checks]
+composite = ["check-lint", "check-typing"]
+help = "Run all checks."
+
+[tool.pdm.scripts.ready]
+composite = ["reformat", "checks", "tests"]
+help = "Run all checks and tests."
+
+[tool.pdm.scripts.reformat]
+shell = """
+    isort .
+    ruff format .
+"""
+help = "Reformat the code using isort and ruff."
+
+[tool.pdm.scripts.reqs]
+cmd = "pdm export --prod --without-hashes"
+help = "Extract current development requirements. Save to a file with the `-o` option."
+
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+asyncio_mode = "auto"
+markers = ["skip_if_drone", "integration"]
+
+[tool.coverage.run]
+source = ["raspvan/", ]
+omit = ["*/tests/*", ]
+
+[tool.coverage.report]
+skip_covered = false
+show_missing = true
+#fail_under = 90
+exclude_also = ["pragma: no cover", "@abstract",]
+omit = []
+
+[tool.ruff]
+line-length = 88
+output-format = "grouped"
+
+[tool.ruff.lint]
+select = [  # see https://docs.astral.sh/ruff/rules/
+    "E4", "E7", "E9",  # basic pycodestyle rules
+    "W",     # pycodestyle warnings
+    "F",     # Pyflakes rules
+    "N",     # PEP8 naming conventions
+    "PLR",   # Pylint refactoring recommendations
+    "PTH",   # recommends to use pathlib instead of os.path
+    "UP",    # pyupgrade suggestions
+#    "BLE",   # locates blind exception capture
+    "B",     # locates possible bugs and design problems
+    "A",     # locates shadowing of builtin names
+    "C4",    # locates possible issues with comprehensions
+    "PIE",   # miscellaneous linting rules
+    "DTZ",   # locates incorrect use of timezone information
+    "TRY",   # locates potential exception handling antipatterns
+    "PERF",  # locates potential performance issues
+    "RUF",   # various Ruff-specific linting rules
+]
+# TODO: fix this to use Annotated instead of function call as default.
+ignore = ["B008", "TRY003"]
+

@@ -1,4 +1,4 @@
-import argparse
+import click
 import asyncio
 import json
 import logging
@@ -59,82 +59,29 @@ async def callback(event):
         pixels.off()
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
-
-    comm_opts = parser.add_argument_group("Routing options")
-    comm_opts.add_argument(
-        "--exchange",
-        "-x",
-        help="queue exchange name",
-        default=os.getenv(Q_EXCHANGE_ENV_VAR, DEFAULT_EXCHANGE),
-    )
-    comm_opts.add_argument(
-        "--consume-topic",
-        "-ct",
-        help="ASR --> NLU topic as a routing key",
-        default=DEFAULT_HOTWORD_ASR_TOPIC,
-    )
-    comm_opts.add_argument(
-        "--publish-topic",
-        "-pt",
-        help="ASR --> NLU topic as a routing key",
-        default=DEFAULT_ASR_NLU_TOPIC,
-    )
-
-    vad_opts = parser.add_argument_group("VAD options")
-    vad_opts.add_argument(
-        "-u",
-        "--uri",
-        type=str,
-        metavar="URL",
-        help="Server URL",
-        default="ws://localhost:2700",
-    )
-    vad_opts.add_argument(
-        "-d",
-        "--device",
-        type=int_or_str,
-        help="input device (numeric ID or substring)",
-        default=os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0),
-    )
-    vad_opts.add_argument(
-        "-r", "--samplerate", type=int, help="sampling rate", default=16000
-    )
-    vad_opts.add_argument(
-        "-v", "--vad-aggressiveness", type=int, help="VAD aggressiveness", default=2
-    )
-
-    return parser.parse_args()
-
-
-async def main():
-
+async def arun_asr(samplerate, device, uri, exchange, consume_topic, publish_topic, vad_aggressiveness):
     global asr
     global device_id
     global sample_rate
     global pixels
     global publisher
-    global publish_topic
-
-    args = get_args()
 
     try:
         # Init ASR parameters
-        sample_rate = args.samplerate
-        device_id = args.device
+        sample_rate = samplerate
+        device_id = device
 
         logger.info(
-            f"🎙️ Using Audio Device: {args.device} "
-            f"(sampling rate: {args.samplerate} Hz)"
+            f"🎙️ Using Audio Device: {device} "
+            f"(sampling rate: {samplerate} Hz)"
         )
 
         # Init the Pixels client
         pixels = Pixels()
 
         # Init the ASR Client
-        vad = VAD(args.vad_aggressiveness)
-        asr = ASRClient(args.uri, vad)
+        vad = VAD(vad_aggressiveness)
+        asr = ASRClient(uri, vad)
 
         # Init the triggering queue
         amqp_host, amqp_port = get_amqp_uri_from_env()
@@ -142,8 +89,8 @@ async def main():
         # Init the rabbit MQ consumer
         logger.debug(f"rabbit host: {amqp_host}, rabbit port: {amqp_port}")
         logger.info(
-            f"🐇 Initializing Consumer. Exchange: {args.exchange}"
-            f"(topics: {args.consume_topic})"
+            f"🐇 Initializing Consumer. Exchange: {exchange}"
+            f"(topics: {consume_topic})"
         )
         consumer = BlockingQueueConsumer(
             host=amqp_host,
@@ -151,21 +98,21 @@ async def main():
             on_event=lambda e: run_sync(callback, e),
             on_done=lambda: pixels.off(),
             load_func=json.loads,
-            routing_keys=[args.consume_topic],
-            exchange_name=args.exchange,
+            routing_keys=[consume_topic],
+            exchange_name=exchange,
             exchange_type="topic",
             queue_name="asr",
         )
         # Init the rabbit MQ sender
         logger.info(
-            f"🐇 Initializing publisher. Exchange: {args.exchange}"
-            f"(topics: {args.publish_topic})"
+            f"🐇 Initializing publisher. Exchange: {exchange}"
+            f"(topics: {publish_topic})"
         )
-        publish_topic = args.publish_topic
+        publish_topic = publish_topic
         publisher = BlockingQueuePublisher(
             host=amqp_host,
             port=amqp_port,
-            exchange_name=args.exchange,
+            exchange_name=exchange,
             exchange_type="topic",
             queue_name="nlu",
         )
@@ -176,8 +123,70 @@ async def main():
         consumer.close()
 
 
-if __name__ == "__main__":
+@click.command()
+@click.option(
+    "-x",
+    "--exchange",
+    help="queue exchange name",
+    default=os.getenv(Q_EXCHANGE_ENV_VAR, DEFAULT_EXCHANGE),
+)
+@click.option(
+    "-ct",
+    "--consume-topic",
+    help="ASR --> NLU topic as a routing key",
+    default=DEFAULT_HOTWORD_ASR_TOPIC,
+)
+@click.option(
+    "-pt",
+    "--publish-topic",
+    help="ASR --> NLU topic as a routing key",
+    default=DEFAULT_ASR_NLU_TOPIC,
+)
+@click.option(
+    "-s",
+    "--asr-ws-uri",
+    type=str,
+    metavar="URL",
+    help="ASR Server websocket URI",
+    default="ws://localhost:2700",
+)
+@click.option(
+    "-d",
+    "--device",
+    type=int_or_str,
+    help="input device (numeric ID or substring)",
+    default=os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0),
+)
+@click.option(
+    "-r", "--samplerate", type=int, help="sampling rate", default=16000
+)
+@click.option(
+    "-v", "--vad-aggressiveness", type=int, help="VAD aggressiveness", default=2
+)
+def main(
+    samplerate,
+    device,
+    asr_ws_uri,
+    exchange,
+    consume_topic,
+    publish_topic,
+    vad_aggressiveness,
+):
     try:
-        asyncio.run(main())
+        asyncio.run(
+            arun_asr(
+                samplerate,
+                device,
+                asr_ws_uri,
+                exchange,
+                consume_topic,
+                publish_topic,
+                vad_aggressiveness,
+            )
+        )
     except Exception as e:
-        logger.error(f"Error while running ASR: {e}")
+        logger.error(f"💥 Error while running ASR: {e}")
+
+
+if __name__ == "__main__":
+    main()

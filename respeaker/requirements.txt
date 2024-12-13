@@ -1,5 +1,0 @@
-gpiozero~=1.6.2
-numpy>=1.16.0
-PyAudio>=0.2.11
-respeaker~=0.6.2
-spidev==3.5
