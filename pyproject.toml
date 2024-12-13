@@ -28,6 +28,7 @@ dependencies = [
     "rich>=10.14.0",
     "soundfile~=0.10.3.post1",
     "tqdm>=4.62.3",
+    "invoke>=2.2.0",
 ]
 requires-python = "==3.9.*"
 readme = "README.md"
