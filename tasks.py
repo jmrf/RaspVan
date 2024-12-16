@@ -1,5 +1,30 @@
 from invoke import task
 
+# =============== DEV Tasks ================
+
+@task
+def reformat(ctx):
+    """Apply isort and ruff formatting"""
+    ctx.run("isort .")
+    ctx.run("ruff format .")
+
+
+@task
+def checks(ctx):
+    ctx.run("""
+        echo "👀 Checking code formatting..."
+        ruff format --check .
+        echo "👀 Checking import formatting..."
+        isort --check .
+        echo "👀 Checking linting rules..."
+        ruff check .
+    """)
+
+
+@task
+def tests(ctx):
+    ctx.run("pytest --cov --spec -n 2")
+
 # =============== Base Tasks ================
 
 @task
@@ -75,3 +100,17 @@ def run_asr(ctx):
 def run_nlu(ctx):
     """Run the NLU worker service listening to the ASR.complete trigger"""
     ctx.run("python -m raspvan.workers.nlu -ct asr.complete")
+
+
+@task
+def toc(ctx):
+    """Gnerate a Table Of Contents for the README file"""
+    # https://github.com/ekalinin/github-markdown-toc
+    ctx.run(
+        "find . "
+        "! -path '.venv/*' "
+        "! -path './kaldi/*' "
+        "! -path './external/*' "
+        "! -path './hotword/mycroft-precise/*' "
+        "-name README.md -exec gh-md-toc --insert {} \;"
+    )
