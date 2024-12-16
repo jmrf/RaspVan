@@ -2,8 +2,7 @@ import wave
 
 import pyaudio
 
-from respeaker.constants import (RESPEAKER_CHANNELS, RESPEAKER_RATE,
-                                 RESPEAKER_WIDTH)
+from respeaker.constants import RESPEAKER_CHANNELS, RESPEAKER_RATE, RESPEAKER_WIDTH
 
 RESPEAKER_RATE = 16000
 RESPEAKER_CHANNELS = 4

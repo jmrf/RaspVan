@@ -17,10 +17,14 @@ from common import int_or_str
 from common.utils.context import no_alsa_err
 from common.utils.io import init_logger
 from common.utils.rabbit import BlockingQueuePublisher, get_amqp_uri_from_env
-from raspvan.constants import (AUDIO_DEVICE_ID_ENV_VAR, DEFAULT_EXCHANGE,
-                               DEFAULT_HOTWORD_ASR_TOPIC,
-                               HOTWORD_MODEL_ENV_VAR, PRECISE_ENGINE_ENV_VAR,
-                               Q_EXCHANGE_ENV_VAR)
+from raspvan.constants import (
+    AUDIO_DEVICE_ID_ENV_VAR,
+    DEFAULT_EXCHANGE,
+    DEFAULT_HOTWORD_ASR_TOPIC,
+    HOTWORD_MODEL_ENV_VAR,
+    PRECISE_ENGINE_ENV_VAR,
+    Q_EXCHANGE_ENV_VAR,
+)
 from respeaker.pixels import Pixels
 
 logger = logging.getLogger(__name__)

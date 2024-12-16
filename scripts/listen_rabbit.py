@@ -40,9 +40,7 @@ if __name__ == "__main__":
         routing_keys = [args.topic]
 
         if args.from_exchange and not args.topic:
-            raise ValueError(
-                "A topic must be provided when consuming from an exchange"
-            )
+            raise ValueError("A topic must be provided when consuming from an exchange")
 
         logger.info("Creating consumer and listening")
         consumer = BlockingQueueConsumer(

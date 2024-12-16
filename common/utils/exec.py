@@ -40,9 +40,7 @@ async def async_parallel_exec(
 
         # Create all tasks
         tasks = [
-            loop.run_in_executor(
-                executor, mapping_func_call, *(f_id, func, *f_params)
-            )
+            loop.run_in_executor(executor, mapping_func_call, *(f_id, func, *f_params))
             for f_id, func, f_params in func_calls
         ]
 

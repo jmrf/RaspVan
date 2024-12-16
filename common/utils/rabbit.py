@@ -7,8 +7,12 @@ import pika
 from pika.adapters.blocking_connection import BlockingChannel
 
 from common.utils.io import init_logger
-from raspvan.constants import (DEFAULT_RABBITMQ_HOST, DEFAULT_RABBITMQ_PORT,
-                               RABBITMQ_HOST_ENV_VAR, RABBITMQ_PORT_ENV_VAR)
+from raspvan.constants import (
+    DEFAULT_RABBITMQ_HOST,
+    DEFAULT_RABBITMQ_PORT,
+    RABBITMQ_HOST_ENV_VAR,
+    RABBITMQ_PORT_ENV_VAR,
+)
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
@@ -79,9 +83,7 @@ class BaseQueueClient:
                 f"Must be one of: {self.VALID_EXCHANGE_TYPES}"
             )
         if self.q_lim > 0 and self.exchange_name:
-            logger.warning(
-                "🐇 Queue limit will be ignored when sending to an exchange"
-            )
+            logger.warning("🐇 Queue limit will be ignored when sending to an exchange")
 
         logger.info(
             f"🐇 @ {self.host}:{self.port} "
