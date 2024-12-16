@@ -75,7 +75,7 @@ class GoogleHomeLedPattern:
             time.sleep(0.2)
 
         t = 0.1
-        for i in range(0, 5):
+        for i in range(5):
             pixels = numpy.roll(pixels, 4)
             self.show(pixels * (4 - i) / 4)
             time.sleep(t)

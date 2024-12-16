@@ -24,12 +24,10 @@ init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 class Pixels(metaclass=Singleton):
-
     PIXELS_N = 12
     PATTERN_MAP = {"google": GoogleHomeLedPattern, "alexa": AlexaLedPattern}
 
     def __init__(self, pattern=None):
-
         if pattern is None:
             pattern = self._random_pattern()
 
@@ -101,7 +99,6 @@ class Pixels(metaclass=Singleton):
 
 
 if __name__ == "__main__":
-
     pixels = Pixels()
 
     while True:

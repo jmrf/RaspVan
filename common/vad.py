@@ -39,7 +39,7 @@ class VoiceActivityDetector:
 
     def _calculate_energy(self, data):
         data_amplitude = self._calculate_amplitude(data)
-        data_energy = data_amplitude ** 2
+        data_energy = data_amplitude**2
         return data_energy
 
     def _znormalize_energy(self, data_energy):
@@ -50,7 +50,7 @@ class VoiceActivityDetector:
 
     def _connect_energy_with_frequencies(self, data_freq, data_energy):
         energy_freq = {}
-        for (i, freq) in enumerate(data_freq):
+        for i, freq in enumerate(data_freq):
             if abs(freq) not in energy_freq:
                 energy_freq[abs(freq)] = data_energy[i] * 2
         return energy_freq

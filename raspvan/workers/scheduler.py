@@ -1,15 +1,12 @@
 import logging
 import time
 from datetime import datetime as dt
-from typing import Any
-from typing import Callable
-from typing import Dict
+from typing import Any, Callable
 
 import coloredlogs
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from raspvan.workers.relay import RelayClient
-
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(logger=logger, level=logging.DEBUG)
@@ -41,7 +38,7 @@ class LightTimer:
             for j in self.sched.get_jobs()
         ]
 
-    def put(self, delay: int, func: Callable, f_kwargs: Dict[str, Any]):
+    def put(self, delay: int, func: Callable, f_kwargs: dict[str, Any]):
         try:
             job_id = self._make_schedule_id(func, f_kwargs, delay)
             logger.info(f"New schedule -> {job_id}")
@@ -55,7 +52,7 @@ class LightTimer:
                 args=(job_id, func, f_kwargs),
             )
         except Exception as e:
-            logger.error(f"Error in PUT schedule: {e}")
+            logger.exception(f"Error in PUT schedule: {e}")
             logger.exception(e)
 
 

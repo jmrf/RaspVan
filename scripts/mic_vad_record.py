@@ -8,12 +8,10 @@ import soundfile as sf
 from halo import Halo
 from rich.console import Console
 
-from asr import calc_block_ms
-from asr import raw_stream_to_numpy
+from asr import calc_block_ms, raw_stream_to_numpy
 from asr.vad import VAD
 from common import int_or_str
 from respeaker.pixels import Pixels
-
 
 console = Console()
 
@@ -55,7 +53,7 @@ def get_args():
 
     if args.list_devices:
         console.print(sd.query_devices())
-        exit(0)
+        sys.exit(0)
     if args.samplerate is None:
         # soundfile expects an int, sounddevice provides a float:
         device_info = sd.query_devices(args.device, "input")

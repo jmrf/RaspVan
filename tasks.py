@@ -2,6 +2,7 @@ from invoke import task
 
 # =============== DEV Tasks ================
 
+
 @task
 def reformat(ctx):
     """Apply isort and ruff formatting"""
@@ -11,21 +12,25 @@ def reformat(ctx):
 
 @task
 def checks(ctx):
-    ctx.run("""
+    ctx.run(
+        """
         echo "👀 Checking code formatting..."
         ruff format --check .
         echo "👀 Checking import formatting..."
         isort --check .
         echo "👀 Checking linting rules..."
         ruff check .
-    """)
+    """
+    )
 
 
 @task
 def tests(ctx):
     ctx.run("pytest --cov --spec -n 2")
 
+
 # =============== Base Tasks ================
+
 
 @task
 def print_audio_devices(ctx):
@@ -44,6 +49,7 @@ def print_audio_cards(ctx):
 @task
 def build_nlu(ctx):
     from raspvan.version import __version__
+
     print(f"🔨 Building image: jmrf/nlu-rpi:{__version__}")
     ctx.run(
         f"docker build --rm -t jmrf/nlu-rpi:{__version__}"
@@ -53,7 +59,7 @@ def build_nlu(ctx):
 
 @task
 def run_pixels(ctx):
-    """Run the Respeaker respeaker.pixels:__main__ """
+    """Run the Respeaker respeaker.pixels:__main__"""
     ctx.run("python -m respeaker.pixels")
 
 
@@ -89,8 +95,8 @@ def run_hot_word(ctx):
 @task
 def run_asr(ctx):
     """Run the ASR worker service.
-        - Consuming from the topic 'hotword.detected'
-        - Publishes to 'asr.complete'
+    - Consuming from the topic 'hotword.detected'
+    - Publishes to 'asr.complete'
     """
     ctx.run("docker-compose up -d rabbit asr-server")
     ctx.run("python -m raspvan.workers.asr -ct hotword.detected -pt asr.complete")
@@ -112,5 +118,5 @@ def toc(ctx):
         "! -path './kaldi/*' "
         "! -path './external/*' "
         "! -path './hotword/mycroft-precise/*' "
-        "-name README.md -exec gh-md-toc --insert {} \;"
+        r"-name README.md -exec gh-md-toc --insert {} \;"
     )

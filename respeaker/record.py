@@ -2,9 +2,8 @@ import wave
 
 import pyaudio
 
-from respeaker.constants import RESPEAKER_CHANNELS
-from respeaker.constants import RESPEAKER_RATE
-from respeaker.constants import RESPEAKER_WIDTH
+from respeaker.constants import (RESPEAKER_CHANNELS, RESPEAKER_RATE,
+                                 RESPEAKER_WIDTH)
 
 RESPEAKER_RATE = 16000
 RESPEAKER_CHANNELS = 4
@@ -36,7 +35,7 @@ def record_audio(
 
     frames = []
 
-    for i in range(0, int(rate / CHUNK * record_seconds)):
+    for _i in range(int(rate / CHUNK * record_seconds)):
         data = stream.read(CHUNK)
         frames.append(data)
 

@@ -1,25 +1,22 @@
-import click
 import asyncio
 import json
 import logging
 import os
 from datetime import datetime as dt
 
+import click
+
 from asr.client import ASRClient
 from asr.vad import VAD
 from common import int_or_str
 from common.utils.exec import run_sync
 from common.utils.io import init_logger
-from common.utils.rabbit import BlockingQueueConsumer
-from common.utils.rabbit import BlockingQueuePublisher
-from common.utils.rabbit import get_amqp_uri_from_env
-from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
-from raspvan.constants import DEFAULT_ASR_NLU_TOPIC
-from raspvan.constants import DEFAULT_EXCHANGE
-from raspvan.constants import DEFAULT_HOTWORD_ASR_TOPIC
-from raspvan.constants import Q_EXCHANGE_ENV_VAR
+from common.utils.rabbit import (BlockingQueueConsumer, BlockingQueuePublisher,
+                                 get_amqp_uri_from_env)
+from raspvan.constants import (AUDIO_DEVICE_ID_ENV_VAR, DEFAULT_ASR_NLU_TOPIC,
+                               DEFAULT_EXCHANGE, DEFAULT_HOTWORD_ASR_TOPIC,
+                               Q_EXCHANGE_ENV_VAR)
 from respeaker.pixels import Pixels
-
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
@@ -59,7 +56,9 @@ async def callback(event):
         pixels.off()
 
 
-async def arun_asr(samplerate, device, uri, exchange, consume_topic, publish_topic, vad_aggressiveness):
+async def arun_asr(
+    samplerate, device, uri, exchange, consume_topic, publish_topic, vad_aggressiveness
+):
     global asr
     global device_id
     global sample_rate
@@ -72,8 +71,7 @@ async def arun_asr(samplerate, device, uri, exchange, consume_topic, publish_top
         device_id = device
 
         logger.info(
-            f"🎙️ Using Audio Device: {device} "
-            f"(sampling rate: {samplerate} Hz)"
+            f"🎙️ Using Audio Device: {device} " f"(sampling rate: {samplerate} Hz)"
         )
 
         # Init the Pixels client
@@ -157,9 +155,7 @@ async def arun_asr(samplerate, device, uri, exchange, consume_topic, publish_top
     help="input device (numeric ID or substring)",
     default=os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0),
 )
-@click.option(
-    "-r", "--samplerate", type=int, help="sampling rate", default=16000
-)
+@click.option("-r", "--samplerate", type=int, help="sampling rate", default=16000)
 @click.option(
     "-v", "--vad-aggressiveness", type=int, help="VAD aggressiveness", default=2
 )
@@ -185,7 +181,7 @@ def main(
             )
         )
     except Exception as e:
-        logger.error(f"💥 Error while running ASR: {e}")
+        logger.exception(f"💥 Error while running ASR: {e}")
 
 
 if __name__ == "__main__":

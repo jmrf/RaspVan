@@ -4,7 +4,6 @@ from rich.table import Table
 
 from common.utils.context import no_alsa_err
 
-
 table = Table(title="Available Audio Devices")
 table.add_column("Index", justify="right", style="cyan", no_wrap=True)
 table.add_column("Name", style="magenta")

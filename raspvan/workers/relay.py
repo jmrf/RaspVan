@@ -2,7 +2,6 @@ import copy
 import json
 import logging
 import time
-from typing import List
 
 import redis
 from smbus2 import SMBus
@@ -44,7 +43,7 @@ class RelayClient:
 
     @staticmethod
     def validate(channels, mode):
-        if any([c < MIN_CHANNEL or c > MAX_CHANNEL for c in channels]):
+        if any(c < MIN_CHANNEL or c > MAX_CHANNEL for c in channels):
             raise ValueError(f"Invalid channels: {channels}")
 
         if mode not in (0, 1):
@@ -65,7 +64,7 @@ class RelayClient:
 
         return new_state, mask_val
 
-    def switch(self, channels: List[int], mode: int) -> List[int]:
+    def switch(self, channels: list[int], mode: int) -> list[int]:
         try:
             self.validate(channels, mode)
         except ValueError as ve:

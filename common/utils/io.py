@@ -7,13 +7,12 @@ import tqdm
 
 LOG_DIR = os.getenv("LOG_DIR", "logs")
 
-from typing import Any
-from typing import Dict
+from typing import Any, Optional
 
 import yaml
 
 
-def read_config(conf_file: str) -> Dict[Any, Any]:
+def read_config(conf_file: str) -> dict[Any, Any]:
     def env_replace(elem: Any) -> Any:
         if isinstance(elem, dict):
             return {k: env_replace(v) for k, v in elem.items()}
@@ -28,7 +27,7 @@ def read_config(conf_file: str) -> Dict[Any, Any]:
         else:
             return elem
 
-    with open(conf_file, "r") as f:
+    with open(conf_file) as f:
         config = yaml.safe_load(f) or {}
 
     return env_replace(config)
@@ -36,11 +35,11 @@ def read_config(conf_file: str) -> Dict[Any, Any]:
 
 class TqdmStream:
     @classmethod
-    def write(_, msg):
+    def write(cls, msg):
         tqdm.tqdm.write(msg, end="")
 
     @classmethod
-    def flush(_):
+    def flush(cls):
         sys.stdout.flush()
 
 
@@ -53,7 +52,7 @@ def get_default_config(
     logger: Logger,
     level: str,
     fmt: str,
-    filename: str = None,
+    filename: Optional[str] = None,
 ):
     config_logging = {
         "version": 1,
@@ -134,8 +133,8 @@ def get_default_config(
 def init_logger(
     level,
     logger: Logger,
-    filename: str = None,
-    log_dir: str = None,
+    filename: Optional[str] = None,
+    log_dir: Optional[str] = None,
     fmt="%(asctime)s,%(msecs)03d %(levelname)-8s %(name)-25s:%(lineno)3d - %(message)-50s",
 ):
     """Configures the given logger; format, logging level, style, etc"""

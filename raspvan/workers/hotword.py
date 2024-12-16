@@ -1,4 +1,3 @@
-import click
 import json
 import logging
 import os
@@ -9,23 +8,19 @@ from datetime import datetime as dt
 from time import sleep
 from typing import Callable
 
+import click
 import precise_runner
-from precise_runner import PreciseEngine
-from precise_runner import PreciseRunner
-from pyaudio import paInt16
-from pyaudio import PyAudio
+from precise_runner import PreciseEngine, PreciseRunner
+from pyaudio import PyAudio, paInt16
 
 from common import int_or_str
 from common.utils.context import no_alsa_err
 from common.utils.io import init_logger
-from common.utils.rabbit import BlockingQueuePublisher
-from common.utils.rabbit import get_amqp_uri_from_env
-from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
-from raspvan.constants import DEFAULT_EXCHANGE
-from raspvan.constants import DEFAULT_HOTWORD_ASR_TOPIC
-from raspvan.constants import HOTWORD_MODEL_ENV_VAR
-from raspvan.constants import PRECISE_ENGINE_ENV_VAR
-from raspvan.constants import Q_EXCHANGE_ENV_VAR
+from common.utils.rabbit import BlockingQueuePublisher, get_amqp_uri_from_env
+from raspvan.constants import (AUDIO_DEVICE_ID_ENV_VAR, DEFAULT_EXCHANGE,
+                               DEFAULT_HOTWORD_ASR_TOPIC,
+                               HOTWORD_MODEL_ENV_VAR, PRECISE_ENGINE_ENV_VAR,
+                               Q_EXCHANGE_ENV_VAR)
 from respeaker.pixels import Pixels
 
 logger = logging.getLogger(__name__)
@@ -35,6 +30,7 @@ init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 CHUNK_SIZE = 2048
 COUNT = 0
 PUBLISH_TOPIC = None
+
 
 class SoundThread(threading.Thread):
     def __init__(self, timeout=3):
@@ -52,7 +48,7 @@ class SoundThread(threading.Thread):
             except subprocess.TimeoutExpired:
                 p.kill()
         except Exception as e:
-            logger.error(f"Error playing sound: {e}")
+            logger.exception(f"Error playing sound: {e}")
 
 
 class ASRTrigger:
@@ -77,7 +73,7 @@ class ASRTrigger:
                 topic=PUBLISH_TOPIC,
             )
         except Exception as e:
-            logger.error(f"Error sending Queue message: {e}")
+            logger.exception(f"Error sending Queue message: {e}")
         finally:
             # Switch off the wake up pixels
             time.sleep(0.5)
@@ -92,7 +88,6 @@ def init_engine(
     sample_rate: int = 16000,
     n_channels: int = 4,
 ):
-
     logger.debug(f"Precise Engine: '{engine_binary_path}'")
     logger.debug(f"Precise Runner version: '{precise_runner.__version__}'")
     logger.debug(f"model path: '{hotword_model_pb}'")
@@ -125,8 +120,6 @@ def init_engine(
     return runner, pa, stream
 
 
-
-
 @click.command()
 # rabbitMQ options
 @click.option(
@@ -149,9 +142,7 @@ def init_engine(
     help="input device (numeric ID or substring)",
     default=os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0),
 )
-@click.option(
-    "-r", "--samplerate", type=int, help="sampling rate", default=16000
-)
+@click.option("-r", "--samplerate", type=int, help="sampling rate", default=16000)
 # model options
 @click.option("-m", "--model", default=os.getenv(HOTWORD_MODEL_ENV_VAR))
 @click.option("-e", "--engine", default=os.getenv(PRECISE_ENGINE_ENV_VAR))
@@ -170,8 +161,7 @@ def main(device, samplerate, exchange, publish_topic, engine, model):
 
         PUBLISH_TOPIC = publish_topic
         logger.info(
-            f"🎙️ Using Audio Device: {device} "
-            f"(sampling rate: {samplerate} Hz)"
+            f"🎙️ Using Audio Device: {device} " f"(sampling rate: {samplerate} Hz)"
         )
 
         # Init the rabbit MQ sender
@@ -220,5 +210,5 @@ if __name__ == "__main__":
         with no_alsa_err():
             main()
     except Exception as e:
-        logger.error(f"Error while running hotword detection: {e}")
+        logger.exception(f"Error while running hotword detection: {e}")
         logger.exception("")

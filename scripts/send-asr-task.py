@@ -18,6 +18,6 @@ assert exchange is not None, "env.var 'Q_EXCHANGE' not defined!"
 # Send a message
 message = json.dumps(["hello"])
 channel.basic_publish(exchange=exchange, routing_key="hotword.detected", body=message)
-print(" [x] Sent %r" % message)
+print(f" [x] Sent {message!r}")
 
 connection.close()

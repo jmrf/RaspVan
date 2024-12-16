@@ -7,8 +7,7 @@ import pandas as pd
 import spacy
 from sklearn.model_selection import train_test_split
 
-from nlu.entity_extractor import EntityTagger
-from nlu.entity_extractor import to_conll_format
+from nlu.entity_extractor import EntityTagger, to_conll_format
 from nlu.intent_clf import IntentPredictor
 
 
@@ -23,7 +22,7 @@ def df_to_conll(df: pd.DataFrame, nlp):
     Each sentence is a list of tuples; (token, POS-tag, label)
     """
     sents = []
-    for i, row in df.iterrows():
+    for _i, row in df.iterrows():
         sent, entities = row[["text", "entities"]]
         sents.append(to_conll_format(sent, json.loads(entities), nlp))
 
@@ -31,7 +30,6 @@ def df_to_conll(df: pd.DataFrame, nlp):
 
 
 if __name__ == "__main__":
-
     # Hyperparameters: SVC and CRF configuration
     C = 3
     L1_c = 0.1  # @param {"type":"slider", "min":0.1, "max":1, "step": 0.1}
@@ -47,7 +45,7 @@ if __name__ == "__main__":
             "Run e.g.: python -m nlu.train "
             "./nlu/data/fiona-nlu-at-2022-04-27-13-12.csv ./nlu/models"
         )
-        exit(1)
+        sys.exit(1)
 
     # Read csv data and split into train / test
     df = pd.read_csv(training_csv)
@@ -78,12 +76,12 @@ if __name__ == "__main__":
     if not os.path.exists(out_dir):
         os.makedirs(out_dir, exists_ok=True)
 
-    print(f"💾 Saving Intent Detector to disk")
+    print("💾 Saving Intent Detector to disk")
     with open(os.path.join(out_dir, "intent-clf.pkl"), "wb") as f:
         pickle.dump(intd.clf, f)
     with open(os.path.join(out_dir, "intent-le.pkl"), "wb") as f:
         pickle.dump(intd.le, f)
 
-    print(f"💾 Saving Entity Tagger to disk")
+    print("💾 Saving Entity Tagger to disk")
     with open(os.path.join(out_dir, "entity-tagger.pkl"), "wb") as f:
         pickle.dump(entity_tagger.tagger, f)

@@ -5,16 +5,12 @@ import os
 from datetime import datetime as dt
 
 from common.utils.io import init_logger
-from common.utils.rabbit import BlockingQueueConsumer
-from common.utils.rabbit import BlockingQueuePublisher
-from common.utils.rabbit import get_amqp_uri_from_env
+from common.utils.rabbit import (BlockingQueueConsumer, BlockingQueuePublisher,
+                                 get_amqp_uri_from_env)
 from nlu import NLUPipeline
-from raspvan.constants import DEFAULT_ASR_NLU_TOPIC
-from raspvan.constants import DEFAULT_EXCHANGE
-from raspvan.constants import DEFAULT_NLU_ACTION_TOPIC
-from raspvan.constants import Q_EXCHANGE_ENV_VAR
+from raspvan.constants import (DEFAULT_ASR_NLU_TOPIC, DEFAULT_EXCHANGE,
+                               DEFAULT_NLU_ACTION_TOPIC, Q_EXCHANGE_ENV_VAR)
 from respeaker.pixels import Pixels
-
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
@@ -97,7 +93,6 @@ def get_args():
 
 
 def main():
-
     global nlp
     global pixels
     global publisher
@@ -157,4 +152,4 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        logger.error(f"Error while running NLU: {e}")
+        logger.exception(f"Error while running NLU: {e}")

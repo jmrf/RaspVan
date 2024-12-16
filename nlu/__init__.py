@@ -1,9 +1,6 @@
 import logging
 import os
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Union
+from typing import Any, Dict, List, Union
 
 import spacy
 
@@ -28,7 +25,7 @@ class NLUPipeline:
         self.ip = IntentPredictor.from_pretrained(clf_pkl, le_pkl, nlp)
         self.et = EntityTagger.from_pretrained(tagger_pkl, nlp)
 
-    def __call__(self, sentences: Union[List[str], str]) -> List[Dict[str, Any]]:
+    def __call__(self, sentences: Union[list[str], str]) -> list[dict[str, Any]]:
         if isinstance(sentences, str):
             sentences = [sentences]
 
@@ -49,7 +46,6 @@ class NLUPipeline:
 
 
 if __name__ == "__main__":
-
     import sys
 
     nlp = NLUPipeline(

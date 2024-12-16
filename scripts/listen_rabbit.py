@@ -6,7 +6,6 @@ import os
 from common.utils.io import init_logger
 from common.utils.rabbit import BlockingQueueConsumer
 
-
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
@@ -33,7 +32,6 @@ def get_args():
 
 
 if __name__ == "__main__":
-
     args = get_args()
 
     try:
@@ -43,7 +41,7 @@ if __name__ == "__main__":
 
         if args.from_exchange and not args.topic:
             raise ValueError(
-                f"A topic must be provided when consuming from an exchange"
+                "A topic must be provided when consuming from an exchange"
             )
 
         logger.info("Creating consumer and listening")
@@ -59,6 +57,6 @@ if __name__ == "__main__":
         )
         consumer.consume()
     except KeyboardInterrupt:
-        logger.info(f"Closing connection and unbinding")
+        logger.info("Closing connection and unbinding")
         # consumer.unbind()
         consumer.close()

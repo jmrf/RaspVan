@@ -1,14 +1,8 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Tuple
-from typing import Union
+from typing import Any, Callable, Union
 
 import nest_asyncio
-
 
 # https://stackoverflow.com/questions/46827007/runtimeerror-this-event-loop-is-already-running-in-python#56434301
 nest_asyncio.apply()
@@ -25,10 +19,10 @@ def run_sync(fn: Callable, *args, **kwargs):
 
 
 async def async_parallel_exec(
-    func_calls: List[Tuple[Union[str, int], Callable, Tuple]],
+    func_calls: list[tuple[Union[str, int], Callable, tuple]],
     max_workers: int = 20,
     as_mapping: bool = True,
-) -> Union[Dict[Any, Any], List[Any]]:
+) -> Union[dict[Any, Any], list[Any]]:
     """Calls a series of functions in parallel. Maps each result to the
     function key provided to return results in the same order as requested
     Args:
@@ -47,7 +41,7 @@ async def async_parallel_exec(
         # Create all tasks
         tasks = [
             loop.run_in_executor(
-                executor, mapping_func_call, *tuple([f_id, func, *f_params])
+                executor, mapping_func_call, *(f_id, func, *f_params)
             )
             for f_id, func, f_params in func_calls
         ]
@@ -66,8 +60,8 @@ async def async_parallel_exec(
 
 
 def parallel_exec(
-    func_calls: List[Callable],
-    func_params: List[Tuple],
+    func_calls: list[Callable],
+    func_params: list[tuple],
     max_workers: int = 20,
 ):
     with ThreadPoolExecutor(max_workers=max_workers) as executor:

@@ -1,7 +1,6 @@
 import json
 import logging
 from typing import Any
-from typing import Dict
 
 import bluetooth as bt
 import click
@@ -10,7 +9,6 @@ import coloredlogs
 from raspvan.workers.relay import RelayClient
 from raspvan.workers.scheduler import LightTimer
 from respeaker.pixels import Pixels
-
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(logger=logger, level=logging.DEBUG)
@@ -76,21 +74,20 @@ class BLEServer:
                 logger.debug(f"request process returned: {ret}")
                 client_sock.send(json.dumps(ret))
             except bt.BluetoothError as be:
-
                 if be.errno == 104:
-                    logger.warning(f"Connection reset by peer...")
+                    logger.warning("Connection reset by peer...")
                     client_sock.close()
                     # Accept a new connection
                     client_sock = self._accept_connection()
                 else:
                     logger.debug(be.errno)
-                    logger.error(f"Something wrong with bluetooth: {be}")
+                    logger.exception(f"Something wrong with bluetooth: {be}")
             except KeyboardInterrupt:
                 logger.warning("\nDisconnected")
             except Exception as e:
-                logger.error(f"BT Server Unknown error: {e}")
+                logger.exception(f"BT Server Unknown error: {e}")
 
-    def process_request(self, data: Dict[str, Any]):
+    def process_request(self, data: dict[str, Any]):
         pixels.wakeup()
         try:
             logger.debug(f"Rx data: {data}")
@@ -136,7 +133,7 @@ class BLEServer:
                 return {"ok": False, "error": f"Unknown command '{cmd}'"}
 
         except Exception as e:
-            logger.error(f"Error processing request to BT server: {e}")
+            logger.exception(f"Error processing request to BT server: {e}")
             logger.exception(e)
             return {"ok": False, "error": str(e)}
         finally:

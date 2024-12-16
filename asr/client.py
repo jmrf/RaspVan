@@ -5,7 +5,6 @@ import logging
 import os
 import time
 import wave
-from typing import Dict
 
 import sounddevice as sd
 import websockets
@@ -16,13 +15,11 @@ from common import int_or_str
 from common.utils.io import init_logger
 from respeaker.pixels import Pixels
 
-
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 class ASRClient:
-
     # TODO: Make as parameters
     MAX_SECONDS_NO_VOICE = 3
     MAX_SECONDS_VOICE = 5
@@ -37,9 +34,8 @@ class ASRClient:
         self.pixels = Pixels()
         self.vad = vad
 
-    async def from_wave(self, wave_file: str) -> Dict[str, str]:
+    async def from_wave(self, wave_file: str) -> dict[str, str]:
         async with websockets.connect(self.asr_uri) as websocket:
-
             wf = wave.open(wave_file, "rb")
             await websocket.send(
                 '{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
@@ -57,7 +53,7 @@ class ASRClient:
 
             return json.loads(await websocket.recv())
 
-    async def stream_mic(self, sample_rate: float, device_id: int) -> Dict[str, str]:
+    async def stream_mic(self, sample_rate: float, device_id: int) -> dict[str, str]:
         def _callback(indata, frames, time, status):
             """This is called (from a separate thread) for each audio block."""
             self.loop.call_soon_threadsafe(self.audio_queue.put_nowait, bytes(indata))
@@ -90,7 +86,6 @@ class ASRClient:
             channels=1,
             callback=_callback,
         ) as device:
-
             text = ""
 
             # Blocks of size 4000 @ 16kHz are 250 ms of audio

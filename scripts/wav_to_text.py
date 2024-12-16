@@ -1,8 +1,8 @@
 import asyncio
-import click
 import glob
 import os
 
+import click
 from halo.halo import Halo
 
 from asr.client import ASRClient
