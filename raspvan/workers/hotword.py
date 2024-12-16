@@ -1,4 +1,4 @@
-import argparse
+import click
 import json
 import logging
 import os
@@ -34,7 +34,7 @@ init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 CHUNK_SIZE = 2048
 COUNT = 0
-
+PUBLISH_TOPIC = None
 
 class SoundThread(threading.Thread):
     def __init__(self, timeout=3):
@@ -64,7 +64,7 @@ class ASRTrigger:
 
     def on_activation(self):
         global COUNT
-        global publish_topic
+        global PUBLISH_TOPIC
         COUNT += 1
 
         logger.info(f" 🔫 Hotword detected! ({COUNT})")
@@ -74,7 +74,7 @@ class ASRTrigger:
             # Send activation message through queue
             self.publisher.send_message(
                 json.dumps([{"status": "detected", "timestamp": dt.now().isoformat()}]),
-                topic=publish_topic,
+                topic=PUBLISH_TOPIC,
             )
         except Exception as e:
             logger.error(f"Error sending Queue message: {e}")
@@ -125,66 +125,53 @@ def init_engine(
     return runner, pa, stream
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
 
-    # rabbitMQ options
-    comm_opts = parser.add_argument_group("Routing options")
-    comm_opts.add_argument(
-        "--exchange",
-        "-x",
-        help="queue exchange name",
-        default=os.getenv(Q_EXCHANGE_ENV_VAR, DEFAULT_EXCHANGE),
-    )
-    comm_opts.add_argument(
-        "--publish-topic",
-        "-pt",
-        help="HOTWORD --> ASR topic as a routing key",
-        default=DEFAULT_HOTWORD_ASR_TOPIC,
-    )
-    # microphone options
-    mic_opts = parser.add_argument_group("Audio options")
-    mic_opts.add_argument(
-        "-d",
-        "--device",
-        type=int_or_str,
-        help="input device (numeric ID or substring)",
-        default=os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0),
-    )
-    mic_opts.add_argument(
-        "-r", "--samplerate", type=int, help="sampling rate", default=16000
-    )
-    # model options
-    model_opts = parser.add_argument_group("Model and engine options")
-    model_opts.add_argument("-m", "--model", default=os.getenv(HOTWORD_MODEL_ENV_VAR))
-    model_opts.add_argument("-e", "--engine", default=os.getenv(PRECISE_ENGINE_ENV_VAR))
 
-    args = parser.parse_args()
-
-    if args.model is None:
+@click.command()
+# rabbitMQ options
+@click.option(
+    "-x",
+    "--exchange",
+    help="queue exchange name",
+    default=os.getenv(Q_EXCHANGE_ENV_VAR, DEFAULT_EXCHANGE),
+)
+@click.option(
+    "-pt",
+    "--publish-topic",
+    help="HOTWORD --> ASR topic as a routing key",
+    default=DEFAULT_HOTWORD_ASR_TOPIC,
+)
+# microphone options
+@click.option(
+    "-d",
+    "--device",
+    type=int_or_str,
+    help="input device (numeric ID or substring)",
+    default=os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0),
+)
+@click.option(
+    "-r", "--samplerate", type=int, help="sampling rate", default=16000
+)
+# model options
+@click.option("-m", "--model", default=os.getenv(HOTWORD_MODEL_ENV_VAR))
+@click.option("-e", "--engine", default=os.getenv(PRECISE_ENGINE_ENV_VAR))
+def main(device, samplerate, exchange, publish_topic, engine, model):
+    if model is None:
         raise ValueError(
             f"--model not provided and '{HOTWORD_MODEL_ENV_VAR}' env. var not set."
         )
 
-    if args.engine is None:
+    if engine is None:
         raise ValueError(
             f"--engine not provided and '{PRECISE_ENGINE_ENV_VAR}' env. var not set."
         )
-
-    return args
-
-
-def main():
-
-    args = get_args()
-
     try:
-        global publish_topic
+        global PUBLISH_TOPIC
 
-        publish_topic = args.publish_topic
+        PUBLISH_TOPIC = publish_topic
         logger.info(
-            f"🎙️ Using Audio Device: {args.device} "
-            f"(sampling rate: {args.samplerate} Hz)"
+            f"🎙️ Using Audio Device: {device} "
+            f"(sampling rate: {samplerate} Hz)"
         )
 
         # Init the rabbit MQ sender
@@ -193,24 +180,24 @@ def main():
         publisher = BlockingQueuePublisher(
             host=amqp_host,
             port=amqp_port,
-            exchange_name=args.exchange,
+            exchange_name=exchange,
             exchange_type="topic",
         )
     except Exception as e:
         raise Exception(f"Error initializing 🐇 publisher: {e}")
 
     try:
-        trigger = ASRTrigger(args.publish_topic, Pixels(), publisher)
+        trigger = ASRTrigger(publish_topic, Pixels(), publisher)
     except Exception as e:
         raise Exception(f"Error initializing ASR Trigger: {e}")
 
     try:
         # Init the precise-engine machinery
         runner, pa, stream = init_engine(
-            engine_binary_path=args.engine,
-            hotword_model_pb=args.model,
+            engine_binary_path=engine,
+            hotword_model_pb=model,
             on_activation_func=trigger.on_activation,
-            sample_rate=args.samplerate,
+            sample_rate=samplerate,
         )
         # The runner runs on a separate thread...
         runner.start()

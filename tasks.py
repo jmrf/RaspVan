@@ -2,11 +2,11 @@ from invoke import task
 
 # =============== Base Tasks ================
 
-
 @task
 def print_audio_devices(ctx):
     """List available audio devices"""
     ctx.run("python -m respeaker.get_audio_device_index")
+
 
 @task
 def print_audio_cards(ctx):
@@ -33,14 +33,8 @@ def run_pixels(ctx):
 
 
 @task
-def run_relays(ctx):
-    """Run the raspvan.workers.relay:__main__"""
-    ctx.run("python -m raspvan.workers.relay")
-
-
-@task
 def run_ble_server(ctx):
-    """Runs the BLE (Bluetooth Low Energy) Server.
+    """Run the BLE (Bluetooth Low Energy) Server.
     First starts REDIS and configured the 1st bluetooth device mode to
     'Page and Inquiry Scan' to accept connections and scan for other devices.
     """
@@ -55,15 +49,21 @@ def run_ble_server(ctx):
 
 
 @task
+def run_relays(ctx):
+    """Run the Relay worker"""
+    ctx.run("python -m raspvan.workers.relay")
+
+
+@task
 def run_hot_word(ctx):
-    """Runs the hotword detection component and publishes to 'hotword.detected'"""
+    """Runs the hotword detection worker and publishes to 'hotword.detected'"""
     ctx.run("docker-compose up -d rabbit")
     ctx.run("python -m raspvan.workers.hotword -pt hotword.detected")
 
 
 @task
 def run_asr(ctx):
-    """Run the ASR service.
+    """Run the ASR worker service.
         - Consuming from the topic 'hotword.detected'
         - Publishes to 'asr.complete'
     """
@@ -73,5 +73,5 @@ def run_asr(ctx):
 
 @task
 def run_nlu(ctx):
-    """Run the NLU service listening to the ASR.complete trigger"""
+    """Run the NLU worker service listening to the ASR.complete trigger"""
     ctx.run("python -m raspvan.workers.nlu -ct asr.complete")
