@@ -81,15 +81,15 @@ class RelayClient:
 
 
 if __name__ == "__main__":
-    RelayClient = RelayClient()
+    client = RelayClient()
 
     # switch all one by one
     r = OFF_STATE
     for c in range(MIN_CHANNEL, MAX_CHANNEL + 1):
-        RelayClient.switch([c], ON)
+        client.switch([c], ON)
         time.sleep(1)
 
     # switch off one by one
     for c in range(MAX_CHANNEL, MIN_CHANNEL - 1, -1):
-        RelayClient.switch([c], OFF)
+        client.switch([c], OFF)
         time.sleep(1)
