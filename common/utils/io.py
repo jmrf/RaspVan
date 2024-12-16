@@ -4,6 +4,7 @@ import sys
 from logging import Logger
 
 import tqdm
+from typing import Dict
 
 LOG_DIR = os.getenv("LOG_DIR", "logs")
 
@@ -12,7 +13,7 @@ from typing import Any, Optional
 import yaml
 
 
-def read_config(conf_file: str) -> dict[Any, Any]:
+def read_config(conf_file: str) -> Dict[Any, Any]:
     def env_replace(elem: Any) -> Any:
         if isinstance(elem, dict):
             return {k: env_replace(v) for k, v in elem.items()}

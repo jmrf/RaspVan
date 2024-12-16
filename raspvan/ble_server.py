@@ -5,6 +5,7 @@ from typing import Any
 import bluetooth as bt
 import click
 import coloredlogs
+from typing import Dict
 
 from raspvan.workers.relay import RelayClient
 from raspvan.workers.scheduler import LightTimer
@@ -87,7 +88,7 @@ class BLEServer:
             except Exception as e:
                 logger.exception(f"BT Server Unknown error: {e}")
 
-    def process_request(self, data: dict[str, Any]):
+    def process_request(self, data: Dict[str, Any]):
         pixels.wakeup()
         try:
             logger.debug(f"Rx data: {data}")

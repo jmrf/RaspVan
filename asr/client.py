@@ -15,6 +15,8 @@ from common import int_or_str
 from common.utils.io import init_logger
 from respeaker.pixels import Pixels
 
+from typing import Dict
+
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
@@ -34,7 +36,7 @@ class ASRClient:
         self.pixels = Pixels()
         self.vad = vad
 
-    async def from_wave(self, wave_file: str) -> dict[str, str]:
+    async def from_wave(self, wave_file: str) -> Dict[str, str]:
         async with websockets.connect(self.asr_uri) as websocket:
             wf = wave.open(wave_file, "rb")
             await websocket.send(
@@ -53,7 +55,7 @@ class ASRClient:
 
             return json.loads(await websocket.recv())
 
-    async def stream_mic(self, sample_rate: float, device_id: int) -> dict[str, str]:
+    async def stream_mic(self, sample_rate: float, device_id: int) -> Dict[str, str]:
         def _callback(indata, frames, time, status):
             """This is called (from a separate thread) for each audio block."""
             self.loop.call_soon_threadsafe(self.audio_queue.put_nowait, bytes(indata))

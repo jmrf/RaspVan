@@ -2,6 +2,7 @@ import logging
 import time
 from datetime import datetime as dt
 from typing import Any, Callable
+from typing import Dict
 
 import coloredlogs
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -38,7 +39,7 @@ class LightTimer:
             for j in self.sched.get_jobs()
         ]
 
-    def put(self, delay: int, func: Callable, f_kwargs: dict[str, Any]):
+    def put(self, delay: int, func: Callable, f_kwargs: Dict[str, Any]):
         try:
             job_id = self._make_schedule_id(func, f_kwargs, delay)
             logger.info(f"New schedule -> {job_id}")

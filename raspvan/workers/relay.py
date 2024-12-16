@@ -2,6 +2,7 @@ import copy
 import json
 import logging
 import time
+from typing import List
 
 import redis
 from smbus2 import SMBus
@@ -64,7 +65,7 @@ class RelayClient:
 
         return new_state, mask_val
 
-    def switch(self, channels: list[int], mode: int) -> list[int]:
+    def switch(self, channels: List[int], mode: int) -> List[int]:
         try:
             self.validate(channels, mode)
         except ValueError as ve:

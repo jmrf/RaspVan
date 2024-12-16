@@ -25,7 +25,7 @@ class NLUPipeline:
         self.ip = IntentPredictor.from_pretrained(clf_pkl, le_pkl, nlp)
         self.et = EntityTagger.from_pretrained(tagger_pkl, nlp)
 
-    def __call__(self, sentences: Union[list[str], str]) -> list[dict[str, Any]]:
+    def __call__(self, sentences: Union[List[str], str]) -> List[Dict[str, Any]]:
         if isinstance(sentences, str):
             sentences = [sentences]
 

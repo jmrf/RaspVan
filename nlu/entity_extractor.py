@@ -1,10 +1,11 @@
 import logging
 import os
 import pickle
-from typing import Optional
+from typing import List, Optional
 
 import sklearn_crfsuite
 import spacy
+from typing import Dict
 
 from common.utils.io import init_logger
 
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
-conll_sent = list[tuple[str, str, str]]
+conll_sent = List[tuple[str, str, str]]
 
 
 class EntityTagger:
@@ -61,12 +62,12 @@ class EntityTagger:
 
         return et
 
-    def fit(self, sents: list[conll_sent]):
+    def fit(self, sents: List[conll_sent]):
         x = [self._sent2features(s) for s in sents]
         y = [self._sent2labels(s) for s in sents]
         self.tagger.fit(x, y)
 
-    def predict(self, sentences: list[str]) -> list[list[tuple[str, str]]]:
+    def predict(self, sentences: List[str]) -> List[List[tuple[str, str]]]:
         # encode
         sents = [
             [(str(tok), tok.pos_) for tok in self.nlp_pos(sent)] for sent in sentences
@@ -140,7 +141,7 @@ class EntityTagger:
         return [self._word2features(sent, i) for i in range(len(sent))]
 
 
-def to_conll_format(sent: str, entities: list[dict[str, str]], nlp):
+def to_conll_format(sent: str, entities: List[Dict[str, str]], nlp):
     """Transform a sentence into CONLL annotation format.
      - sent (str): sentence to encode
      - entities: (list): Entity list. Each with {text,start,end} keys

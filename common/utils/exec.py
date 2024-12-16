@@ -1,6 +1,8 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Callable, Union
+from typing import Any, Callable, List, Union
+
+from typing import Dict
 
 import nest_asyncio
 
@@ -22,7 +24,7 @@ async def async_parallel_exec(
     func_calls: list[tuple[Union[str, int], Callable, tuple]],
     max_workers: int = 20,
     as_mapping: bool = True,
-) -> Union[dict[Any, Any], list[Any]]:
+) -> Union[Dict[Any, Any], list[Any]]:
     """Calls a series of functions in parallel. Maps each result to the
     function key provided to return results in the same order as requested
     Args:
@@ -58,8 +60,8 @@ async def async_parallel_exec(
 
 
 def parallel_exec(
-    func_calls: list[Callable],
-    func_params: list[tuple],
+    func_calls: List[Callable],
+    func_params: List[tuple],
     max_workers: int = 20,
 ):
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
