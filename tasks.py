@@ -40,13 +40,23 @@ def run_relays(ctx):
 
 @task
 def run_ble_server(ctx):
+    """Runs the BLE (Bluetooth Low Energy) Server.
+    First starts REDIS and configured the 1st bluetooth device mode to
+    'Page and Inquiry Scan' to accept connections and scan for other devices.
+    """
+    # Start Redis
     ctx.run("docker-compose up -d redis")
+    # Set BT device 0 to 'Page and Inquiry Scan':
+    # Page: Respond to connection requests from other Bluetooth devices
+    # Inquiry Scan: Actively scan for nearby Bluetooth devices to discover them.
     ctx.run("sudo hciconfig hci0 piscan")
+    # Start the BLE server
     ctx.run("sudo python -m raspvan.ble_server")
 
 
 @task
 def run_hot_word(ctx):
+    """Runs the hotword detection component and publishes to 'hotword.detected'"""
     ctx.run("docker-compose up -d rabbit")
     ctx.run("python -m raspvan.workers.hotword -pt hotword.detected")
 
