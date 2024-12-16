@@ -12,6 +12,7 @@ def reformat(ctx):
 
 @task
 def checks(ctx):
+    """Run ruff and isort checks"""
     ctx.run(
         """
         echo "👀 Checking code formatting..."
@@ -26,6 +27,7 @@ def checks(ctx):
 
 @task
 def tests(ctx):
+    """Run pytests"""
     ctx.run("pytest --cov --spec -n 2")
 
 
@@ -48,6 +50,7 @@ def print_audio_cards(ctx):
 
 @task
 def build_nlu(ctx):
+    """Build NLU docker image [jmrf/nlu-rpi]"""
     from raspvan.version import __version__
 
     print(f"🔨 Building image: jmrf/nlu-rpi:{__version__}")
