@@ -19,7 +19,7 @@ def run_sync(fn: Callable, *args, **kwargs):
 
 
 async def async_parallel_exec(
-    func_calls: list[Tuple[Union[str, int], Callable, tuple]],
+    func_calls: list[Tuple[Union[str, int], Callable, Tuple]],
     max_workers: int = 20,
     as_mapping: bool = True,
 ) -> Union[Dict[Any, Any], list[Any]]:
@@ -59,7 +59,7 @@ async def async_parallel_exec(
 
 def parallel_exec(
     func_calls: List[Callable],
-    func_params: List[tuple],
+    func_params: List[Tuple],
     max_workers: int = 20,
 ):
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
