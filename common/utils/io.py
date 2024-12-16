@@ -2,15 +2,12 @@ import logging.config
 import os
 import sys
 from logging import Logger
+from typing import Any, Dict, Optional
 
 import tqdm
-from typing import Dict
+import yaml
 
 LOG_DIR = os.getenv("LOG_DIR", "logs")
-
-from typing import Any, Optional
-
-import yaml
 
 
 def read_config(conf_file: str) -> Dict[Any, Any]:

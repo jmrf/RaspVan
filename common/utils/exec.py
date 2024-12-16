@@ -1,8 +1,6 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Callable, List, Union
-
-from typing import Dict
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import nest_asyncio
 
@@ -21,7 +19,7 @@ def run_sync(fn: Callable, *args, **kwargs):
 
 
 async def async_parallel_exec(
-    func_calls: list[tuple[Union[str, int], Callable, tuple]],
+    func_calls: list[Tuple[Union[str, int], Callable, tuple]],
     max_workers: int = 20,
     as_mapping: bool = True,
 ) -> Union[Dict[Any, Any], list[Any]]:

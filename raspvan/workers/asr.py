@@ -11,18 +11,11 @@ from asr.vad import VAD
 from common import int_or_str
 from common.utils.exec import run_sync
 from common.utils.io import init_logger
-from common.utils.rabbit import (
-    BlockingQueueConsumer,
-    BlockingQueuePublisher,
-    get_amqp_uri_from_env,
-)
-from raspvan.constants import (
-    AUDIO_DEVICE_ID_ENV_VAR,
-    DEFAULT_ASR_NLU_TOPIC,
-    DEFAULT_EXCHANGE,
-    DEFAULT_HOTWORD_ASR_TOPIC,
-    Q_EXCHANGE_ENV_VAR,
-)
+from common.utils.rabbit import (BlockingQueueConsumer, BlockingQueuePublisher,
+                                 get_amqp_uri_from_env)
+from raspvan.constants import (AUDIO_DEVICE_ID_ENV_VAR, DEFAULT_ASR_NLU_TOPIC,
+                               DEFAULT_EXCHANGE, DEFAULT_HOTWORD_ASR_TOPIC,
+                               Q_EXCHANGE_ENV_VAR)
 from respeaker.pixels import Pixels
 
 logger = logging.getLogger(__name__)

@@ -2,11 +2,9 @@ import wave
 
 import pyaudio
 
-from respeaker.constants import RESPEAKER_CHANNELS, RESPEAKER_RATE, RESPEAKER_WIDTH
+from respeaker.constants import (RESPEAKER_CHANNELS, RESPEAKER_RATE,
+                                 RESPEAKER_WIDTH)
 
-RESPEAKER_RATE = 16000
-RESPEAKER_CHANNELS = 4
-RESPEAKER_WIDTH = 2
 RESPEAKER_DEVICE_INDEX = 0  # refer to input device id
 
 CHUNK = 1024

@@ -1,18 +1,14 @@
 import logging
 import os
 import time
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 
 from common.utils.io import init_logger
-from raspvan.constants import (
-    DEFAULT_RABBITMQ_HOST,
-    DEFAULT_RABBITMQ_PORT,
-    RABBITMQ_HOST_ENV_VAR,
-    RABBITMQ_PORT_ENV_VAR,
-)
+from raspvan.constants import (DEFAULT_RABBITMQ_HOST, DEFAULT_RABBITMQ_PORT,
+                               RABBITMQ_HOST_ENV_VAR, RABBITMQ_PORT_ENV_VAR)
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
@@ -128,7 +124,7 @@ class BaseQueueClient:
 
     def connect(
         self, tcp_keepidle: Optional[int] = None
-    ) -> tuple[pika.BlockingConnection, BlockingChannel]:
+    ) -> Tuple[pika.BlockingConnection, BlockingChannel]:
         tcp_options = {"TCP_KEEPIDLE": tcp_keepidle or self.DEFAULT_TCP_KEEPIDLE}
         connection = pika.BlockingConnection(
             # for connection no to die while blocked waiting for inputs

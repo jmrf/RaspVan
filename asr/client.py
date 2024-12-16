@@ -5,6 +5,7 @@ import logging
 import os
 import time
 import wave
+from typing import Dict
 
 import sounddevice as sd
 import websockets
@@ -14,8 +15,6 @@ from asr.vad import VAD
 from common import int_or_str
 from common.utils.io import init_logger
 from respeaker.pixels import Pixels
-
-from typing import Dict
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)

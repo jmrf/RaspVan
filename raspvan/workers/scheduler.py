@@ -1,8 +1,7 @@
 import logging
 import time
 from datetime import datetime as dt
-from typing import Any, Callable
-from typing import Dict
+from typing import Any, Callable, Dict
 
 import coloredlogs
 from apscheduler.schedulers.background import BackgroundScheduler

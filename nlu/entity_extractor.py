@@ -1,11 +1,10 @@
 import logging
 import os
 import pickle
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import sklearn_crfsuite
 import spacy
-from typing import Dict
 
 from common.utils.io import init_logger
 
@@ -13,7 +12,7 @@ logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
-conll_sent = List[tuple[str, str, str]]
+conll_sent = List[Tuple[str, str, str]]
 
 
 class EntityTagger:
@@ -67,7 +66,7 @@ class EntityTagger:
         y = [self._sent2labels(s) for s in sents]
         self.tagger.fit(x, y)
 
-    def predict(self, sentences: List[str]) -> List[List[tuple[str, str]]]:
+    def predict(self, sentences: List[str]) -> List[List[Tuple[str, str]]]:
         # encode
         sents = [
             [(str(tok), tok.pos_) for tok in self.nlp_pos(sent)] for sent in sentences

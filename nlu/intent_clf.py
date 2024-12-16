@@ -1,7 +1,7 @@
 import logging
 import os
 import pickle
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 import spacy
@@ -9,8 +9,6 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 
 from common.utils.io import init_logger
-
-from typing import List
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)

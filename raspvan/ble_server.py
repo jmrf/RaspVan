@@ -1,11 +1,10 @@
 import json
 import logging
-from typing import Any
+from typing import Any, Dict
 
 import bluetooth as bt
 import click
 import coloredlogs
-from typing import Dict
 
 from raspvan.workers.relay import RelayClient
 from raspvan.workers.scheduler import LightTimer
