@@ -4,7 +4,7 @@ repos:
     hooks:
     - id: check-merge-conflict
     - id: check-added-large-files
-      args: [--maxkb=750]
+      args: [--maxkb=3500]
     - id: name-tests-test
       args: ['--django']
     - id: detect-private-key
