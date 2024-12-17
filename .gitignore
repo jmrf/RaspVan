@@ -21,6 +21,7 @@ out.txt
 imgs/
 **/data/
 **/models/
+!hotword/models
 
 
 
