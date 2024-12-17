@@ -11,18 +11,11 @@ from asr.vad import VAD
 from common import int_or_str
 from common.utils.exec import run_sync
 from common.utils.io import init_logger
-from common.utils.rabbit import (
-    BlockingQueueConsumer,
-    BlockingQueuePublisher,
-    get_amqp_uri_from_env,
-)
-from raspvan.constants import (
-    AUDIO_DEVICE_ID_ENV_VAR,
-    DEFAULT_ASR_NLU_TOPIC,
-    DEFAULT_EXCHANGE,
-    DEFAULT_HOTWORD_ASR_TOPIC,
-    Q_EXCHANGE_ENV_VAR,
-)
+from common.utils.rabbit import (BlockingQueueConsumer, BlockingQueuePublisher,
+                                 get_amqp_uri_from_env)
+from raspvan.constants import (AUDIO_DEVICE_ID_ENV_VAR, DEFAULT_ASR_NLU_TOPIC,
+                               DEFAULT_EXCHANGE, DEFAULT_HOTWORD_ASR_TOPIC,
+                               Q_EXCHANGE_ENV_VAR)
 from respeaker.pixels import Pixels
 
 logger = logging.getLogger(__name__)
@@ -34,7 +27,7 @@ last_time_asr_completed = dt.now().isoformat()
 
 async def callback(event):
     global last_time_asr_completed
-    global publish_topic
+    global PUBLISH_TOPIC
 
     text = "😕"
     try:
@@ -54,7 +47,7 @@ async def callback(event):
                     }
                 ]
             ),
-            topic=publish_topic,
+            topic=PUBLISH_TOPIC,
         )
     except Exception as e:
         logger.exception(f"Unknown error while runnig VAD/ASR callback: {e}")
@@ -71,6 +64,8 @@ async def arun_asr(
     global sample_rate
     global pixels
     global publisher
+    global PUBLISH_TOPIC
+    PUBLISH_TOPIC = publish_topic
 
     try:
         # Init ASR parameters
