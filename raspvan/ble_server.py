@@ -84,6 +84,7 @@ class BLEServer:
                     logger.exception(f"Something wrong with bluetooth: {be}")
             except KeyboardInterrupt:
                 logger.warning("\nDisconnected")
+                return
             except Exception as e:
                 logger.exception(f"BT Server Unknown error: {e}")
 
@@ -99,8 +100,11 @@ class BLEServer:
                 raise KeyboardInterrupt
 
             elif cmd == "/switch":
-                channels = payload.get("channels", [])
-                s = int(payload.get("mode", False))
+                channels = payload.get("channels")
+                s = int(payload.get("mode"))
+                if channels is None or s is None:
+                    return {"ok": False, "state": []}
+
                 state = self.relay_client.switch(channels, s)
                 return {"ok": True, "state": state}
 
