@@ -11,7 +11,7 @@ from typing import Callable
 import click
 import precise_runner
 from precise_runner import PreciseEngine, PreciseRunner
-from pyaudio import PyAudio, paInt16
+from pyaudio import paInt16, PyAudio
 
 from common import int_or_str
 from common.utils.context import no_alsa_err

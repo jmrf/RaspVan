@@ -37,8 +37,8 @@ Commands can be executed either by _voice_ or by sending _HTTP requests_ to a se
 
 ## Requirements
 
-Apart from any other requirement defined in the root or any of the sub-components we
-need the follwing:
+Apart from any other requirement defined in the root or any of the sub-modules we
+need the following system-wide dependencies:
 
 * [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
    ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
@@ -47,13 +47,13 @@ need the follwing:
 
 ## Structure
 
-This repo is organized in a series of sub-components plus the main solution code
-under [raspvan](raspvan/]).
+This repo is organized in a series of sub-modules plus the main solution code under [raspvan](raspvan/]).
 
-To understand how to train, configure, test and run each sub-component please refer to
+To understand how to train, configure, test and run each sub-module please refer to
 the individual readme files.
 
 ```bash
+# tree -L 1
 .
 ├── asr                     # ASR component (uses vosk-kaldi)
 ├── assets
@@ -61,20 +61,19 @@ the individual readme files.
 ├── config
 ├── data
 ├── docker-compose.yml
-├── external
 ├── hotword                 # HotWord detection (uses Mycroft/Precise)
-├── Makefile
+├── nlu                     # NLU (sklearn and spacy custom implementation)
+├── raspvan                 # client and server systems
 ├── README.md
 ├── requirements-dev.txt
 ├── requirements.txt
 ├── respeaker
 ├── scripts
 ├── setup.cfg
-└── raspvan                 # client and server systems
+└──  tasks.py               # invoke commands
 ```
 
-Most of the following components communicate through `AMQP` using `rabbitMQ`.
-
+All the `raspvan.workers` communicate through `AMQP` using `rabbitMQ`.
 To run the broker backbone glueing all together:
 
 ```bash
@@ -83,46 +82,43 @@ docker-compose up -d rabbit
 
 ### Hotword
 
-> ⚠️ TBD
+The hotword detection sub-module is based on a custom for of [mycroft/precise](https://github.com/josemarcosrf/mycroft-precise.
 
-To run:
+To run the rabbitMQ-publisher hot-word worker:
 
 ```bash
 source .env
 source .venv/bin/activate
-python -m raspvan.workers.hotword
+inv run-hot-word
 ```
 
 ### ASR
 
-We use the dockerized vosk-server from the
-[jmrf/pyvosk-rpi](https://github.com/josemarcosrf/pyvosk-rpi) repo.
+The ASR sub-module uses a custom dockerized PyVosk server build for the RaspberryPi:
+[jmrf/pyvosk-rpi](https://github.com/josemarcosrf/pyvosk-rpi).
 
 This server listens via websocket to a `sounddevice` stream and performs STT on the fly.
 
 > 💡 For a complete list of compatible models check:
 > [vosk/models](https://alphacephei.com/vosk/models)
 
+
+To try the ASR client & server:
 ```bash
 # Run the dockerized server
 docker-compose up asr-server
-```
-
-Then, run one of the clients:
-
-```bash
-source .env
-source .venv/bin/activate
 # ASR from a audio wav file
 python -m  asr client -v 2 -f <name-of-the-16kHz-wav-file>
 # Or ASR listening from the microphone
 python -m  asr client -v 2 -d <microphone-ID>
 ```
 
-Or run the rabbitMQ-triggered `raspvan ASR worker`:
+To run the rabbitMQ-triggered ASR worker:
 
 ```bash
-python -m raspvan.workers.asr
+source .env
+source .venv/bin/activate
+inv run-asr
 ```
 
 ### NLU
@@ -154,7 +150,7 @@ python -m scripts.mic_vad_record sample.wav -d 5 -c 4
 
 ### Respeaker
 
-We use `respeaker 4mic hat` as microphone and visual feedbac with its LED array.
+We use `respeaker 4mic hat` as a microphone and visual-feedback with its LED array.
 
 To run the LED pixel demo:
 
@@ -174,11 +170,19 @@ This is the main module which coordinates all the different components.
 
 #### Relays
 
-i2c relay demo: `python -m raspvan.workers.relay`
+i2c relay demo:
+
+```shell
+inv run-relays
+```
 
 #### Bluetoth
 
-To run the bluetooth server `inv run-ble-server`
+To run the bluetooth server:
+
+```shell
+inv run-ble-server`
+````
 
 <details>
 
@@ -223,8 +227,7 @@ source .venv/bin/activate
 And install all the python dependencies
 
 ```bash
-# pip install -r requirements.txt
-pdm sync
+pip install -r requirements.txt
 ```
 
 ### Finding the sound input device ID
