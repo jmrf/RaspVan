@@ -1,7 +1,8 @@
-import argparse
 import json
 import logging
 import os
+
+import click
 
 from common.utils.io import init_logger
 from common.utils.rabbit import BlockingQueueConsumer
@@ -18,28 +19,21 @@ def on_done():
     print("Completed! ")
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--queue", "-q", help="Bind to a queue if provided")
-    parser.add_argument(
-        "--from_exchange",
-        "-x",
-        help="if provided the exchange to consume from",
-    )
-    parser.add_argument("--topic", "-t", help="topic as a routing key")
-
-    return parser.parse_args()
-
-
-if __name__ == "__main__":
-    args = get_args()
-
+@click.command()
+@click.option(
+    "--from_exchange",
+    "-x",
+    help="if provided the exchange to consume from",
+)
+@click.option("-t", "--topic", help="topic as a routing key")
+@click.option("-q", "--queue", help="Bind to a queue if provided")
+def main(from_exchange, topic, queue):
     try:
-        exchange_name = args.from_exchange or ""
-        exchange_type = "topic" if args.from_exchange else None
-        routing_keys = [args.topic]
+        exchange_name = from_exchange or ""
+        exchange_type = "topic" if from_exchange else None
+        routing_keys = [topic]
 
-        if args.from_exchange and not args.topic:
+        if from_exchange and not topic:
             raise ValueError("A topic must be provided when consuming from an exchange")
 
         logger.info("Creating consumer and listening")
@@ -51,10 +45,14 @@ if __name__ == "__main__":
             routing_keys=routing_keys,
             exchange_name=exchange_name,
             exchange_type=exchange_type,
-            queue_name=args.queue,
+            queue_name=queue,
         )
         consumer.consume()
     except KeyboardInterrupt:
         logger.info("Closing connection and unbinding")
         # consumer.unbind()
         consumer.close()
+
+
+if __name__ == "__main__":
+    main()
