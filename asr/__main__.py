@@ -40,9 +40,9 @@ async def asr(asr_uri, device, wfile, samplerate, vad_aggressiveness):
 @click.option(
     "-v", "--vad-aggressiveness", type=int, help="VAD aggressiveness", default=1
 )
-def cli(asr_uri, device, wfile, samplerate, vad_aggressiveness):
+def client(asr_uri, device, wfile, samplerate, vad_aggressiveness):
     asyncio.run(asr(asr_uri, device, wfile, samplerate, vad_aggressiveness))
 
 
 if __name__ == "__main__":
-    cli()  # e.g.: python -m  asr -v 2 -d 0
+    client()  # e.g.: python -m  asr -v 2 -d 0

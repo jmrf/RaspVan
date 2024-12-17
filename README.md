@@ -114,9 +114,9 @@ Then, run one of the clients:
 source .env
 source .venv/bin/activate
 # ASR from a audio wav file
-python -m  asr.client -v 2 -f <name-of-the-16kHz-wav-file>
+python -m  asr client -v 2 -f <name-of-the-16kHz-wav-file>
 # Or ASR listening from the microphone
-python -m  asr.client -v 2 -d <microphone-ID>
+python -m  asr client -v 2 -d <microphone-ID>
 ```
 
 Or run the rabbitMQ-triggered `raspvan ASR worker`:
