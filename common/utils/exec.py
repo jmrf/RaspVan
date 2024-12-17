@@ -19,10 +19,10 @@ def run_sync(fn: Callable, *args, **kwargs):
 
 
 async def async_parallel_exec(
-    func_calls: list[Tuple[Union[str, int], Callable, Tuple]],
+    func_calls: List[Tuple[Union[str, int], Callable, Tuple]],
     max_workers: int = 20,
     as_mapping: bool = True,
-) -> Union[Dict[Any, Any], list[Any]]:
+) -> Union[Dict[Any, Any], List[Any]]:
     """Calls a series of functions in parallel. Maps each result to the
     function key provided to return results in the same order as requested
     Args:

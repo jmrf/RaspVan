@@ -68,7 +68,7 @@ def run_pixels(ctx):
 
 @task
 def run_ble_server(ctx):
-    """Run the BLE (Bluetooth Low Energy) Server.
+    """Start Redis and run the BLE (Bluetooth Low Energy) Server.
     First starts REDIS and configured the 1st bluetooth device mode to
     'Page and Inquiry Scan' to accept connections and scan for other devices.
     """
@@ -90,14 +90,14 @@ def run_relays(ctx):
 
 @task
 def run_hot_word(ctx):
-    """Runs the hotword detection worker and publishes to 'hotword.detected'"""
+    """Start RabbitMQ and run the hotword detection worker and publishes to 'hotword.detected'"""
     ctx.run("docker-compose up -d rabbit")
     ctx.run("python -m raspvan.workers.hotword -pt hotword.detected")
 
 
 @task
 def run_asr(ctx):
-    """Run the ASR worker service.
+    """Start RabbitMQ and run the ASR worker service.
     - Consuming from the topic 'hotword.detected'
     - Publishes to 'asr.complete'
     """

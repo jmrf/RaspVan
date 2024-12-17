@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-say() {
+cprint() {
  echo "$@" | sed \
          -e "s/\(\(@\(red\|magenta\|yellow\|blue\|magenta\|cyan\|white\|reset\|b\|u\)\)\+\)[[]\{2\}\(.*\)[]]\{2\}/\1\4@reset/g" \
          -e "s/@red/$(tput setaf 1)/g" \
@@ -30,7 +30,7 @@ sudo apt-get install \
 
 
 # Docker
-say @magenta[["================ Installing Docker Engine ================"]]
+cprint @magenta[["================ Installing Docker Engine ================"]]
 
 # Post-installation
 # As per: https://docs.docker.com/engine/install/linux-postinstall/
@@ -40,7 +40,7 @@ newgrp docker
 
 
 ## Docker-compose
-#say @magenta[["================ Installing Docker Compose ================"]]
+#cprint @magenta[["================ Installing Docker Compose ================"]]
 #sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" \
 #    -o /usr/local/bin/docker-compose
 #sudo chmod +x /usr/local/bin/docker-compose
@@ -48,18 +48,18 @@ newgrp docker
 
 
 # Install utilities
-say @magenta[["================ Installing Utilities ================"]]
+cprint @magenta[["================ Installing Utilities ================"]]
 
 # bPyTop
-say @blue[["> bpytop"]]
+cprint @blue[["> bpytop"]]
 pip install bpytop --upgrade
 
 # Oh-my-bash
-say @blue[["> .oh-my-bash"]]
+cprint @blue[["> .oh-my-bash"]]
 sh -c "$(curl -fsSL https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 
 # Oh-my-bash custom themes
-say @blue[["> .oh-my-bash"]]
+cprint @blue[["> .oh-my-bash"]]
 git clone https://github.com/josemarcosrf/oh-my-bash-custom-dir.git
 yes | cp -r oh-my-bash-custom-dir/* .oh-my-bash/custom
 

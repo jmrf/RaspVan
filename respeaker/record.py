@@ -2,8 +2,7 @@ import wave
 
 import pyaudio
 
-from respeaker.constants import (RESPEAKER_CHANNELS, RESPEAKER_RATE,
-                                 RESPEAKER_WIDTH)
+from respeaker.constants import RESPEAKER_CHANNELS, RESPEAKER_RATE, RESPEAKER_WIDTH
 
 RESPEAKER_DEVICE_INDEX = 0  # refer to input device id
 

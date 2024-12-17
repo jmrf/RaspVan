@@ -143,7 +143,7 @@ class EntityTagger:
 def to_conll_format(sent: str, entities: List[Dict[str, str]], nlp):
     """Transform a sentence into CONLL annotation format.
      - sent (str): sentence to encode
-     - entities: (list): Entity list. Each with {text,start,end} keys
+     - entities: (List): Entity list. Each with {text,start,end} keys
 
     Returns a sentence as a list of tuples; (token, POS-tag, label)
     """

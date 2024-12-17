@@ -1,14 +1,18 @@
 import logging
 import os
 import time
-from typing import Callable, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 
 from common.utils.io import init_logger
-from raspvan.constants import (DEFAULT_RABBITMQ_HOST, DEFAULT_RABBITMQ_PORT,
-                               RABBITMQ_HOST_ENV_VAR, RABBITMQ_PORT_ENV_VAR)
+from raspvan.constants import (
+    DEFAULT_RABBITMQ_HOST,
+    DEFAULT_RABBITMQ_PORT,
+    RABBITMQ_HOST_ENV_VAR,
+    RABBITMQ_PORT_ENV_VAR,
+)
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
@@ -199,7 +203,7 @@ class BlockingQueueConsumer(BaseQueueClient):
         queue_name: Optional[str] = None,
         exchange_name: Optional[str] = None,
         exchange_type: Optional[str] = None,
-        routing_keys: Optional[list] = None,
+        routing_keys: Optional[List] = None,
         prefetch_count: Optional[int] = None,
         host: Optional[str] = None,
         port: Optional[int] = None,

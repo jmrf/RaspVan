@@ -3,7 +3,7 @@
 # exit when any command fails
 set -e
 
-say() {
+cprint() {
  echo "$@" | sed \
          -e "s/\(\(@\(red\|green\|yellow\|blue\|magenta\|cyan\|white\|reset\|b\|u\)\)\+\)[[]\{2\}\(.*\)[]]\{2\}/\1\4@reset/g" \
          -e "s/@red/$(tput setaf 1)/g" \
@@ -22,7 +22,7 @@ say() {
 # check current directory
 current_dir=${PWD##*/}
 if [ "$current_dir" == "scripts" ]; then
-    say @red[["This scripts should be executed from the root folder as: ./scripts/download_binaries.sh"]]
+    cprint @red[["This scripts should be executed from the root folder as: ./scripts/download_binaries.sh"]]
     exit
 fi
 
@@ -31,22 +31,22 @@ ARCH=$(uname -a |awk '{print $12}')
 TAR_FILE="precise-engine.tar.gz"
 
 
-say @yellow[["🚧 WARNING: This will download an older version (v0.1.1) of the precise-runner!"]]
-say @yellow[["🚧 WARNING: To get the latest (v0.3.1) you need to compile from source:"]]
-say @yellow[["🛠️  https://github.com/josemarcosrf/mycroft-precise#source-install"]]
+cprint @yellow[["🚧 WARNING: This will download an older version (v0.1.1) of the precise-runner!"]]
+cprint @yellow[["🚧 WARNING: To get the latest (v0.3.1) you need to compile from source:"]]
+cprint @yellow[["🛠️  https://github.com/josemarcosrf/mycroft-precise#source-install"]]
 
 
 if [ ! -f $TAR_FILE ]; then
-    say @blue[["⏬ Downloading binaries for '$ARCH'"]]
+    cprint @blue[["⏬ Downloading binaries for '$ARCH'"]]
     wget  https://github.com/josemarcosrf/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
 fi
 
 if [ -f $TAR_FILE ]; then
-    say @blue[["📚️ Extracting binaries..."]]
+    cprint @blue[["📚️ Extracting binaries..."]]
     tar -xvf $TAR_FILE
     rm -r $TAR_FILE
 fi
 
-say @magenta[["precise-engine version: "]]
+cprint @magenta[["precise-engine version: "]]
 $(precise-engine/precise-engine --version)
 

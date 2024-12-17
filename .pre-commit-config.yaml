@@ -24,16 +24,16 @@ repos:
 #     -   id: pyupgrade
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.2
+    rev: v0.8.2
     hooks:
-    - id: ruff
+    - id: ruff # linter
       language_version: python3
-    - id: ruff-format
+    - id: ruff-format # formatter
       args: [ --check ]
       language_version: python3
 
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.11.5
+    rev: 5.13.2
     hooks:
     - id: isort
       language_version: python3

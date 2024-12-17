@@ -3,7 +3,7 @@
 # exit when any command fails
 set -e
 
-say() {
+cprint() {
  echo "$@" | sed \
          -e "s/\(\(@\(red\|green\|yellow\|blue\|magenta\|cyan\|white\|reset\|b\|u\)\)\+\)[[]\{2\}\(.*\)[]]\{2\}/\1\4@reset/g" \
          -e "s/@red/$(tput setaf 1)/g" \
@@ -22,7 +22,7 @@ say() {
 # > docker-compose up -d asr-server
 #
 # Second; we can run the ASRClient from wav files:
-say @cyan[["Processing converting wav files to text..."]]
+cprint @cyan[["Processing converting wav files to text..."]]
 python -m scripts.wav_to_text \
     ./data/recordings-for-nlu/ \
     | grep -v Processing | sed 's/\r//' | grep . > out
@@ -31,7 +31,7 @@ python -m scripts.wav_to_text \
 #       (uses a different numpy version so we run it containerized)
 #
 # Finally; We pick the last line of the NLU output and manipulate to use JQ
-say @cyan[["Running NLU on each prediction..."]]
+cprint @cyan[["Running NLU on each prediction..."]]
 nlines=$(cat out |wc -l)
 cat out | docker run -i \
         -v ${PWD}/nlu/:/app/nlu \
@@ -42,6 +42,6 @@ cat out | docker run -i \
             | jq
 
 
-say @green[["Done :)"]]
+cprint @green[["Done :)"]]
 
 

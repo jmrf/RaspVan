@@ -3,7 +3,7 @@
 # exit when any command fails
 set -e
 
-say() {
+cprint() {
  echo "$@" | sed \
          -e "s/\(\(@\(red\|green\|yellow\|blue\|magenta\|cyan\|white\|reset\|b\|u\)\)\+\)[[]\{2\}\(.*\)[]]\{2\}/\1\4@reset/g" \
          -e "s/@red/$(tput setaf 1)/g" \
@@ -21,32 +21,32 @@ say() {
 # check current directory
 current_dir=${PWD##*/}
 if [ "$current_dir" == "scripts" ]; then
-    say @red[["This scripts should be executed from the root folder as: ./scripts/build_docker.sh"]]
+    cprint @red[["This scripts should be executed from the root folder as: ./scripts/build_docker.sh"]]
     exit
 fi
 
 MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
   # 64-bit architecture
-  say @blue[["Downloading miniconda 64 bits for x86"]]
+  cprint @blue[["Downloading miniconda 64 bits for x86"]]
   wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
 elif [ ${MACHINE_TYPE} == 'x86_32' ]; then
   # 32-bit architecture
-  say @blue[["Downloading miniconda 32 bits for x86"]]
+  cprint @blue[["Downloading miniconda 32 bits for x86"]]
   wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86.sh -O ~/miniconda.sh
 elif [ ${MACHINE_TYPE} == 'armv6l' ]; then
   # 32-bit architecture
-  say @blue[["Downloading berryconda 32 bits for armv6l"]]
+  cprint @blue[["Downloading berryconda 32 bits for armv6l"]]
   wget https://github.com/jjhelmus/berryconda/releases/download/v2.0.0/Berryconda3-2.0.0-Linux-armv6l.sh -O ~/miniconda.sh
 elif [ ${MACHINE_TYPE} == 'armv7l' ]; then
   # 32-bit architecture
-  say @blue[["Downloading miniconda 32 bits for armv7l"]]
+  cprint @blue[["Downloading miniconda 32 bits for armv7l"]]
   wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-armv7l.sh -O ~/miniconda.sh
 else
-    say @red["Unknown architecture: $MACHINE_TYPE for miniconda. Exiting..."]
+    cprint @red["Unknown architecture: $MACHINE_TYPE for miniconda. Exiting..."]
 fi
 
-say @blue[["Installing miniconda"]]
+cprint @blue[["Installing miniconda"]]
 chmod +x ~/miniconda.sh && bash ~/miniconda.sh
 rm -f ~/miniconda.sh
 
