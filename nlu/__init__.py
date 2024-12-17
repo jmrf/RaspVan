@@ -43,17 +43,3 @@ class NLUPipeline:
             {"sentence": sent, "intent": intent, "entities": ents}
             for sent, intent, ents in zip(sentences, intents, entities)
         ]
-
-
-if __name__ == "__main__":
-    import sys
-
-    nlp = NLUPipeline(
-        "nlu/models/intent-clf.pkl",
-        "nlu/models/intent-le.pkl",
-        "nlu/models/entity-tagger.pkl",
-    )
-
-    for line in sys.stdin:
-        res = nlp([line.strip()])[0]
-        print(res)

@@ -96,27 +96,3 @@ class Pixels(metaclass=Singleton):
             )
 
         self.dev.show()
-
-
-if __name__ == "__main__":
-    pixels = Pixels()
-
-    while True:
-        try:
-            print("🌞 wakeup...")
-            pixels.wakeup()
-            time.sleep(3)
-            print("🤔 think...")
-            pixels.think()
-            time.sleep(3)
-            print("🗣️  speak...")
-            pixels.speak()
-            time.sleep(6)
-            print("👋 off...")
-            pixels.off()
-            time.sleep(3)
-        except KeyboardInterrupt:
-            break
-        finally:
-            pixels.off()
-            time.sleep(1)

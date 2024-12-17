@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import json
 import logging
@@ -12,7 +11,6 @@ import websockets
 
 from asr import calc_block_size
 from asr.vad import VAD
-from common import int_or_str
 from common.utils.io import init_logger
 from respeaker.pixels import Pixels
 
@@ -144,46 +142,3 @@ class ASRClient:
                 logger.debug(f"⏳️ Total run time: {time.time() - start}")
 
                 return text
-
-
-async def main():
-    """Here just to serve as an example of how to run as standalone"""
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-u",
-        "--uri",
-        type=str,
-        metavar="URL",
-        help="Server URL",
-        default="ws://localhost:2700",
-    )
-    parser.add_argument("-f", "--file", type=str, help="wave file to ASR", default=None)
-    parser.add_argument(
-        "-d",
-        "--device",
-        type=int_or_str,
-        help="input device (numeric ID or substring)",
-        default=0,
-    )
-    parser.add_argument(
-        "-r", "--samplerate", type=int, help="sampling rate", default=16000
-    )
-    parser.add_argument(
-        "-v", "--vad-aggressiveness", type=int, help="VAD aggressiveness", default=1
-    )
-
-    args = parser.parse_args()
-
-    vad = VAD(args.vad_aggressiveness)
-    asr = ASRClient(args.uri, vad)
-    if args.file:
-        res = await asr.from_wave(args.file)
-    else:
-        res = await asr.stream_mic(args.samplerate, args.device)
-
-    logger.info(f"📢: {res}")
-
-
-if __name__ == "__main__":
-    # python -m  asr.client -v 2 -d 0
-    asyncio.run(main())

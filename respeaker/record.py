@@ -18,7 +18,6 @@ def record_audio(
     width=RESPEAKER_WIDTH,
 ):
     p = pyaudio.PyAudio()
-
     stream = p.open(
         rate=rate,
         format=p.get_format_from_width(RESPEAKER_WIDTH),
@@ -26,17 +25,14 @@ def record_audio(
         input=True,
         # input_device_index=RESPEAKER_INDEX,
     )
-
     print("🎙️ recording")
 
     frames = []
-
-    for _i in range(int(rate / CHUNK * record_seconds)):
+    for _ in range(int(rate / CHUNK * record_seconds)):
         data = stream.read(CHUNK)
         frames.append(data)
 
     print("🎬️ done recording")
-
     stream.stop_stream()
     stream.close()
     p.terminate()
@@ -47,9 +43,4 @@ def record_audio(
     wf.setframerate(rate)
     wf.writeframes(b"".join(frames))
     wf.close()
-
     print(f"🔊 saved output as: '{output_filename}'")
-
-
-if __name__ == "__main__":
-    record_audio(5, "output.wav")

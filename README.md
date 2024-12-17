@@ -159,7 +159,13 @@ We use `respeaker 4mic hat` as microphone and visual feedbac with its LED array.
 To run the LED pixel demo:
 
 ```bash
-python -m respeaker.pixels
+python -m respeaker pixels
+```
+
+To run a recording:
+
+```bash
+python -m respeaker record -t 5 -o output.wav
 ```
 
 ### Raspvan
@@ -172,7 +178,7 @@ i2c relay demo: `python -m raspvan.workers.relay`
 
 #### Bluetoth
 
-To run the bluetooth server `make run-ble-server`
+To run the bluetooth server `inv run-ble-server`
 
 <details>
 
@@ -180,7 +186,7 @@ To run the bluetooth server `make run-ble-server`
 
 Create `/etc/systemd/system/ble_server.service` with the following content:
 
-```
+```ini
 [Unit]
 Description=RaspVan BLE Server + Redis container
 Requires=docker.service
@@ -226,7 +232,7 @@ pdm sync
 First list all audio devices:
 
 ```bash
-python -m respeaker.get_audio_device_index
+python -m respeaker print-audio-devices
 ```
 
 You should get a table simlar to this:
