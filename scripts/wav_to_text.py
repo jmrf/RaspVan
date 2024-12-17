@@ -1,20 +1,11 @@
-import argparse
 import asyncio
 import glob
 import os
 
+import click
 from halo.halo import Halo
 
 from asr.client import ASRClient
-
-
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("data_dir")
-    parser.add_argument("--glob-mask", "-m", default="*.wav")
-    parser.add_argument("--asr-server-uri", "-u", default="ws://localhost:2700")
-
-    return parser.parse_args()
 
 
 async def wav_to_text(asr_uri: str, wav_file: str):
@@ -24,14 +15,20 @@ async def wav_to_text(asr_uri: str, wav_file: str):
     return res["text"]
 
 
-if __name__ == "__main__":
-    args = get_args()
-
-    wav_files = glob.glob(os.path.join(args.data_dir, args.glob_mask))
+@click.command()
+@click.argument("data_dir")
+@click.option("-m", "--glob-mask", default="*.wav")
+@click.option("-u", "--asr-server-uri", default="ws://localhost:2700")
+def transform(data_dir, glob_mask, asr_server_uri):
+    wav_files = glob.glob(os.path.join(data_dir, glob_mask))
     for wav_file in wav_files:
         fname = os.path.basename(wav_file)
         with Halo(f"Processing: {fname}") as sp:
-            res = asyncio.run(wav_to_text(args.asr_server_uri, wav_file))
+            res = asyncio.run(wav_to_text(asr_server_uri, wav_file))
             sp.succeed()
 
         print(res)
+
+
+if __name__ == "__main__":
+    transform()

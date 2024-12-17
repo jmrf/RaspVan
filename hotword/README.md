@@ -2,7 +2,7 @@
 
 We use a custom [mycroft/precise fork](https://github.com/josemarcosrf/mycroft-precise) for hot-word detection.
 
-We collect some recordings and [train a custom word ](https://github.com/josemarcosrf/mycroft-precise/wiki/Training-your-own-wake-word)by combining with [public sounds](http://pdsounds.tuxfamily.org/).
+We collect some recordings and [train a custom word](https://github.com/josemarcosrf/mycroft-precise/wiki/Training-your-own-wake-word)by combining with [public sounds](http://pdsounds.tuxfamily.org/).
 
 We find that collecting the following samples yields acceptable results:
 
@@ -14,18 +14,16 @@ We find that collecting the following samples yields acceptable results:
 ## Table of Contents
 
 <!--ts-->
-   * [Hotword detection](#hotword-detection)
-      * [Table of Contents](#table-of-contents)
-      * [Requirements](#requirements)
-      * [Structure](#structure)
-      * [How To](#how-to)
-         * [Install](#install)
-         * [Train a custom hotword](#train-a-custom-hotword)
+- [Hotword detection](#hotword-detection)
+  - [Table of Contents](#table-of-contents)
+  - [Requirements](#requirements)
+  - [Structure](#structure)
+  - [How To](#how-to)
+    - [Install](#install)
+    - [Train a custom hotword](#train-a-custom-hotword)
 
 <!-- Added by: jose, at: vie 24 mar 2023 22:54:28 CET -->
-
 <!--te-->
-
 
 ## Requirements
 
@@ -42,10 +40,9 @@ We find that collecting the following samples yields acceptable results:
 > Ensure you have version `0.3.0` of both `mycroft-precise` and `precise-runner`
 > check with `pip list |grep precise` and `pip list |grep h5py`
 
-
 ## Structure
 
-```
+```shell
 .
 ├── data
 │   ├── phiona
@@ -69,41 +66,41 @@ We find that collecting the following samples yields acceptable results:
 18 directories
 ```
 
-
 ## How To
-
 
 ### Install
 
 To train a `custom model` we need to install from source:
-```
+
+```shell
     git clone https://github.com/josemarcosrf/mycroft-precise
     cd mycroft-precise
     ./setup.sh
 ```
 
 Once deployed in the `RaspberryPi`, we can use the binary installs:
-```
+
+```shell
     ARCH=armv7l
     wget https://github.com/josemarcosrf/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
     tar xvf precise-engine.tar.gz
 ```
 
 And finally:
-```
+
+```shell
     pip install precise-runner
 ```
 
 ### Train a custom hotword
 
-1. run
+1. Run
 
-   ```bash
-   ./scripts/crate_dirs.sh
-   ```
+```shell
+bash ./scripts/crate_dirs.sh
+```
 
-2. follow the [this wiki instructions](https://github.com/josemarcosrf/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word)
-
+2. Follow the [this wiki instructions](https://github.com/josemarcosrf/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word)
 
 <details>
   <summary>Additional instructions. Click to expand!</summary>

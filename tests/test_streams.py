@@ -1,7 +1,6 @@
 import time
 
-from pyaudio import paInt16
-from pyaudio import PyAudio
+from pyaudio import paInt16, PyAudio
 
 
 def close(pa, streams):

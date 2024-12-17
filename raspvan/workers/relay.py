@@ -54,7 +54,7 @@ class RelayClient:
 
     @staticmethod
     def validate(channels, mode):
-        if any([c < MIN_CHANNEL or c > MAX_CHANNEL for c in channels]):
+        if any(c < MIN_CHANNEL or c > MAX_CHANNEL for c in channels):
             raise ValueError(f"Invalid channels: {channels}")
 
         if mode not in (0, 1):
@@ -97,6 +97,7 @@ class RelayClient:
 
 if __name__ == "__main__":
     rc = RelayClient()
+
 
     # switch all one by one
     print("---------- Switching ON one by one ----------")

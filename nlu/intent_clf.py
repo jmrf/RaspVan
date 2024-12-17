@@ -1,8 +1,7 @@
 import logging
 import os
 import pickle
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 import spacy
@@ -11,13 +10,11 @@ from sklearn.svm import SVC
 
 from common.utils.io import init_logger
 
-
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 class IntentPredictor:
-
     DEFAULT_SPACY_VEC_MODEL = "en_core_web_sm"
 
     def __init__(
@@ -27,7 +24,7 @@ class IntentPredictor:
         if nlp is not None:
             self.nlp_vec = nlp
         else:
-            logger.info(f"Loading spacy vectorizer...")
+            logger.info("Loading spacy vectorizer...")
             self.nlp_vec = spacy.load(self.DEFAULT_SPACY_VEC_MODEL)
 
         # Calculate the dimensionality of nlp
@@ -46,11 +43,11 @@ class IntentPredictor:
     ):
         ip = cls(nlp=nlp)
 
-        logger.info(f"Loading label encoder")
+        logger.info("Loading label encoder")
         with open(le_pkl, "rb") as f:
             ip.le = pickle.load(f)
 
-        logger.info(f"Loading Intent classifier")
+        logger.info("Loading Intent classifier")
         with open(clf_pkl, "rb") as f:
             ip.clf = pickle.load(f)
 

@@ -1,16 +1,12 @@
 import logging
 import os
 import pickle
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
+from typing import Dict, List, Optional, Tuple
 
 import sklearn_crfsuite
 import spacy
 
 from common.utils.io import init_logger
-
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
@@ -20,7 +16,6 @@ conll_sent = List[Tuple[str, str, str]]
 
 
 class EntityTagger:
-
     default_config = {
         "spacy_pos_model": "en_core_web_sm",
         "L1_c": 0.1,  # coefficient for L1 penalty
@@ -31,9 +26,9 @@ class EntityTagger:
 
     def __init__(
         self,
-        c1: float = None,
-        c2: float = None,
-        max_iterations: int = None,
+        c1: Optional[float] = None,
+        c2: Optional[float] = None,
+        max_iterations: Optional[int] = None,
         all_transitions: bool = True,
         verbose: bool = False,
         nlp: Optional[spacy.language.Language] = None,
@@ -41,7 +36,7 @@ class EntityTagger:
         if nlp is not None:
             self.nlp_pos = nlp
         else:
-            logger.info(f"Loading Spacy POS model")
+            logger.info("Loading Spacy POS model")
             self.nlp_pos = nlp or spacy.load(self.default_config["spacy_pos_model"])
 
         self.tagger = sklearn_crfsuite.CRF(
@@ -60,7 +55,7 @@ class EntityTagger:
     ):
         et = cls(nlp=nlp)
 
-        logger.info(f"Loading tagger CRF model")
+        logger.info("Loading tagger CRF model")
         with open(tagger_pkl, "rb") as f:
             et.tagger = pickle.load(f)
 
@@ -148,7 +143,7 @@ class EntityTagger:
 def to_conll_format(sent: str, entities: List[Dict[str, str]], nlp):
     """Transform a sentence into CONLL annotation format.
      - sent (str): sentence to encode
-     - entities: (list): Entity list. Each with {text,start,end} keys
+     - entities: (List): Entity list. Each with {text,start,end} keys
 
     Returns a sentence as a list of tuples; (token, POS-tag, label)
     """

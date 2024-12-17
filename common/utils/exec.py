@@ -1,14 +1,8 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Tuple
-from typing import Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import nest_asyncio
-
 
 # https://stackoverflow.com/questions/46827007/runtimeerror-this-event-loop-is-already-running-in-python#56434301
 nest_asyncio.apply()
@@ -46,9 +40,7 @@ async def async_parallel_exec(
 
         # Create all tasks
         tasks = [
-            loop.run_in_executor(
-                executor, mapping_func_call, *tuple([f_id, func, *f_params])
-            )
+            loop.run_in_executor(executor, mapping_func_call, *(f_id, func, *f_params))
             for f_id, func, f_params in func_calls
         ]
 

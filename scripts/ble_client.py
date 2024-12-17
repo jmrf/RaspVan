@@ -1,11 +1,11 @@
-import click
 import json
 import logging
 import sys
+from typing import Optional
 
 import bluetooth
+import click
 import coloredlogs
-
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(logger=logger, level=logging.DEBUG)
@@ -14,7 +14,7 @@ coloredlogs.install(logger=logger, level=logging.DEBUG)
 @click.command()
 @click.option("--uuid", default="616d3aa1-689e-4e71-8fed-09f3c7c4ad91")
 @click.option("--addr")
-def main(uuid: str, addr: str = None):
+def main(uuid: str, addr: Optional[str] = None):
     if addr:
         logger.info(f"Searching for BT Server with address={addr}...")
     else:

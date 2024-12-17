@@ -12,23 +12,23 @@ Commands can be executed either by _voice_ or by sending _HTTP requests_ to a se
 ## Table of Contents
 
 <!--ts-->
-   * [RaspVan (codename: Fiona)](#raspvan-codename-fiona)
-      * [Table of Contents](#table-of-contents)
-      * [Requirements](#requirements)
-      * [Structure](#structure)
-         * [Hotword](#hotword)
-         * [ASR](#asr)
-         * [NLU](#nlu)
-         * [Respeaker](#respeaker)
-         * [Raspvan](#raspvan)
-            * [Relays](#relays)
-            * [Bluetoth](#bluetoth)
-      * [How to](#how-to)
-         * [Installation](#installation)
-         * [Finding the sound input device ID](#finding-the-sound-input-device-id)
-         * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
-         * [Wiring and Connections](#wiring-and-connections)
-      * [Misc](#misc)
+* [RaspVan (codename: Fiona)](#raspvan-codename-fiona)
+  * [Table of Contents](#table-of-contents)
+  * [Requirements](#requirements)
+  * [Structure](#structure)
+    * [Hotword](#hotword)
+    * [ASR](#asr)
+    * [NLU](#nlu)
+    * [Respeaker](#respeaker)
+    * [Raspvan](#raspvan)
+      * [Relays](#relays)
+      * [Bluetoth](#bluetoth)
+  * [How to](#how-to)
+    * [Installation](#installation)
+    * [Finding the sound input device ID](#finding-the-sound-input-device-id)
+    * [WiFi and automatic hotspot](#wifi-and-automatic-hotspot)
+    * [Wiring and Connections](#wiring-and-connections)
+  * [Misc](#misc)
 
 <!-- Added by: jose, at: vie 24 mar 2023 22:54:27 CET -->
 
@@ -37,24 +37,23 @@ Commands can be executed either by _voice_ or by sending _HTTP requests_ to a se
 
 ## Requirements
 
-Apart from any other requirement defined in the root or any of the sub-components we
-need the follwing:
+Apart from any other requirement defined in the root or any of the sub-modules we
+need the following system-wide dependencies:
 
-*  [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
+* [Raspbian Buster](https://www.raspberrypi.org/downloads/raspbian/)
    ([installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
-*  python >= 3.7
-*  Docker & Docker-compose
-
+* python >= 3.7
+* Docker & Docker-compose
 
 ## Structure
 
-This repo is organized in a series of sub-components plus the main solution code
-under [raspvan](raspvan/]).
+This repo is organized in a series of sub-modules plus the main solution code under [raspvan](raspvan/]).
 
-To understand how to train, configure, test and run each sub-component please refer to
+To understand how to train, configure, test and run each sub-module please refer to
 the individual readme files.
 
 ```bash
+# tree -L 1
 .
 ├── asr                     # ASR component (uses vosk-kaldi)
 ├── assets
@@ -62,21 +61,19 @@ the individual readme files.
 ├── config
 ├── data
 ├── docker-compose.yml
-├── external
 ├── hotword                 # HotWord detection (uses Mycroft/Precise)
-├── Makefile
+├── nlu                     # NLU (sklearn and spacy custom implementation)
+├── raspvan                 # client and server systems
 ├── README.md
 ├── requirements-dev.txt
 ├── requirements.txt
 ├── respeaker
 ├── scripts
 ├── setup.cfg
-└── raspvan                 # client and server systems
+└──  tasks.py               # invoke commands
 ```
 
-
-Most of the following components communicate through `AMQP` using `rabbitMQ`.
-
+All the `raspvan.workers` communicate through `AMQP` using `rabbitMQ`.
 To run the broker backbone glueing all together:
 
 ```bash
@@ -85,48 +82,44 @@ docker-compose up -d rabbit
 
 ### Hotword
 
-> ⚠️ TBD
+The hotword detection sub-module is based on a custom for of [mycroft/precise](https://github.com/josemarcosrf/mycroft-precise.
 
-To run:
+To run the rabbitMQ-publisher hot-word worker:
 
 ```bash
 source .env
 source .venv/bin/activate
-python -m raspvan.workers.hotword
+inv run-hot-word
 ```
 
 ### ASR
 
-We use the dockerized vosk-server from the
-[jmrf/pyvosk-rpi](https://github.com/josemarcosrf/pyvosk-rpi) repo.
+The ASR sub-module uses a custom dockerized PyVosk server build for the RaspberryPi:
+[jmrf/pyvosk-rpi](https://github.com/josemarcosrf/pyvosk-rpi).
 
 This server listens via websocket to a `sounddevice` stream and performs STT on the fly.
 
 > 💡 For a complete list of compatible models check:
 > [vosk/models](https://alphacephei.com/vosk/models)
 
+
+To try the ASR client & server:
 ```bash
 # Run the dockerized server
 docker-compose up asr-server
+# ASR from a audio wav file
+python -m  asr client -v 2 -f <name-of-the-16kHz-wav-file>
+# Or ASR listening from the microphone
+python -m  asr client -v 2 -d <microphone-ID>
 ```
 
-Then, run one of the clients:
+To run the rabbitMQ-triggered ASR worker:
 
 ```bash
 source .env
 source .venv/bin/activate
-# ASR from a audio wav file
-python -m  asr.client -v 2 -f <name-of-the-16kHz-wav-file>
-# Or ASR listening from the microphone
-python -m  asr.client -v 2 -d <microphone-ID>
+inv run-asr
 ```
-
-Or run the rabbitMQ-triggered `raspvan ASR worker`:
-
-```bash
-python -m raspvan.workers.asr
-```
-
 
 ### NLU
 
@@ -137,15 +130,12 @@ python -m raspvan.workers.asr
 >
 > See [nlu/README.md](nlu/README.md)
 
-
 The NLU engine has two parts:
 
- - A Spacy vectorizer + SVM classifier for **intent classification**
- - A `Conditional Random Field` (CRF) for **entity extraction**
+* A Spacy vectorizer + SVM classifier for **intent classification**
+* A `Conditional Random Field` (CRF) for **entity extraction**
 
 > 💡 Check the details in this Colab notebook: [simple-NLU.ipynb](https://colab.research.google.com/drive/1q6Ei9SRdD8Pdg65Pvp8porRyFlQXD4w6#scrollTo=mK2GbpHan6k7)
-
-
 > 💡 It is advices to collect some voice samples and run them through ASR to use
 > these as training samples for the NLU component to train it on real data.
 
@@ -158,17 +148,21 @@ python -m scripts.mic_vad_record -l
 python -m scripts.mic_vad_record sample.wav -d 5 -c 4
 ```
 
-
 ### Respeaker
 
-We use [respeaker 4mic hat]() as microphone and visual feedbac with its LED array.
+We use `respeaker 4mic hat` as a microphone and visual-feedback with its LED array.
 
 To run the LED pixel demo:
 
 ```bash
-python -m respeaker.pixels
+python -m respeaker pixels
 ```
 
+To run a recording:
+
+```bash
+python -m respeaker record -t 5 -o output.wav
+```
 
 ### Raspvan
 
@@ -176,11 +170,19 @@ This is the main module which coordinates all the different components.
 
 #### Relays
 
-i2c relay demo: `python -m raspvan.workers.relay`
+i2c relay demo:
+
+```shell
+inv run-relays
+```
 
 #### Bluetoth
 
-To run the bluetooth server `make run-ble-server`
+To run the bluetooth server:
+
+```shell
+inv run-ble-server`
+````
 
 <details>
 
@@ -188,7 +190,7 @@ To run the bluetooth server `make run-ble-server`
 
 Create `/etc/systemd/system/ble_server.service` with the following content:
 
-```
+```ini
 [Unit]
 Description=RaspVan BLE Server + Redis container
 Requires=docker.service
@@ -204,13 +206,12 @@ WantedBy=default.target
 ```
 
 > Enable on startup: `sudo systemctl enable ble_server.service`
-
+>
 > Start with : `sudo systemctl start ble_server`
-
+>
 > Check its status with: `sudo systemctl status ble_server`
 
 </details>
-
 
 ## How to
 
@@ -229,13 +230,12 @@ And install all the python dependencies
 pip install -r requirements.txt
 ```
 
-
 ### Finding the sound input device ID
 
 First list all audio devices:
 
 ```bash
-python -m respeaker.get_audio_device_index
+python -m respeaker print-audio-devices
 ```
 
 You should get a table simlar to this:
@@ -263,7 +263,6 @@ is the one to pass to the `hotword` and `ASR` workers.
 >
 > Copy [config/.asoundrc](config/.asoundrc) to `~./asoundrc`
 
-
 <details>
   <summary>⚠️ Probably deprecated. Click to expand!</summary>
 
@@ -277,11 +276,9 @@ from [raspberryconnect/network](http://www.raspberryconnect.com/network).
 
 By default the RaspberryPi will be accessible at the IP: `192.168.50.5` when the hotspot is active.
 
-
 ### Wiring and Connections
 
 TBD
-
 
 ## Misc
 

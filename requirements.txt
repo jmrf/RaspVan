@@ -1,12 +1,13 @@
 -r asr/requirements.txt
 -r hotword/requirements.txt
 APScheduler==3.5.1
-coloredlogs
 click
+coloredlogs
 Flask==2.0.2
 Flask_RESTful==0.3.6
 funcy>=1.16
 halo>=0.0.31
+invoke
 nest-asyncio~=1.5.5
 pika==1.2.0
 playsound>=1.3.0

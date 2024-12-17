@@ -9,9 +9,7 @@ import numpy as np
 from funcy import chunks
 from tqdm import tqdm
 
-from common.utils.exec import run_in_event_loop
-from common.utils.exec import run_sync
-
+from common.utils.exec import run_in_event_loop, run_sync
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +37,6 @@ def batched(batch_size, p_bar=True):
     def wrapper(func):
         @wraps(func)
         def batcher(long_list, *args, **kwargs):
-
             _iter = chunks(batch_size, long_list)
             if p_bar:
                 _iter = tqdm(_iter, total=len(long_list))
@@ -104,8 +101,8 @@ def f_timeout(timeout_secs: int):
             result = None
             try:
                 result = func(*args, **kwargs)
-            except Exception as exc:
-                raise exc
+            except Exception:
+                raise
             finally:
                 # disable the signal alarm
                 signal.alarm(0)
@@ -125,7 +122,7 @@ def as_numpy_array(func, dtype=np.float32):
         if r_type in {"ndarray", "EagerTensor", "Tensor", "list"}:
             return np.array(r, dtype)
         else:
-            raise TypeError("unrecognized type {}: {}".format(r_type, type(r)))
+            raise TypeError(f"unrecognized type {r_type}: {type(r)}")
 
     return arg_wrapper
 
@@ -138,7 +135,7 @@ def as_numpy_batch(func, dtype=np.float32):
         if r_type in {"ndarray", "EagerTensor", "Tensor", "list"}:
             r = np.array(r, dtype)
         else:
-            raise TypeError("unrecognized type {}: {}".format(r_type, type(r)))
+            raise TypeError(f"unrecognized type {r_type}: {type(r)}")
 
         if r.ndim < 2:
             r = np.expand_dims(r, axis=0)

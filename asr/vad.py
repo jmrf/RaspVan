@@ -7,13 +7,11 @@ from funcy import chunks
 from asr import calc_block_size
 from common.utils.io import init_logger
 
-
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
 
 
 class VAD:
-
     VALID_BLOCK_MS = [10, 20, 30]
 
     def __init__(self, vad_aggressiveness: int, voice_th: float = 0.9) -> None:

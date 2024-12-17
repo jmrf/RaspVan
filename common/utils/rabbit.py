@@ -1,20 +1,18 @@
 import logging
 import os
 import time
-from typing import Callable
-from typing import List
-from typing import Optional
-from typing import Tuple
+from typing import Callable, List, Optional, Tuple
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 
 from common.utils.io import init_logger
-from raspvan.constants import DEFAULT_RABBITMQ_HOST
-from raspvan.constants import DEFAULT_RABBITMQ_PORT
-from raspvan.constants import RABBITMQ_HOST_ENV_VAR
-from raspvan.constants import RABBITMQ_PORT_ENV_VAR
-
+from raspvan.constants import (
+    DEFAULT_RABBITMQ_HOST,
+    DEFAULT_RABBITMQ_PORT,
+    RABBITMQ_HOST_ENV_VAR,
+    RABBITMQ_PORT_ENV_VAR,
+)
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
@@ -54,16 +52,15 @@ def wait_on_q_limit(channel: BlockingChannel, q_name: str, lim: int, sleep: int 
 
 
 class BaseQueueClient:
-
     VALID_EXCHANGE_TYPES = ["fanout", "topic", "headers"]
     DEFAULT_TCP_KEEPIDLE = 60 * 5  # 5 minutes
 
     def __init__(
         self,
-        host: str = None,
-        port: int = None,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
         blocked_timeout: int = 10,
-        q_lim: int = None,
+        q_lim: Optional[int] = None,
         *args,
         **kwargs,
     ):
@@ -77,7 +74,6 @@ class BaseQueueClient:
         self.q_lim = q_lim or -1
 
     def _validate_params(self):
-
         if self.queue_name and self.exchange_name:
             logger.notice("🐇 Connecting to an exchange and a queue simultanously")  # type: ignore
 
@@ -87,7 +83,7 @@ class BaseQueueClient:
                 f"Must be one of: {self.VALID_EXCHANGE_TYPES}"
             )
         if self.q_lim > 0 and self.exchange_name:
-            logger.warning(f"🐇 Queue limit will be ignored when sending to an exchange")
+            logger.warning("🐇 Queue limit will be ignored when sending to an exchange")
 
         logger.info(
             f"🐇 @ {self.host}:{self.port} "
@@ -104,7 +100,6 @@ class BaseQueueClient:
         exclusive: bool = False,
         auto_delete: bool = False,
     ) -> None:
-
         # Create the channel **persistent** queue
         logger.debug(f"🐇 Connecting to queue: {self.queue_name}")
         channel.queue_declare(
@@ -134,7 +129,7 @@ class BaseQueueClient:
     def connect(
         self, tcp_keepidle: Optional[int] = None
     ) -> Tuple[pika.BlockingConnection, BlockingChannel]:
-        tcp_options = dict(TCP_KEEPIDLE=tcp_keepidle or self.DEFAULT_TCP_KEEPIDLE)
+        tcp_options = {"TCP_KEEPIDLE": tcp_keepidle or self.DEFAULT_TCP_KEEPIDLE}
         connection = pika.BlockingConnection(
             # for connection no to die while blocked waiting for inputs
             # we must set the heartbeat to 0 (although is discouraged)
@@ -154,11 +149,11 @@ class BaseQueueClient:
 class BlockingQueuePublisher(BaseQueueClient):
     def __init__(
         self,
-        host: str = None,
-        port: int = None,
-        queue_name: str = None,
-        exchange_name: str = None,
-        exchange_type: str = None,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        queue_name: Optional[str] = None,
+        exchange_name: Optional[str] = None,
+        exchange_type: Optional[str] = None,
         *args,
         **kwargs,
     ):
@@ -167,7 +162,7 @@ class BlockingQueuePublisher(BaseQueueClient):
         self.exchange_name = exchange_name or ""
         self.exchange_type = exchange_type
 
-    def send_message(self, message, topic: str = None):
+    def send_message(self, message, topic: Optional[str] = None):
         connection, channel = self.connect()
         if self.exchange_name and self.exchange_type:
             self.declare_exchange(
@@ -198,7 +193,6 @@ class BlockingQueuePublisher(BaseQueueClient):
 
 
 class BlockingQueueConsumer(BaseQueueClient):
-
     PREFETCH_COUNT = 10
 
     def __init__(
@@ -206,13 +200,13 @@ class BlockingQueueConsumer(BaseQueueClient):
         on_event: Callable,
         on_done: Callable,
         load_func: Callable,
-        queue_name: str = None,
-        exchange_name: str = None,
-        exchange_type: str = None,
-        routing_keys: List = None,
-        prefetch_count: int = None,
-        host: str = None,
-        port: int = None,
+        queue_name: Optional[str] = None,
+        exchange_name: Optional[str] = None,
+        exchange_type: Optional[str] = None,
+        routing_keys: Optional[List] = None,
+        prefetch_count: Optional[int] = None,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
         *args,
         **kwargs,
     ):
@@ -266,7 +260,7 @@ class BlockingQueueConsumer(BaseQueueClient):
             for event in rx_data:
                 self._on_event(event)
         except Exception as e:
-            logger.error(f"🐇 Error in queue callback: {e}")
+            logger.exception(f"🐇 Error in queue callback: {e}")
         else:
             # Notify Inference Server via endpoint
             self._on_done()

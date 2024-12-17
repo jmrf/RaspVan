@@ -21,6 +21,8 @@ out.txt
 imgs/
 **/data/
 **/models/
+!hotword/models
+!nlu/models
 
 
 
