@@ -57,11 +57,6 @@ def callback(event):
 
 
 @click.command()
-@click.option_group(
-    "Routing options",
-    help="MQTT Routing Options",
-    options=["--exchange", "--consume-topic", "--publish-topic"],
-)
 @click.option(
     "-x",
     "--exchange",
@@ -80,7 +75,6 @@ def callback(event):
     help="ASR --> NLU topic as a routing key",
     default=DEFAULT_NLU_ACTION_TOPIC,
 )
-@click.option_group("Model options", options=["--clf", "--le", "--tg"])
 @click.option(
     "-clf",
     "--classifier",

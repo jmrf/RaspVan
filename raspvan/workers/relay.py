@@ -4,13 +4,11 @@ import logging
 import time
 from typing import List
 
+import coloredlogs
 import redis
 from smbus2 import SMBus
 
 logger = logging.getLogger(__name__)
-
-import coloredlogs
-
 coloredlogs.install(logger=logger, level=logging.DEBUG)
 
 MIN_CHANNEL = 1
@@ -97,7 +95,6 @@ class RelayClient:
 
 if __name__ == "__main__":
     rc = RelayClient()
-
 
     # switch all one by one
     print("---------- Switching ON one by one ----------")

@@ -4,7 +4,7 @@ import logging
 import os
 import time
 import wave
-from typing import Dict
+from typing import Dict, Optional
 
 import sounddevice as sd
 import websockets
@@ -26,11 +26,11 @@ class ASRClient:
     VAD_BLOCK_MS = 30
     VOICE_TH = 0.9
 
-    def __init__(self, asr_uri: str, vad: VAD) -> None:
+    def __init__(self, asr_uri: str, vad: VAD, pixels: Optional[Pixels] = None) -> None:
         self.asr_uri = asr_uri
         self.loop = asyncio.get_running_loop()
         self.audio_queue = asyncio.Queue()
-        self.pixels = Pixels()
+        self.pixels = pixels or Pixels()
         self.vad = vad
 
     async def from_wave(self, wave_file: str) -> Dict[str, str]:
