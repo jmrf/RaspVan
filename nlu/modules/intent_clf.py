@@ -62,7 +62,7 @@ class IntentPredictor:
 
         return x_vecs
 
-    def train(self, sentences: List[str], labels: List[str]):
+    def fit(self, sentences: List[str], labels: List[str]):
         logger.info(f"Training on {len(sentences)} intent examples...")
         # Train the label encoder
         self.le.fit(labels)
