@@ -17,16 +17,21 @@ class NLURequesthandler(http.server.SimpleHTTPRequestHandler):
         data = json.loads(post_data)
 
         # Process the string parameter
+        response = {}
         if "text" in data:
-            response = f"Received text: {data['text']}"
+            text = data["text"]
+            response = {
+                "text": text,
+                "predictions": self.nlp([text])[0],
+            }
         else:
-            response = "💥 No text parameter received"
+            response = {"error": "💥 No text parameter received"}
 
         # Send JSON response
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
-        self.wfile.write(json.dumps({"response": response}).encode("utf-8"))
+        self.wfile.write(json.dumps(response).encode("utf-8"))
 
     def do_GET(self):
         self.send_response(200)
