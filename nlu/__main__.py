@@ -20,25 +20,25 @@ def cli():
 )
 @click.option(
     "-l",
-    "--labels",
+    "--label-encoder",
     type=click.Path(dir_okay=False),
     default="nlu/models/intent-le.pkl",
 )
 @click.option(
     "-t",
-    "--tagger",
+    "--entity-tagger",
     type=click.Path(dir_okay=False),
-    default="nlu/models/intent-tagger.pkl",
+    default="nlu/models/entity-tagger.pkl",
 )
-def run_nlu(classifier, labels, tagger):
+def run_nlu(classifier, label_encoder, entity_tagger):
     """Run the NLU pipeline
 
     Args:
         classifier (str): Path to the pickled classifier model
-        labels (str): Path to the pickled label-encoder model
-        tagger (str): Path to the pickled CRF tagger model
+        label_encoder (str): Path to the pickled label-encoder model
+        entity_tagger (str): Path to the pickled CRF tagger model
     """
-    nlp = NLUPipeline(classifier, labels, tagger)
+    nlp = NLUPipeline(classifier, label_encoder, entity_tagger)
     for line in sys.stdin:
         res = nlp([line.strip()])[0]
         print(f"🔮 Result: {res}")
@@ -98,9 +98,17 @@ def train_nlu(
     "-t",
     "--entity-tagger",
     type=click.Path(dir_okay=False),
-    default="nlu/models/intent-tagger.pkl",
+    default="nlu/models/entity-tagger.pkl",
 )
-def start_server(port, classifier, label_encoder, entity_tagger):
+def serve(port, classifier, label_encoder, entity_tagger):
+    """Starts a simple http server to serve NLU predictions
+
+    Args:
+        port (int): HTTP port to listen to
+        classifier (str): Path to the pickled classifier model
+        label_encoder (str): Path to the pickled label-encoder model
+        entity_tagger (str): Path to the pickled CRF tagger model
+    """
     # Create the handler
     nlp = NLUPipeline(classifier, label_encoder, entity_tagger)
     init_handler_and_run_server(nlp, port)
