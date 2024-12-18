@@ -20,10 +20,10 @@ out.txt
 
 imgs/
 **/data/
+!nlu/data/
 **/models/
 !hotword/models
 !nlu/models
-
 
 
 
