@@ -23,12 +23,12 @@ from raspvan.constants import (
 )
 @click.option("-r", "--samplerate", type=int, help="sampling rate", default=16000)
 # Hotword detection options
-@click.option("-h", "--hotword_model", default=os.getenv(HOTWORD_MODEL_ENV_VAR))
-@click.option("-e", "--hotword_engine", default=os.getenv(PRECISE_ENGINE_ENV_VAR))
+@click.option("-h", "--hotword-model", default=os.getenv(HOTWORD_MODEL_ENV_VAR))
+@click.option("-e", "--hotword-engine", default=os.getenv(PRECISE_ENGINE_ENV_VAR))
 # ASR options
 @click.option(
-    "-s",
-    "--asr_server_uri",
+    "-as",
+    "--asr-server-uri",
     type=str,
     metavar="URL",
     help="ASR Server websocket URI",
@@ -40,45 +40,29 @@ from raspvan.constants import (
 )
 # NLU options
 @click.option(
-    "-clf",
-    "--classifier",
-    help="Intent classifier model pkl file",
-    default="nlu/models/intent-clf.pkl",
-)
-@click.option(
-    "-le",
-    "--label-encoder",
-    help="Intent label encoder pkl file",
-    default="nlu/models/intent-le.pkl",
-)
-@click.option(
-    "-tg",
-    "--tagger",
-    help="Entity extractor pkl file",
-    default="nlu/models/entity-tagger.pkl",
+    "-ns",
+    "--nlu-server-uri",
+    help="NLU HTTP Server for Intent Classifier and Entity Tagger",
+    default="http://localhost:8000",
 )
 def main(
     device,
     samplerate,
-    hotword_model,
-    hotword_engine,
-    asr_server_uri,
     vad_aggressiveness,
-    classifier,
-    label_encoder,
-    tagger,
+    hotword_engine,
+    hotword_model,
+    asr_server_uri,
+    nlu_server_uri,
 ):
     asyncio.run(
         pipeline(
+            device=device,
+            samplerate=samplerate,
+            vad_aggressiveness=vad_aggressiveness,
             hotword_engine=hotword_engine,
             hotword_model=hotword_model,
             asr_uri=asr_server_uri,
-            nlu_classifier=classifier,
-            nlu_label_encoder=label_encoder,
-            nlu_tagger=tagger,
-            samplerate=samplerate,
-            device=device,
-            vad_aggressiveness=vad_aggressiveness,
+            nlu_uri=nlu_server_uri,
         )
     )
 

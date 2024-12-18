@@ -1,6 +1,9 @@
 import http.server
 import json
+import logging
 import socketserver
+
+logger = logging.getLogger(__name__)
 
 
 class NLURequesthandler(http.server.SimpleHTTPRequestHandler):
@@ -19,13 +22,13 @@ class NLURequesthandler(http.server.SimpleHTTPRequestHandler):
         # Process the string parameter
         response = {}
         if "text" in data:
-            text = data["text"]
-            response = {
-                "text": text,
-                "predictions": self.nlp([text])[0],
-            }
+            sentence = data["text"]
+            logger.info(f"[POST] sentence: '{sentence}'")
+            response = self.nlp([sentence])[0]
         else:
-            response = {"error": "💥 No text parameter received"}
+            error_msg = "💥 No text parameter received"
+            logger.error(f"[POST] {error_msg}")
+            response = {"error": error_msg}
 
         # Send JSON response
         self.send_response(200)

@@ -4,13 +4,13 @@ import queue
 from typing import Callable
 
 import precise_runner
+import requests
 from precise_runner import PreciseEngine, PreciseRunner
 from pyaudio import paInt16, PyAudio
 
 from asr.client import ASRClient
 from asr.vad import VAD
 from common.utils.io import init_logger
-from nlu import NLUPipeline
 from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
 from raspvan.workers.hotword import CHUNK_SIZE
 from respeaker.pixels import Pixels
@@ -69,28 +69,34 @@ def init_hotword_engine(
 
 
 async def pipeline(
+    device,
+    samplerate,
+    vad_aggressiveness,
     hotword_engine,
     hotword_model,
     asr_uri,
-    nlu_classifier,
-    nlu_label_encoder,
-    nlu_tagger,
-    samplerate,
-    device,
-    vad_aggressiveness,
+    nlu_uri,
 ):
-    logger.info(f"🎙️ Using Audio Device: {device} " f"(sampling rate: {samplerate} Hz)")
-    # Init the Pixels client
-    pixels = Pixels(pattern_name="google")
+    logger.info(f"🎙️ Using Audio Device: {device} (sampling rate: {samplerate} Hz)")
 
-    # Init the ASR Client
-    # ---------------------------
-    #     HOTWORD DETECTION
-    # ---------------------------
+    def parse(text: str):
+        try:
+            res = requests.post(nlu_uri, json={"text": text})
+            res.raise_for_status()
+            return res.json()
+        except Exception as e:
+            logger.error(f"Error making NLU parse request: {e}")
+
     def activate():
         pixels.wakeup()
         q.put(HOTWORD_KEY)
 
+    # Init the Pixels client
+    pixels = Pixels(pattern_name="google")
+
+    # ---------------------------
+    #     HOTWORD DETECTION
+    # ---------------------------
     try:
         # Init the precise-engine machinery
         runner, _, _ = init_hotword_engine(
@@ -106,31 +112,30 @@ async def pipeline(
         raise Exception(f"Error in audio-stream or hotword engine: {e}")
 
     # ---------------------------
-    #           ASR + NLU
+    #     ASR + NLU
     # ---------------------------
     logger.info("🤐 Initializing ASR and VAD clients")
     vad = VAD(vad_aggressiveness)
     asr = ASRClient(asr_uri, vad, pixels)
 
-    # FIXME: This fucker needs a different numpy! :(
-    logger.info("🔮 Initializing NLU pipeline")
-    nlp = NLUPipeline(nlu_classifier, nlu_label_encoder, nlu_tagger)
-
-    logger.info(f"🔁 Starting ASR ({asr_uri}) + NLU infinite loop")
+    # This requires to external services running (docker):
+    #  - ASR websocket server
+    #  - NLU http server
+    logger.info(f"🔁 Starting ASR ({asr_uri}) + NLU ({nlu_uri}) infinite loop")
     while True:
         msg = q.get()
         if msg == HOTWORD_KEY:
-            # Start audio stream and ASR on the fly
+            # ASR: Start audio stream and do speach recognition on the fly
             logger.info("🔥 hotword detected! Starting microphone stream...")
             text = await asr.stream_mic(samplerate, device)
-            logger.info("👂 Recognized: '{text}")
+            logger.info(f"👂 Recognized: '{text}")
             q.put(f"{ASR_KEY}:{text}")
         elif msg.startswith(ASR_KEY):
-            # NLU analysis of the recognized text
+            # NLU: Analysis of the recognized text
             text = msg.split(":")[-1]
-            logger.info(f"🤔 Parsing '{text}'")
-            res = nlp([text])
-            print(res)
+            logger.info(f"🔮 Parsing '{text}'")
+            res = parse(text)
+            logger.info(f"💫 Result {res}")
         else:
             logger.warning("😵‍💫 Weird message in the queue: '{msg}")
 

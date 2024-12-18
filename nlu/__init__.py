@@ -21,9 +21,9 @@ class NLUPipeline:
         nlp_model_name: str = "en_core_web_sm",
     ) -> None:
         # Load a unique spacy model shared by both components so we take up less memory
-        logger.info("📥 Loading Spacy '{nlp_model_name}'")
+        logger.info("📥 Loading NLU Pipeline models")
+        logger.info(f"Loading Spacy model ({nlp_model_name})")
         nlp = spacy.load(nlp_model_name)
-        logger.info("📥 Loading Intent-Predictor, label-encoder and Entity-Tagger")
         self.ip = IntentPredictor.from_pretrained(clf_pkl, le_pkl, nlp)
         self.et = EntityTagger.from_pretrained(tagger_pkl, nlp)
         logger.info("✅ Done")

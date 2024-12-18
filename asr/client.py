@@ -60,14 +60,9 @@ class ASRClient:
         async def _do_asr(pcm_data):
             # ASR on the entire buffer
             await websocket.send(pcm_data)
-
             res = json.loads(await websocket.recv())
-            logger.debug(res)
 
             return res.get("text", "")
-
-            # if "text" in res:
-            #     logger.notice(f"ASR result: {res['text']}")
 
         # Compute pcm buffer parameters
         asr_block_ms = self.ASR_BLOCK_SIZE / sample_rate * 1000  # e.g: 250ms
@@ -128,7 +123,7 @@ class ASRClient:
                     # to collect audio frames and potentially we can
                     # break due to having 'silent' audio blocks before
                     # the ASR has completed!
-                    logger.debug(f"🎙️ [block {i}] Running ASR! ({len(data)})")
+                    # logger.debug(f"🎙️ [block {i}] Running ASR! ({len(data)})")
                     text += await _do_asr(data)
 
                 # close up pixels and asr-server sock stream

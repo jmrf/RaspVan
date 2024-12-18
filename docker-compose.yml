@@ -8,9 +8,8 @@ x-logging:
 
 services:
 
-  asr-server:
-    # To run with the default english model:
-    #   python vosk-server/websocket/asr_server.py /app/model
+  asr:
+    # To run with the default english model: python vosk-server/websocket/asr_server.py /app/model
     # Other models can be loaded using the mount volume:
     # [ES] e.g: python vosk-server/websocket/asr_server.py /app/models/vosk-model-small-es-0.22
     image: jmrf/vosk-server-rpi:0.3.32-cp37
@@ -34,8 +33,10 @@ services:
     volumes:
       - ${PWD}/nlu/:/app/nlu
       - ${PWD}/common/:/app/common
+    ports:
+      - 8000:8000
     command: >
-      python -m nlu.__init__
+      python -m nlu serve -p 8000
 
 
   rabbit:
