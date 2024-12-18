@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Union
 import spacy
 
 from common.utils.io import init_logger
-from nlu.entity_extractor import EntityTagger
-from nlu.intent_clf import IntentPredictor
+from nlu.modules.entity_extractor import EntityTagger
+from nlu.modules.intent_clf import IntentPredictor
 
 logger = logging.getLogger(__name__)
 init_logger(level=os.getenv("LOG_LEVEL", logging.INFO), logger=logger)
