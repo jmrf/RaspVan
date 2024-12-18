@@ -37,7 +37,7 @@ def tests(ctx):
 @task
 def print_audio_devices(ctx):
     """List available audio devices"""
-    ctx.run("python -m respeaker.get_audio_device_index")
+    ctx.run("python -m respeaker print-audio-devices")
 
 
 @task

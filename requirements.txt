@@ -2,9 +2,8 @@
 -r hotword/requirements.txt
 APScheduler==3.5.1
 click
+click-option-group
 coloredlogs
-Flask==2.0.2
-Flask_RESTful==0.3.6
 funcy>=1.16
 halo>=0.0.31
 invoke

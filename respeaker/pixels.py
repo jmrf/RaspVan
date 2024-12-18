@@ -2,7 +2,6 @@ import logging
 import os
 import random
 import threading
-import time
 
 from gpiozero import LED
 
@@ -27,9 +26,11 @@ class Pixels(metaclass=Singleton):
     PIXELS_N = 12
     PATTERN_MAP = {"google": GoogleHomeLedPattern, "alexa": AlexaLedPattern}
 
-    def __init__(self, pattern=None):
-        if pattern is None:
+    def __init__(self, pattern_name=None):
+        if pattern_name is None:
             pattern = self._random_pattern()
+        else:
+            pattern = Pixels.PATTERN_MAP.get(pattern_name, self._random_pattern())
 
         self.pattern = pattern(show=self.show)
 

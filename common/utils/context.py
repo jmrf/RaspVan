@@ -1,6 +1,6 @@
 import signal
 from contextlib import contextmanager
-from ctypes import CFUNCTYPE, c_char_p, c_int, cdll
+from ctypes import c_char_p, c_int, cdll, CFUNCTYPE
 
 
 @contextmanager

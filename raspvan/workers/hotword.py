@@ -11,7 +11,7 @@ from typing import Callable
 import click
 import precise_runner
 from precise_runner import PreciseEngine, PreciseRunner
-from pyaudio import PyAudio, paInt16
+from pyaudio import paInt16, PyAudio
 
 from common import int_or_str
 from common.utils.context import no_alsa_err
@@ -125,7 +125,6 @@ def init_engine(
 
 
 @click.command()
-# rabbitMQ options
 @click.option(
     "-x",
     "--exchange",
@@ -138,7 +137,6 @@ def init_engine(
     help="HOTWORD --> ASR topic as a routing key",
     default=DEFAULT_HOTWORD_ASR_TOPIC,
 )
-# microphone options
 @click.option(
     "-d",
     "--device",
@@ -147,7 +145,6 @@ def init_engine(
     default=os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0),
 )
 @click.option("-r", "--samplerate", type=int, help="sampling rate", default=16000)
-# model options
 @click.option("-m", "--model", default=os.getenv(HOTWORD_MODEL_ENV_VAR))
 @click.option("-e", "--engine", default=os.getenv(PRECISE_ENGINE_ENV_VAR))
 def main(device, samplerate, exchange, publish_topic, engine, model):
@@ -202,7 +199,7 @@ def main(device, samplerate, exchange, publish_topic, engine, model):
         # ...So here we just sleep for ever
         while True:
             sleep(10)
-
+    finally:
         if pa is not None:
             logger.warning("‼️ Terminating pyAudio!")
             pa.terminate()

@@ -46,6 +46,7 @@ def print_audio_devices():
 
 @cli.command()
 def pixels():
+    """Run the Respeaker4hat pixel demo"""
     pixels = Pixels()
     while True:
         try:
@@ -70,8 +71,11 @@ def pixels():
 
 @cli.command()
 @click.option("-t", "--recording-seconds", type=int, default=5)
-@click.option("-o", "--output_wav_filepath", type=click.Path, default="output.wav")
+@click.option(
+    "-o", "--output_wav_filepath", type=click.Path(dir_okay=False), default="output.wav"
+)
 def record(recording_seconds, output_wav_filepath):
+    """Record audio and store in a .wav file"""
     record_audio(recording_seconds, output_wav_filepath)
 
 

@@ -1,8 +1,8 @@
-import argparse
 import queue
 import sys
 import tempfile
 
+import click
 import sounddevice as sd
 import soundfile as sf
 from halo import Halo
@@ -14,54 +14,6 @@ from common import int_or_str
 from respeaker.pixels import Pixels
 
 console = Console()
-
-
-def get_args():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "-l",
-        "--list-devices",
-        action="store_true",
-        help="show list of audio devices and exit",
-    )
-    parser.add_argument(
-        "-d", "--device", type=int_or_str, help="input device (numeric ID or substring)"
-    )
-    parser.add_argument(
-        "-r", "--samplerate", type=int, default=16000, help="sampling rate"
-    )
-    parser.add_argument(
-        "-c", "--channels", type=int, default=1, help="number of input channels"
-    )
-    parser.add_argument(
-        "filename",
-        nargs="?",
-        metavar="FILENAME",
-        help="audio file to store recording to (without extension)",
-    )
-    parser.add_argument(
-        "-b", "--blocksize", type=int, default=4000, help="mic stream block size"
-    )
-    parser.add_argument(
-        "-t", "--subtype", type=str, help='sound file subtype (e.g. "PCM_24")'
-    )
-    parser.add_argument(
-        "-v", "--vad-aggressiveness", type=int, help="VAD aggressiveness", default=2
-    )
-
-    args = parser.parse_args()
-
-    if args.list_devices:
-        console.print(sd.query_devices())
-        sys.exit(0)
-    if args.samplerate is None:
-        # soundfile expects an int, sounddevice provides a float:
-        device_info = sd.query_devices(args.device, "input")
-        args.samplerate = int(device_info["default_samplerate"])
-    if args.filename is None:
-        args.filename = tempfile.mktemp(prefix="rec_unlimited_", suffix=".wav", dir="")
-
-    return args
 
 
 def record_to_file(
@@ -129,25 +81,59 @@ def record_to_file(
         return
 
 
-def main():
+@click.command()
+@click.argument("filename")
+@click.option(
+    "-l",
+    "--list-devices",
+    is_flag=True,
+    help="show list of audio devices and exit",
+)
+@click.option(
+    "-d", "--device", type=int_or_str, help="input device (numeric ID or substring)"
+)
+@click.option("-r", "--samplerate", type=int, default=16000, help="sampling rate")
+@click.option("-c", "--channels", type=int, default=1, help="number of input channels")
+@click.option("-b", "--blocksize", type=int, default=4000, help="mic stream block size")
+@click.option("-t", "--subtype", type=str, help='sound file subtype (e.g. "PCM_24")')
+@click.option(
+    "-v", "--vad-aggressiveness", type=int, help="VAD aggressiveness", default=2
+)
+def main(
+    filename,
+    list_devices,
+    device,
+    samplerate,
+    channels,
+    blocksize,
+    subtype,
+    vad_aggressiveness,
+):
+    if list_devices:
+        console.print(sd.query_devices())
+        sys.exit(0)
+    if samplerate is None:
+        # soundfile expects an int, sounddevice provides a float:
+        device_info = sd.query_devices(device, "input")
+        samplerate = int(device_info["default_samplerate"])
+    if filename is None:
+        filename = tempfile.mktemp(prefix="rec_unlimited_", suffix=".wav", dir="")
     try:
-        args = get_args()
-
         console.print("#" * 80)
         console.print("press Ctrl+C to stop recording", style="magenta bold")
         console.print("#" * 80)
 
-        vad = VAD(args.vad_aggressiveness)
+        vad = VAD(vad_aggressiveness)
         i = 0
         while True:
             record_to_file(
                 vad,
-                f"{args.filename}-{i:03}.wav",
-                args.samplerate,
-                args.blocksize,
-                args.channels,
-                args.subtype,
-                args.device,
+                f"{filename}-{i:03}.wav",
+                samplerate,
+                blocksize,
+                channels,
+                subtype,
+                device,
             )
             i += 1
 
