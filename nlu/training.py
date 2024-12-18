@@ -1,7 +1,6 @@
 import json
 import os
 import pickle
-import sys
 from pathlib import Path
 
 import pandas as pd
@@ -38,18 +37,6 @@ def train(
     L2_c: float = 0.1,
     max_iterations: int = 100,
 ):
-    # Hyperparameters: SVC and CRF configuration
-    try:
-        training_csv = sys.argv[1]
-        out_dir = sys.argv[2]
-    except IndexError:
-        print(
-            "❌ Missing parameters!\n"
-            "Run e.g.: python -m nlu.train "
-            "./nlu/data/fiona-nlu-at-2022-04-27-13-12.csv ./nlu/models"
-        )
-        sys.exit(1)
-
     # Read csv data and split into train / test
     df = pd.read_csv(training_csv)
     df = df[~df.isna().any(axis=1)][["id", "text", "entities", "intent"]]
@@ -64,14 +51,16 @@ def train(
     nlp = spacy.load("en_core_web_sm")
 
     # Init the Intent classifier
+    print("🏋️ Fitting Intent predictor...")
     intd = IntentPredictor(nlp=nlp, C=C)
-    intd.train(x_train, y_train)
+    intd.fit(x_train, y_train)
 
     # Transform to CoNLL 2002 format
     train_conll = df_to_conll(df_train, nlp)
     # test_conll = df_to_conll(df_test, nlp)
 
     # Train the CRF tagger
+    print("🏋️ Fitting Entity Tagger...")
     entity_tagger = EntityTagger(
         c1=L1_c, c2=L2_c, max_iterations=max_iterations, nlp=nlp
     )

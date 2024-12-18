@@ -1,9 +1,11 @@
 import sys
+from pathlib import Path
 
 import click
 
-from nlu import NLUPipeline, train
+from nlu import NLUPipeline
 from nlu.server import init_handler_and_run_server
+from nlu.training import train
 
 
 @click.group()
@@ -11,7 +13,7 @@ def cli():
     """NLU pipeline (clasifier and tagger) CLI"""
 
 
-@cli.command()
+@cli.command("run")
 @click.option(
     "-c",
     "--classifier",
@@ -30,7 +32,7 @@ def cli():
     type=click.Path(dir_okay=False),
     default="nlu/models/entity-tagger.pkl",
 )
-def run_nlu(classifier, label_encoder, entity_tagger):
+def run_nlu_pipeline(classifier, label_encoder, entity_tagger):
     """Run the NLU pipeline
 
     Args:
@@ -44,19 +46,19 @@ def run_nlu(classifier, label_encoder, entity_tagger):
         print(f"🔮 Result: {res}")
 
 
-@cli.command()
+@cli.command("train")
 @click.argument("training-csv", type=click.Path(dir_okay=False))
 @click.argument("out-dir", type=click.Path(file_okay=False))
-@click.option("-C", "--svm-cost", type=int, default=3)
-@click.option("-l1", "--L1_c", type=float, default=0.1)
-@click.option("-l2", "--L2_c", type=float, default=0.1)
-@click.option("-i", "--max-iter", type=int, default=100)
-def train_nlu(
+@click.option("-c", "--svm-cost", type=int, default=3)
+@click.option("-l1", "--tagger-l1-penalty", type=float, default=0.1)
+@click.option("-l2", "--tagger-l2_penalty", type=float, default=0.1)
+@click.option("-i", "--max-iterations", type=int, default=100)
+def train_nlu_pipeline(
     training_csv: str,
     out_dir: str,
-    C: int,
-    L1_c: float,
-    L2_c: float,
+    svm_cost: int,
+    tagger_l1_penalty: float,
+    tagger_l2_penalty: float,
     max_iterations: int,
 ):
     """Trains the intent-classifier and entity-tagger based on the data provided
@@ -73,11 +75,22 @@ def train_nlu(
         L2_c (float): L2 C (L2 regularization) SVM hyper-parameter
         max_iterations (int): Max training iterations for SVM
     """
+    training_csv = Path(training_csv)
     if not training_csv.exists():
         print(f"💥 training CSV not found at '{training_csv}'")
         exit(1)
 
-    train(training_csv, out_dir, C, L1_c, L2_c, max_iterations)
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    train(
+        training_csv,
+        out_dir,
+        svm_cost,
+        tagger_l1_penalty,
+        tagger_l2_penalty,
+        max_iterations,
+    )
 
 
 @cli.command()
