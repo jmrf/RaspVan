@@ -88,4 +88,4 @@ class IntentPredictor:
         x_vecs, y_true = self._encode(sentences, labels)
         y_pred = self.clf.predict(x_vecs)
         # Classification report
-        print(classification_report(y_true, y_pred, target_names=labels))
+        print(classification_report(y_true, y_pred, target_names=self.le.classes_))

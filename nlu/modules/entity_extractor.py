@@ -1,10 +1,11 @@
 import logging
 import os
 import pickle
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import sklearn_crfsuite
 import spacy
+from sklearn.metrics import classification_report
 
 from common.utils.io import init_logger
 
@@ -61,17 +62,13 @@ class EntityTagger:
 
         return et
 
-    def fit(self, sents: List[conll_sent]):
-        x = [self._sent2features(s) for s in sents]
-        y = [self._sent2labels(s) for s in sents]
+    def fit(self, sentences: List[str], entities: List[List[Dict[str, Any]]]) -> None:
+        x, y = self._encode(sentences, entities)
         self.tagger.fit(x, y)
 
     def predict(self, sentences: List[str]) -> List[List[Tuple[str, str]]]:
-        # encode
-        sents = [
-            [(str(tok), tok.pos_) for tok in self.nlp_pos(sent)] for sent in sentences
-        ]
-        x = [self._sent2features(s) for s in sents]
+        sentence_tokens = self._pos_tokenize(sentences)
+        x = [self._sent2features(s) for s in sentence_tokens]
         y = self.tagger.predict(x)
         preds = []
         for sent, pred in zip(x, y):
@@ -80,10 +77,32 @@ class EntityTagger:
 
         return preds
 
+    def eval(self, sentences: List[str], entities: List[List[Dict[str, Any]]]) -> None:
+        x, y_true = self._encode(sentences, entities)
+        y_pred = self.tagger.predict(x)
+        # Classification report
+        print(classification_report(y_true, y_pred))
+
+    def _pos_tokenize(self, sentences: List[str]):
+        """Encode sentences as a list of (token, POS-tag)"""
+        return [
+            [(str(tok), tok.pos_) for tok in self.nlp_pos(sent)] for sent in sentences
+        ]
+
+    def _encode(self, sentences: List[str], entities: List[List[Dict[str, Any]]]):
+        """Encode sentences as a list of (token, POS-tag, entity-label)"""
+        datapoints = [
+            to_conll_format(s, e, self.nlp_pos) for s, e in zip(sentences, entities)
+        ]
+        x = [self._sent2features(d) for d in datapoints]
+        y = [self._sent2labels(d) for d in datapoints]
+
+        return x, y
+
     @staticmethod
-    def _word2features(sent, i):
-        word = sent[i][0]
-        postag = sent[i][1]
+    def _word2features(pos_tokenized_sentence, i):
+        word = pos_tokenized_sentence[i][0]
+        postag = pos_tokenized_sentence[i][1]
 
         features = {
             "bias": 1.0,
@@ -97,8 +116,8 @@ class EntityTagger:
             "postag[:2]": postag[:2],
         }
         if i > 0:
-            word1 = sent[i - 1][0]
-            postag1 = sent[i - 1][1]
+            word1 = pos_tokenized_sentence[i - 1][0]
+            postag1 = pos_tokenized_sentence[i - 1][1]
             features.update(
                 {
                     "-1:word.lower()": word1.lower(),
@@ -111,9 +130,9 @@ class EntityTagger:
         else:
             features["BOS"] = True
 
-        if i < len(sent) - 1:
-            word1 = sent[i + 1][0]
-            postag1 = sent[i + 1][1]
+        if i < len(pos_tokenized_sentence) - 1:
+            word1 = pos_tokenized_sentence[i + 1][0]
+            postag1 = pos_tokenized_sentence[i + 1][1]
             features.update(
                 {
                     "+1:word.lower()": word1.lower(),
@@ -136,14 +155,20 @@ class EntityTagger:
     def _sent2tokens(sent: conll_sent):
         return [token for token, _, _ in sent]
 
-    def _sent2features(self, sent: conll_sent):
-        return [self._word2features(sent, i) for i in range(len(sent))]
+    @staticmethod
+    def _sent2features(sent: conll_sent):
+        return [EntityTagger._word2features(sent, i) for i in range(len(sent))]
 
 
-def to_conll_format(sent: str, entities: List[Dict[str, str]], nlp):
+def to_conll_format(
+    sent: str, entities: List[Dict[str, str]], nlp
+) -> List[Tuple[str, str, str]]:
     """Transform a sentence into CONLL annotation format.
-     - sent (str): sentence to encode
-     - entities: (List): Entity list. Each with {text,start,end} keys
+
+    Args:
+        sent (str): sentence to encode
+        entities: (List): Entity list. Each with {text,start,end} keys
+        nlp (Spacy.nlp): Spacy POS tagger
 
     Returns a sentence as a list of tuples; (token, POS-tag, label)
     """

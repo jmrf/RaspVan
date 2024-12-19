@@ -7,26 +7,8 @@ import pandas as pd
 import spacy
 from sklearn.model_selection import train_test_split
 
-from nlu.modules.entity_extractor import EntityTagger, to_conll_format
+from nlu.modules.entity_extractor import EntityTagger
 from nlu.modules.intent_clf import IntentPredictor
-
-
-def df_to_conll(df: pd.DataFrame, nlp):
-    """Transform into CONLL format.
-    The dataframe must have the following keys:
-    - text (str): sentence sample
-    - entities: (str): json string with the entities list.
-                       Each with {text,start,end} keys
-
-    Returns a List of conll sentences.
-    Each sentence is a list of tuples; (token, POS-tag, label)
-    """
-    sents = []
-    for _, row in df.iterrows():
-        sent, entities = row[["text", "entities"]]
-        sents.append(to_conll_format(sent, json.loads(entities), nlp))
-
-    return sents
 
 
 def train(
@@ -37,45 +19,38 @@ def train(
     L2_c: float = 0.1,
     max_iterations: int = 100,
 ):
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir, exists_ok=True)
+
     # Read csv data and split into train / test
     df = pd.read_csv(training_csv)
     df = df[~df.isna().any(axis=1)][["id", "text", "entities", "intent"]]
     df_train, df_test = train_test_split(df, test_size=0.3, stratify=df["intent"])
 
-    # labels = df.intent.unique()
-    # NOTE: not using ''x_test' or 'y_test' for now
-    x_train, x_test = df_train["text"], df_test["text"]
-    y_train, y_test = df_train["intent"], df_test["intent"]
-
     # Load the just downloaded model
     nlp = spacy.load("en_core_web_sm")
 
-    # Init the Intent classifier
+    # Init, train and eval the Intent-Classifier
     print("🏋️ Fitting Intent predictor...")
     intd = IntentPredictor(nlp=nlp, C=C)
-    intd.fit(x_train, y_train)
+    intd.fit(df_train["text"], df_train["intent"])
+
     print("📊 Evaluating Intent predictor...")
-    intd.eval(x_test, y_test)
+    intd.eval(df_test["text"], df_test["intent"])
 
-    # Transform to CoNLL 2002 format
-    train_conll = df_to_conll(df_train, nlp)
-    # test_conll = df_to_conll(df_test, nlp)
-
-    # Train the CRF tagger
-    print("🏋️ Fitting Entity Tagger...")
-    entity_tagger = EntityTagger(
-        c1=L1_c, c2=L2_c, max_iterations=max_iterations, nlp=nlp
-    )
-    entity_tagger.fit(train_conll)
-
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir, exists_ok=True)
-
-    print("💾 Saving Intent Detector to disk")
+    print("💾 Saving Intent Detector and label-encoder to disk")
     with open(os.path.join(out_dir, "intent-clf.pkl"), "wb") as f:
         pickle.dump(intd.clf, f)
     with open(os.path.join(out_dir, "intent-le.pkl"), "wb") as f:
         pickle.dump(intd.le, f)
+
+    # Init, train and eval the CRF tagger
+    print("🏋️ Fitting Entity Tagger...")
+    entity_tagger = EntityTagger(
+        c1=L1_c, c2=L2_c, max_iterations=max_iterations, nlp=nlp
+    )
+    entity_tagger.fit(df_train["text"], [json.loads(e) for e in df_train["entities"]])
+    entity_tagger.eval(df_test["text"], [json.loads(e) for e in df_test["entities"]])
 
     print("💾 Saving Entity Tagger to disk")
     with open(os.path.join(out_dir, "entity-tagger.pkl"), "wb") as f:
