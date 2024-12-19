@@ -5,6 +5,7 @@ from typing import List, Optional
 
 import numpy as np
 import spacy
+from sklearn.metrics import classification_report
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 
@@ -80,3 +81,11 @@ class IntentPredictor:
             {"label": self.le.inverse_transform([lbl_idx])[0], "score": scores[lbl_idx]}
             for lbl_idx, scores in zip(intent_preds, intent_probs)
         ]
+
+    def eval(self, sentences: List[str], labels: List[str]):
+        logger.info(f"Evaluating on {len(sentences)} intent examples...")
+        # Sentence & Label encoding
+        x_vecs, y_true = self._encode(sentences, labels)
+        y_pred = self.clf.predict(x_vecs)
+        # Classification report
+        print(classification_report(y_true, y_pred, target_names=labels))

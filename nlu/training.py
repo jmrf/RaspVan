@@ -44,8 +44,8 @@ def train(
 
     # labels = df.intent.unique()
     # NOTE: not using ''x_test' or 'y_test' for now
-    x_train, _ = df_train["text"], df_test["text"]
-    y_train, _ = df_train["intent"], df_test["intent"]
+    x_train, x_test = df_train["text"], df_test["text"]
+    y_train, y_test = df_train["intent"], df_test["intent"]
 
     # Load the just downloaded model
     nlp = spacy.load("en_core_web_sm")
@@ -54,6 +54,8 @@ def train(
     print("🏋️ Fitting Intent predictor...")
     intd = IntentPredictor(nlp=nlp, C=C)
     intd.fit(x_train, y_train)
+    print("📊 Evaluating Intent predictor...")
+    intd.eval(x_test, y_test)
 
     # Transform to CoNLL 2002 format
     train_conll = df_to_conll(df_train, nlp)
