@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os
 import pickle
@@ -78,10 +79,16 @@ class EntityTagger:
         return preds
 
     def eval(self, sentences: List[str], entities: List[List[Dict[str, Any]]]) -> None:
+        def flatten(lol):
+            # flatten a list of lists
+            return list(itertools.chain(*lol))
+
+        # Encode and predict
         x, y_true = self._encode(sentences, entities)
         y_pred = self.tagger.predict(x)
+
         # Classification report
-        print(classification_report(y_true, y_pred))
+        print(classification_report(flatten(y_true), flatten(y_pred)))
 
     def _pos_tokenize(self, sentences: List[str]):
         """Encode sentences as a list of (token, POS-tag)"""

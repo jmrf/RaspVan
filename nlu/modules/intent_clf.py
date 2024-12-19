@@ -44,11 +44,11 @@ class IntentPredictor:
     ):
         ip = cls(nlp=nlp)
 
-        logger.info("Loading label encoder")
+        logger.info(f"Loading label encoder ({le_pkl})")
         with open(le_pkl, "rb") as f:
             ip.le = pickle.load(f)
 
-        logger.info("Loading Intent classifier")
+        logger.info(f"Loading Intent classifier ({clf_pkl})")
         with open(clf_pkl, "rb") as f:
             ip.clf = pickle.load(f)
 

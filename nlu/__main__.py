@@ -49,9 +49,9 @@ def run_nlu_pipeline(classifier, label_encoder, entity_tagger):
 @cli.command("train")
 @click.argument("training-csv", type=click.Path(dir_okay=False))
 @click.argument("out-dir", type=click.Path(file_okay=False))
-@click.option("-c", "--svm-cost", type=int, default=3)
-@click.option("-l1", "--tagger-l1-penalty", type=float, default=0.1)
-@click.option("-l2", "--tagger-l2_penalty", type=float, default=0.1)
+@click.option("-c", "--svm-cost", type=int, default=10)
+@click.option("-l1", "--tagger-l1-penalty", type=float, default=0.3)
+@click.option("-l2", "--tagger-l2_penalty", type=float, default=0.3)
 @click.option("-i", "--max-iterations", type=int, default=100)
 def train_nlu_pipeline(
     training_csv: str,
