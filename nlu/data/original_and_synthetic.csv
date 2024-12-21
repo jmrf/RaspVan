@@ -1,0 +1,86 @@
+,id,text,entities,intent
+0,1,Switch on the front light,"[{""start"": 14, ""end"": 19, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-on
+1,2,Switch on the main light,"[{""start"": 14, ""end"": 18, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+2,3,turn on all the lights,"[{""start"": 8, ""end"": 11, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-on
+3,4,"please, turn off the back light","[{""start"": 21, ""end"": 25, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+5,6,put all the lights off,"[{""start"": 4, ""end"": 7, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+6,7,turn the middle light on,"[{""start"": 9, ""end"": 15, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-on
+7,8,make the front light off,"[{""start"": 9, ""end"": 14, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-off
+8,9,Switch off the main lights,"[{""start"": 15, ""end"": 19, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-off
+17,18,get the middle light off,"[{""start"": 8, ""end"": 14, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-off
+18,19,turn off the back and front lights,"[{""start"": 13, ""end"": 17, ""text"": ""back"", ""labels"": [""light_name""]}, {""start"": 22, ""end"": 27, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-off
+19,20,switch on the middle and main lights,"[{""start"": 14, ""end"": 20, ""text"": ""middle"", ""labels"": [""light_name""]}, {""start"": 25, ""end"": 29, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+20,21,put off all the lights,"[{""start"": 8, ""end"": 11, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+21,22,get those main lights on,"[{""start"": 10, ""end"": 14, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+22,23,please turn off the front and back lights,"[{""start"": 20, ""end"": 25, ""text"": ""front"", ""labels"": [""light_name""]}, {""start"": 30, ""end"": 34, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+23,24,turn off the main light please,"[{""start"": 13, ""end"": 17, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-off
+24,1,Turn switch on the back lights,"[{""start"": 19, ""end"": 23, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-on
+25,2,Can you switch on the middle lights?,"[{""start"": 22, ""end"": 28, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-on
+26,3,I need the all light to be switch on,"[{""start"": 11, ""end"": 14, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-on
+27,4,switch on the main lights,"[{""start"": 14, ""end"": 18, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+28,5,Turn switch off the middle lights,"[{""start"": 20, ""end"": 26, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-off
+29,6,Can you switch on the main lights?,"[{""start"": 22, ""end"": 26, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+30,7,Make sure the all light is switch on,"[{""start"": 14, ""end"": 17, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-on
+32,9,Can you switch off the all lights?,"[{""start"": 23, ""end"": 26, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+33,10,Turn switch on the all lights,"[{""start"": 19, ""end"": 22, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-on
+34,11,Turn switch on the middle lights,"[{""start"": 19, ""end"": 25, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-on
+36,13,Switch switch off the front light,"[{""start"": 22, ""end"": 27, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-off
+37,14,I need the front light to be switch off,"[{""start"": 11, ""end"": 16, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-off
+38,15,Please switch off the middle light,"[{""start"": 22, ""end"": 28, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-off
+39,16,I need the back light to be switch on,"[{""start"": 11, ""end"": 15, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-on
+40,17,Switch switch off the back light,"[{""start"": 22, ""end"": 26, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+41,18,switch on the back lights,"[{""start"": 14, ""end"": 18, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-on
+42,19,Can you switch on the back lights?,"[{""start"": 22, ""end"": 26, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-on
+43,20,I need the main light to be switch on,"[{""start"": 11, ""end"": 15, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+44,21,switch on the all lights,"[{""start"": 14, ""end"": 17, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-on
+45,22,Can you switch off the front lights?,"[{""start"": 23, ""end"": 28, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-off
+47,24,Turn switch off the main lights,"[{""start"": 20, ""end"": 24, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-off
+49,26,Switch switch off the middle light,"[{""start"": 22, ""end"": 28, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-off
+56,33,Please switch off the back light,"[{""start"": 22, ""end"": 26, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+58,35,Switch switch on the back light,"[{""start"": 21, ""end"": 25, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-on
+59,36,switch on the front lights,"[{""start"": 14, ""end"": 19, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-on
+60,37,Turn switch on the main lights,"[{""start"": 19, ""end"": 23, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+62,39,Make sure the all light is switch off,"[{""start"": 14, ""end"": 17, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+63,40,I need the main light to be switch off,"[{""start"": 11, ""end"": 15, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-off
+64,41,Make sure the front light is switch on,"[{""start"": 14, ""end"": 19, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-on
+68,45,Make sure the back light is switch on,"[{""start"": 14, ""end"": 18, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-on
+71,48,Switch switch on the all light,"[{""start"": 21, ""end"": 24, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-on
+72,49,Can you switch off the back lights?,"[{""start"": 23, ""end"": 27, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+73,50,Please switch on the middle light,"[{""start"": 21, ""end"": 27, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-on
+75,52,Switch switch off the all light,"[{""start"": 22, ""end"": 25, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+76,53,Switch switch on the middle light,"[{""start"": 21, ""end"": 27, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-on
+79,56,Please switch off the front light,"[{""start"": 22, ""end"": 27, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-off
+80,57,Can you switch on the all lights?,"[{""start"": 22, ""end"": 25, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-on
+82,59,I need the all light to be switch off,"[{""start"": 11, ""end"": 14, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+83,60,I need the middle light to be switch off,"[{""start"": 11, ""end"": 17, ""text"": ""middle"", ""labels"": [""light_name""]}]",switch-off
+84,61,I need the back light to be switch off,"[{""start"": 11, ""end"": 15, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+88,65,Can you switch off the main lights?,"[{""start"": 23, ""end"": 27, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-off
+89,66,Please switch on the main light,"[{""start"": 21, ""end"": 25, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+91,68,Make sure the back light is switch off,"[{""start"": 14, ""end"": 18, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+97,74,Make sure the main light is switch on,"[{""start"": 14, ""end"": 18, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-on
+98,75,Please switch off the all light,"[{""start"": 22, ""end"": 25, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+101,78,Make sure the main light is switch off,"[{""start"": 14, ""end"": 18, ""text"": ""main"", ""labels"": [""light_name""]}]",switch-off
+102,79,switch off the back lights,"[{""start"": 15, ""end"": 19, ""text"": ""back"", ""labels"": [""light_name""]}]",switch-off
+108,85,Please switch on the front light,"[{""start"": 21, ""end"": 26, ""text"": ""front"", ""labels"": [""light_name""]}]",switch-on
+111,88,switch off the all lights,"[{""start"": 15, ""end"": 18, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+112,89,Turn switch off the all lights,"[{""start"": 20, ""end"": 23, ""text"": ""all"", ""labels"": [""light_name""]}]",switch-off
+124,1,Calculate the square root of 64.,[],other
+125,2,Can you play some music?,[],other
+126,3,I need help with my homework.,[],other
+128,5,Call my friend John.,[],other
+129,6,What time is it?,[],other
+130,7,Who won the last game?,[],other
+131,8,Tell me a joke.,[],other
+133,10,Start the car engine.,[],other
+134,11,"Open the door, please.",[],other
+135,12,Book me a flight to Paris.,[],other
+136,13,Remind me to buy groceries.,[],other
+137,14,What's the weather like today?,[],other
+140,17,Clean the house.,[],other
+143,20,Send an email to Sarah.,[],other
+145,22,Bake a cake for me.,[],other
+148,25,How far is the moon?,[],other
+150,27,Take a picture.,[],other
+169,46,Set an alarm for 7 AM.,[],other
+178,55,Where is the nearest gas station?,[],other
+201,78,Write a report.,[],other
