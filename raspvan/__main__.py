@@ -56,7 +56,7 @@ def main(
 ):
     asyncio.run(
         pipeline(
-            device=device,
+            device=int(device),
             samplerate=samplerate,
             vad_aggressiveness=vad_aggressiveness,
             hotword_engine=hotword_engine,

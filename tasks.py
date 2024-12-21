@@ -90,14 +90,14 @@ def run_relays(ctx):
 
 @task
 def run_hot_word(ctx):
-    """Start RabbitMQ and run the hotword detection worker and publishes to 'hotword.detected'"""
+    """[DEPRECATED] Start RabbitMQ and run the hotword detection worker and publishes to 'hotword.detected'"""
     ctx.run("docker-compose up -d rabbit")
     ctx.run("python -m raspvan.workers.hotword -pt hotword.detected")
 
 
 @task
 def run_asr(ctx):
-    """Start RabbitMQ and run the ASR worker service.
+    """[DEPRECATED] Start RabbitMQ and run the ASR worker service.
     - Consuming from the topic 'hotword.detected'
     - Publishes to 'asr.complete'
     """
@@ -107,8 +107,17 @@ def run_asr(ctx):
 
 @task
 def run_nlu(ctx):
-    """Run the NLU worker service listening to the ASR.complete trigger"""
+    """[DEPRECATED] Run the NLU worker service listening to the ASR.complete trigger"""
     ctx.run("python -m raspvan.workers.nlu -ct asr.complete")
+
+
+@task
+def run(ctx, device: int = 5):
+    """Run a simplified version of the system - no need for RabbitMQ"""
+    print("🧑‍🏭 Starting ASR and NLU docker containers...")
+    ctx.run("docker compose up -d asr nlu")
+    print("🚀 Starting voice assistant pipeline...")
+    ctx.run(f"source .venv/bin/activate; python -m raspvan -d {device}")
 
 
 @task

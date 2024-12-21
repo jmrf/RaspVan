@@ -114,8 +114,14 @@ def train_nlu_pipeline(
     default="nlu/models/entity-tagger.pkl",
 )
 def serve(port, classifier, label_encoder, entity_tagger):
-    """Starts a simple http server to serve NLU predictions
+    """Starts a simple http server to serve NLU predictions.
 
+    Test with:
+    ```
+    curl -X POST http://localhost:8000 \
+        -d '{"text":"turn on the rear light please"}' \
+        | jq .intent.label,.entities[0].value
+    ```
     Args:
         port (int): HTTP port to listen to
         classifier (str): Path to the pickled classifier model
