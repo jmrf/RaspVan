@@ -6,8 +6,16 @@ import click
 from common import int_or_str
 from raspvan import pipeline
 from raspvan.constants import (
+    ASR_SERVER_DEFAULT_URI,
+    ASR_SERVER_URI_ENV_VAR,
+    AUDIO_DEFAULT_SAMPLE_RATE,
     AUDIO_DEVICE_ID_ENV_VAR,
+    AUDIO_SAMPLE_RATE_ENV_VAR,
+    HOTWORD_MODEL_DEFAULT_PATH,
     HOTWORD_MODEL_ENV_VAR,
+    NLU_SERVER_DEFAULT_URI,
+    NLU_SERVER_URI_ENV_VAR,
+    PRECISE_ENGINE_DEFAULT_BIN_PATH,
     PRECISE_ENGINE_ENV_VAR,
 )
 
@@ -21,29 +29,43 @@ from raspvan.constants import (
     help="input device (numeric ID or substring)",
     default=os.getenv(AUDIO_DEVICE_ID_ENV_VAR, 0),
 )
-@click.option("-r", "--samplerate", type=int, help="sampling rate", default=16000)
-# Hotword detection options
-@click.option("-h", "--hotword-model", default=os.getenv(HOTWORD_MODEL_ENV_VAR))
-@click.option("-e", "--hotword-engine", default=os.getenv(PRECISE_ENGINE_ENV_VAR))
-# ASR options
 @click.option(
-    "-as",
-    "--asr-server-uri",
-    type=str,
-    metavar="URL",
-    help="ASR Server websocket URI",
-    default="ws://localhost:2700",
+    "-r",
+    "--samplerate",
+    type=int,
+    help="sampling rate",
+    default=os.getenv(AUDIO_SAMPLE_RATE_ENV_VAR, AUDIO_DEFAULT_SAMPLE_RATE),
 )
 # VAD options
 @click.option(
     "-v", "--vad-aggressiveness", type=int, help="VAD aggressiveness", default=2
+)
+# Hotword detection options
+@click.option(
+    "-h",
+    "--hotword-model",
+    type=click.Path(dir_okay=False),
+    default=os.getenv(HOTWORD_MODEL_ENV_VAR, HOTWORD_MODEL_DEFAULT_PATH),
+)
+@click.option(
+    "-e",
+    "--hotword-engine",
+    type=click.Path(dir_okay=False),
+    default=os.getenv(PRECISE_ENGINE_ENV_VAR, PRECISE_ENGINE_DEFAULT_BIN_PATH),
+)
+# ASR options
+@click.option(
+    "-as",
+    "--asr-server-uri",
+    help="ASR Server websocket URI",
+    default=os.getenv(ASR_SERVER_URI_ENV_VAR, ASR_SERVER_DEFAULT_URI),
 )
 # NLU options
 @click.option(
     "-ns",
     "--nlu-server-uri",
     help="NLU HTTP Server for Intent Classifier and Entity Tagger",
-    default="http://localhost:8000",
+    default=os.getenv(NLU_SERVER_URI_ENV_VAR, NLU_SERVER_DEFAULT_URI),
 )
 def main(
     device,
