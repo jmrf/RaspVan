@@ -13,6 +13,7 @@ from asr.vad import VAD
 from common.utils.io import init_logger
 from raspvan.constants import AUDIO_DEVICE_ID_ENV_VAR
 from raspvan.workers.hotword import CHUNK_SIZE
+from raspvan.workers.relay import RelayClient
 from respeaker.pixels import Pixels
 
 logger = logging.getLogger(__name__)
@@ -112,11 +113,19 @@ async def pipeline(
         raise Exception(f"Error in audio-stream or hotword engine: {e}")
 
     # ---------------------------
-    #     ASR + NLU
+    #     ASR + NLU + Relays
     # ---------------------------
     logger.info("🤐 Initializing ASR and VAD clients")
     vad = VAD(vad_aggressiveness)
     asr = ASRClient(asr_uri, vad, pixels)
+    rc = RelayClient()
+    light_map = {
+        "all": [0, 1, 2, 3],
+        "main": [0],
+        "rear": [1],
+        "middle": [2],
+        "front": [3],
+    }
 
     # This requires to external services running (docker):
     #  - ASR websocket server
@@ -124,18 +133,35 @@ async def pipeline(
     logger.info(f"🔁 Starting ASR ({asr_uri}) + NLU ({nlu_uri}) infinite loop")
     while True:
         msg = q.get()
-        if msg == HOTWORD_KEY:
+        key = msg["key"]
+        if key == HOTWORD_KEY:
             # ASR: Start audio stream and do speach recognition on the fly
             logger.info("🔥 hotword detected! Starting microphone stream...")
             text = await asr.stream_mic(samplerate, device)
-            logger.info(f"👂 Recognized: '{text}")
-            q.put(f"{ASR_KEY}:{text}")
-        elif msg.startswith(ASR_KEY):
+            res = {"key": ASR_KEY, "text": text}
+            logger.info(f"👂 {res}")
+            q.put(res)
+        elif key == ASR_KEY:
             # NLU: Analysis of the recognized text
-            text = msg.split(":")[-1]
-            logger.info(f"🔮 Parsing '{text}'")
-            res = parse(text)
-            logger.info(f"💫 Result {res}")
+            parsed = parse(msg["text"])
+            res = {
+                "key": NLU_KEY,
+                "intent": parsed["intent"]["label"],
+                "lights": [
+                    e["value"]
+                    for e in parsed["entities"]
+                    if e["entity"] == "light_name"],
+            }
+            logger.info(f"🔮 {res}")
+            q.put(res)
+        elif key == NLU_KEY:
+            # Unpack all the recognized lights and map to channels
+            channels = [
+                channel for lname in msg["lights"] for channel in light_map.get(lname)
+            ]
+            # Switch On or Off: 1 or 0
+            mode = int(msg["intent"] == "switch-on")
+            rc.switch(channels, mode)
         else:
             logger.warning("😵‍💫 Weird message in the queue: '{msg}")
 

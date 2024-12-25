@@ -27,7 +27,7 @@ We find that collecting the following samples yields acceptable results:
 
 ## Requirements
 
-- python >= 3.6
+- python == 3.7 (for example through `pyenv`)
 - [mycroft/precise](https://github.com/josemarcosrf/mycroft-precise#source-install)
 
 > ‼️ Important:
@@ -70,15 +70,18 @@ We find that collecting the following samples yields acceptable results:
 
 ### Install
 
-To train a `custom model` we need to install from source:
+To train a `custom model` we need to install from source.
+
+In the `workstation` run the following to install the system dependencies, create a virtual environment and install the entire python precise package locally.
 
 ```shell
+    # Build from source: Ensure there's a Python 3.7 avaialble to run the setup & install
     git clone https://github.com/josemarcosrf/mycroft-precise
     cd mycroft-precise
     ./setup.sh
 ```
 
-Once deployed in the `RaspberryPi`, we can use the binary installs:
+In the `RaspberryPi`, we can use the `precise-engine` (inference) binary installs:
 
 ```shell
     ARCH=armv7l
@@ -94,7 +97,7 @@ And finally:
 
 ### Train a custom hotword
 
-1. Run
+1. Create the appropiate data folder structures with:
 
 ```shell
 bash ./scripts/crate_dirs.sh
@@ -107,7 +110,7 @@ bash ./scripts/crate_dirs.sh
 
 ======================== In the Raspeberry Pi ========================
 
-Collect audio samples
+1. Collect audio samples
 
 ```bash
 cd fiona-rpi/wake-word/
@@ -115,6 +118,8 @@ cd fiona-rpi/wake-word/
 ```
 
 ======================== In the work-station ========================
+
+2. Train the hotword model
 
 ```bash
 # The firt train

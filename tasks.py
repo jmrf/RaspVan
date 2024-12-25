@@ -114,8 +114,8 @@ def run_nlu(ctx):
 @task
 def run(ctx, device: int = 5):
     """Run a simplified version of the system - no need for RabbitMQ"""
-    print("🧑‍🏭 Starting ASR and NLU docker containers...")
-    ctx.run("docker compose up -d asr nlu")
+    print("🧑‍🏭 Starting ASR, NLU and Redis docker containers...")
+    ctx.run("docker compose up -d asr nlu redis")
     print("🚀 Starting voice assistant pipeline...")
     ctx.run(f"source .venv/bin/activate; python -m raspvan -d {device}")
 
