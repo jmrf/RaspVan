@@ -1,4 +1,6 @@
+click
 h5py==2.10.0
+halo
 numpy==1.16.0
 precise-runner~=0.3.1
 tensorflow==1.13.1
