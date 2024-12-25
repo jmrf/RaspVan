@@ -61,13 +61,13 @@ def build_nlu(ctx):
 
 
 @task
-def run_pixels(ctx):
+def pixels(ctx):
     """Run the Respeaker respeaker.pixels:__main__"""
     ctx.run("python -m respeaker.pixels")
 
 
 @task
-def run_ble_server(ctx):
+def ble_server(ctx):
     """Start Redis and run the BLE (Bluetooth Low Energy) Server.
     First starts REDIS and configured the 1st bluetooth device mode to
     'Page and Inquiry Scan' to accept connections and scan for other devices.
@@ -83,20 +83,20 @@ def run_ble_server(ctx):
 
 
 @task
-def run_relays(ctx):
+def relays(ctx):
     """Run the Relay worker"""
     ctx.run("python -m raspvan.workers.relay")
 
 
 @task
-def run_hot_word(ctx):
+def hot_word(ctx):
     """[DEPRECATED] Start RabbitMQ and run the hotword detection worker and publishes to 'hotword.detected'"""
     ctx.run("docker-compose up -d rabbit")
     ctx.run("python -m raspvan.workers.hotword -pt hotword.detected")
 
 
 @task
-def run_asr(ctx):
+def asr(ctx):
     """[DEPRECATED] Start RabbitMQ and run the ASR worker service.
     - Consuming from the topic 'hotword.detected'
     - Publishes to 'asr.complete'
@@ -106,7 +106,7 @@ def run_asr(ctx):
 
 
 @task
-def run_nlu(ctx):
+def nlu(ctx):
     """[DEPRECATED] Run the NLU worker service listening to the ASR.complete trigger"""
     ctx.run("python -m raspvan.workers.nlu -ct asr.complete")
 

@@ -22,7 +22,7 @@ imgs/
 **/data/
 !nlu/data/
 **/models/
-!hotword/models
+# !hotword/models
 !nlu/models
 
 
