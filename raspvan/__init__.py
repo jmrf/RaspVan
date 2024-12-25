@@ -150,7 +150,8 @@ async def pipeline(
                 "lights": [
                     e["value"]
                     for e in parsed["entities"]
-                    if e["entity"] == "light_name"],
+                    if e["entity"] == "light_name"
+                ],
             }
             logger.info(f"🔮 {res}")
             q.put(res)
