@@ -26,19 +26,18 @@ if [ "$current_dir" == "scripts" ]; then
     exit
 fi
 
-
-ARCH=$(uname -a |awk '{print $12}')
-TAR_FILE="precise-engine.tar.gz"
-
+ARCH=$(uname -m)
 
 cprint @yellow[["🚧 WARNING: This will download an older version (v0.1.1) of the precise-runner!"]]
 cprint @yellow[["🚧 WARNING: To get the latest (v0.3.1) you need to compile from source:"]]
 cprint @yellow[["🛠️  https://github.com/josemarcosrf/mycroft-precise#source-install"]]
+ENGINE_TAR_URI="https://github.com/josemarcosrf/precise-data/raw/dist/$ARCH/precise-engine.tar.gz"
+# ENGINE_TAR_URI="https://github.com/MycroftAI/mycroft-precise/releases/download/v0.3.0/precise-all_0.3.0_${ARCH}.tar.gz"
 
-
+TAR_FILE=$(echo $ENGINE_TAR_URI | awk -F'/' '{print $NF}')
 if [ ! -f $TAR_FILE ]; then
     cprint @blue[["⏬ Downloading binaries for '$ARCH'"]]
-    wget  https://github.com/josemarcosrf/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
+    wget $ENGINE_TAR_URI
 fi
 
 if [ -f $TAR_FILE ]; then
@@ -48,5 +47,5 @@ if [ -f $TAR_FILE ]; then
 fi
 
 cprint @magenta[["precise-engine version: "]]
-$(precise-engine/precise-engine --version)
+$(precise/precise-engine --version)
 
