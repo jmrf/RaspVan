@@ -90,7 +90,7 @@ async def pipeline(
 
     def activate():
         pixels.wakeup()
-        q.put(HOTWORD_KEY)
+        q.put({"key": HOTWORD_KEY})
 
     # Init the Pixels client
     pixels = Pixels(pattern_name="google")
