@@ -235,7 +235,7 @@ pip install -r requirements.txt
 First list all audio devices:
 
 ```bash
-python -m respeaker print-audio-devices
+inv print-audio-devices # Or: `python -m respeaker print-audio-devices`
 ```
 
 You should get a table simlar to this:

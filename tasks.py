@@ -32,8 +32,6 @@ def tests(ctx):
 
 
 # =============== Base Tasks ================
-
-
 @task
 def print_audio_devices(ctx):
     """List available audio devices"""
@@ -43,9 +41,18 @@ def print_audio_devices(ctx):
 @task
 def print_audio_cards(ctx):
     """List available audio devices"""
+    print("CARDS: ")
     ctx.run("cat /proc/asound/cards")
+    print("🎙️ Input Devices: ")
     ctx.run("arecord -L")
+    print("🔊 Output Devices: ")
     ctx.run("aplay -L")
+
+
+@task
+def record(ctx, channels:int = 2, output_name:str = "output-$(date +%F).wav"):
+    """Record a Signed 16 bit Little Endian, 16000 Hz WAV"""
+    ctx.run(f"acrecord -f S16_LE -r 16000 -c {channels} -t wav {output_name}")
 
 
 @task
