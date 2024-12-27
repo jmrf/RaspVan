@@ -40,17 +40,18 @@ def print_audio_devices(ctx):
 
 @task
 def print_audio_cards(ctx):
-    """List available audio devices"""
+    """List available audio cards"""
+    # NOTE: with `arecord -L` we list PCM named devices
     print("CARDS: ")
     ctx.run("cat /proc/asound/cards")
-    print("🎙️ Input Devices: ")
-    ctx.run("arecord -L")
-    print("🔊 Output Devices: ")
-    ctx.run("aplay -L")
+    print("🎙️ Input Cards: ")
+    ctx.run("arecord -l")
+    print("🔊 Output Cards: ")
+    ctx.run("aplay -l")
 
 
 @task
-def record(ctx, channels:int = 2, output_name:str = "output-$(date +%F).wav"):
+def record(ctx, channels: int = 2, output_name: str = "output-$(date +%F).wav"):
     """Record a Signed 16 bit Little Endian, 16000 Hz WAV"""
     ctx.run(f"acrecord -f S16_LE -r 16000 -c {channels} -t wav {output_name}")
 

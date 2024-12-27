@@ -23,9 +23,9 @@ init_logger(
 )
 
 # Simple communication Queue between components
-HOTWORD_KEY = "HOTWORD"
-ASR_KEY = "ASR"
-NLU_KEY = "NLU"
+HOTWORD_DETECTED = "HOTWORD_DETECTED"
+ASR_READY = "ASR_READY"
+NLU_READY = "NLU_READY"
 q = queue.Queue()
 
 
@@ -90,7 +90,7 @@ async def pipeline(
 
     def activate():
         pixels.wakeup()
-        q.put({"key": HOTWORD_KEY})
+        q.put({"key": HOTWORD_DETECTED})
 
     # Init the Pixels client
     pixels = Pixels(pattern_name="google")
@@ -134,18 +134,18 @@ async def pipeline(
     while True:
         msg = q.get()
         key = msg["key"]
-        if key == HOTWORD_KEY:
+        if key == HOTWORD_DETECTED:
             # ASR: Start audio stream and do speach recognition on the fly
             logger.info("🔥 hotword detected! Starting microphone stream...")
             text = await asr.stream_mic(samplerate, device)
-            res = {"key": ASR_KEY, "text": text}
+            res = {"key": ASR_READY, "text": text}
             logger.info(f"👂 {res}")
             q.put(res)
-        elif key == ASR_KEY:
+        elif key == ASR_READY:
             # NLU: Analysis of the recognized text
             parsed = parse(msg["text"])
             res = {
-                "key": NLU_KEY,
+                "key": NLU_READY,
                 "intent": parsed["intent"]["label"],
                 "lights": [
                     e["value"]
@@ -155,7 +155,7 @@ async def pipeline(
             }
             logger.info(f"🔮 {res}")
             q.put(res)
-        elif key == NLU_KEY:
+        elif key == NLU_READY:
             # Unpack all the recognized lights and map to channels
             channels = [
                 channel for lname in msg["lights"] for channel in light_map.get(lname)
