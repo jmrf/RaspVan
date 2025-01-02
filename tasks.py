@@ -1,4 +1,5 @@
 import sys
+
 from invoke import task
 
 # =============== DEV Tasks ================
@@ -58,7 +59,7 @@ def record(ctx, channels: int = 2, output_name: str = "output-$(date +%F).wav"):
 
 
 @task
-def build_nlu(ctx, x: bool = False, push:bool = False):
+def build_nlu(ctx, x: bool = False, push: bool = False):
     """Build NLU docker image [jmrf/nlu-rpi]"""
     # Get the NLU version;
     # Parse the version file so we can build even if we don't have the python dependencies installed
@@ -66,7 +67,7 @@ def build_nlu(ctx, x: bool = False, push:bool = False):
         "echo $(grep __version__ raspvan/version.py | awk -F' = ' '{print $2}')"
     )
     version = r.stdout.replace('"', "")
-    py_version = f"cp{sys.version_info.major}{sys.version_info.minor}" # e.g.: cp37
+    py_version = f"cp{sys.version_info.major}{sys.version_info.minor}"  # e.g.: cp37
     img_name = f"jmrf/nlu-rpi:{py_version}-{version}"
     print(f"📦️ Building as: {img_name}")
 
@@ -78,9 +79,7 @@ def build_nlu(ctx, x: bool = False, push:bool = False):
 
     # Build the NLU image
     print("🔨 Building image...")
-    ctx.run(
-        build_cmd + " -f ./nlu/dockerfiles/Dockerfile ./nlu -t " + img_name
-    )
+    ctx.run(build_cmd + " -f ./nlu/dockerfiles/Dockerfile ./nlu -t " + img_name)
 
     if push:
         print("📤️ Pushing build image to dockerhub")
@@ -142,7 +141,7 @@ def nlu(ctx):
 def run(ctx, device: int = 5):
     """Run a simplified version of the system - no need for RabbitMQ"""
     print("🧑‍🏭 Starting ASR, NLU and Redis docker containers...")
-    ctx.run("docker compose up -d asr nlu redis")
+    ctx.run("docker-compose up -d asr nlu redis")
     print("🚀 Starting voice assistant pipeline...")
     ctx.run(f"source .venv/bin/activate; python -m raspvan -d {device}")
 
