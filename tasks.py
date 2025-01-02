@@ -1,3 +1,4 @@
+import sys
 from invoke import task
 
 # =============== DEV Tasks ================
@@ -57,15 +58,33 @@ def record(ctx, channels: int = 2, output_name: str = "output-$(date +%F).wav"):
 
 
 @task
-def build_nlu(ctx):
+def build_nlu(ctx, x: bool = False, push:bool = False):
     """Build NLU docker image [jmrf/nlu-rpi]"""
-    from raspvan.version import __version__
-
-    print(f"🔨 Building image: jmrf/nlu-rpi:{__version__}")
-    ctx.run(
-        f"docker build --rm -t jmrf/nlu-rpi:{__version__}"
-        "-f ./nlu/dockerfiles/Dockerfile ./nlu"
+    # Get the NLU version;
+    # Parse the version file so we can build even if we don't have the python dependencies installed
+    r = ctx.run(
+        "echo $(grep __version__ raspvan/version.py | awk -F' = ' '{print $2}')"
     )
+    version = r.stdout.replace('"', "")
+    py_version = f"cp{sys.version_info.major}{sys.version_info.minor}" # e.g.: cp37
+    img_name = f"jmrf/nlu-rpi:{py_version}-{version}"
+    print(f"📦️ Building as: {img_name}")
+
+    # Build command for regular or cross-build
+    if x:
+        build_cmd = "docker buildx build --platform linux/arm/v7"  # Cross-build
+    else:
+        build_cmd = "docker build"
+
+    # Build the NLU image
+    print("🔨 Building image...")
+    ctx.run(
+        build_cmd + " -f ./nlu/dockerfiles/Dockerfile ./nlu -t " + img_name
+    )
+
+    if push:
+        print("📤️ Pushing build image to dockerhub")
+        ctx.run(f"docker push {img_name}")
 
 
 @task
