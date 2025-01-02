@@ -80,13 +80,49 @@ async def pipeline(
 ):
     logger.info(f"🎙️ Using Audio Device: {device} (sampling rate: {samplerate} Hz)")
 
-    def parse(text: str):
+    async def do_asr() -> None:
         try:
+            # ASR: Start audio stream and do speach recognition on the fly
+            logger.info("🔥 hotword detected! Starting microphone stream...")
+            text = await asr.stream_mic(samplerate, device)
+            res = {"key": ASR_READY, "text": text}
+            logger.info(f"👂 {res}")
+            q.put(res)
+        except Exception as e:
+            logger.error(f"Error making audio stream ASR: {e}")
+
+    def do_nlu(text: str) -> None:
+        try:
+            # Request NLU parsing of the recognized text
             res = requests.post(nlu_uri, json={"text": text})
             res.raise_for_status()
-            return res.json()
+            parsed = res.json()
+            # Compose an Intent and Entities response object
+            res = {
+                "key": NLU_READY,
+                "intent": parsed["intent"]["label"],
+                "lights": [
+                    e["value"]
+                    for e in parsed["entities"]
+                    if e["entity"] == "light_name"
+                ],
+            }
+            logger.info(f"🔮 {res}")
+            q.put(res)
         except Exception as e:
-            logger.error(f"Error making NLU parse request: {e}")
+            logger.error(f"Error Performing NLU: {e}")
+
+    def do_relay_switch() -> None:
+        try:
+            # Unpack all the recognized lights and map to channels
+            channels = [
+                channel for lname in msg["lights"] for channel in light_map.get(lname)
+            ]
+            # Switch On or Off: 1 or 0
+            mode = int(msg["intent"] == "switch-on")
+            rc.switch(channels, mode)
+        except Exception as e:
+            logger.error(f"Error switching relays: {e}")
 
     def activate():
         pixels.wakeup()
@@ -135,34 +171,11 @@ async def pipeline(
         msg = q.get()
         key = msg["key"]
         if key == HOTWORD_DETECTED:
-            # ASR: Start audio stream and do speach recognition on the fly
-            logger.info("🔥 hotword detected! Starting microphone stream...")
-            text = await asr.stream_mic(samplerate, device)
-            res = {"key": ASR_READY, "text": text}
-            logger.info(f"👂 {res}")
-            q.put(res)
+            await do_asr()
         elif key == ASR_READY:
-            # NLU: Analysis of the recognized text
-            parsed = parse(msg["text"])
-            res = {
-                "key": NLU_READY,
-                "intent": parsed["intent"]["label"],
-                "lights": [
-                    e["value"]
-                    for e in parsed["entities"]
-                    if e["entity"] == "light_name"
-                ],
-            }
-            logger.info(f"🔮 {res}")
-            q.put(res)
+            do_nlu(msg["text"])
         elif key == NLU_READY:
-            # Unpack all the recognized lights and map to channels
-            channels = [
-                channel for lname in msg["lights"] for channel in light_map.get(lname)
-            ]
-            # Switch On or Off: 1 or 0
-            mode = int(msg["intent"] == "switch-on")
-            rc.switch(channels, mode)
+            do_relay_switch()
         else:
             logger.warning("😵‍💫 Weird message in the queue: '{msg}")
 

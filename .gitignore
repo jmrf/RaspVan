@@ -25,6 +25,8 @@ imgs/
 !hotword/models/fiona-rpi/
 !nlu/models
 
+.env
+
 
 
 
